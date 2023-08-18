@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import mongooseUniqueValidator from "mongoose-unique-validator";
 
 const UserSchema = new mongoose.Schema({
     firstname: {
@@ -28,14 +29,14 @@ const UserSchema = new mongoose.Schema({
         type: String,
         min: 10,
     },
-    password: {
+    hashedPassword: {
         type: String,
         required: true,
         min: 6,
     },
     role: {
         type: String,
-        required: true,
+        default: "user",
     },
     profileImageUrl: {
         type: String,
@@ -50,13 +51,31 @@ const UserSchema = new mongoose.Schema({
         type: String,
     },
     billingAddress: {
-        type: String,
+        country: {
+            type: String,
+        },
+        city: {
+            type: String,
+        },
+        streetAddress: {
+            type: String,
+        } 
     },
     shippingAddress: {
-        type: String,
+        country: {
+            type: String,
+        },
+        city: {
+            type: String,
+        },
+        streetAddress: {
+            type: String,
+        } 
     }
 }, { timestamps: true }
 )
 
+UserSchema.plugin(mongooseUniqueValidator,
+    { message: 'Error, a user with {PATH}:{VALUE} already exists.' })
 const User = mongoose.model("User", UserSchema)
 export default User

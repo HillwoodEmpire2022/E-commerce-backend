@@ -4,6 +4,7 @@ import cors from "cors"
 import helmet from "helmet"
 import dotenv from "dotenv"
 import mongoose from "mongoose"
+import userRoutes from "./routes/user"
 
 dotenv.config()
 
@@ -13,6 +14,7 @@ app.use(express.json({}))
 app.use(helmet())
 app.use(cors())
 app.use(morgan("common"))
+app.use(userRoutes)
 
 const PORT = process.env.PORT || 3001
 
