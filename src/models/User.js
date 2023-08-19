@@ -7,12 +7,14 @@ const UserSchema = new mongoose.Schema({
         required: true,
         min: 2,
         max: 255,
+        trim: true,
     },
     lastname: {
         type: String,
         required: true,
         min: 2,
         max: 255,
+        trim: true,
     },
     username: {
         type: String,
@@ -24,15 +26,17 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
+        trim: true,
+        message: "Custom A user with {PATH}:{VALUE} already exists."
     },
     phoneNumber: {
         type: String,
-        min: 10,
+        default: null,
+        trim: true,
     },
     hashedPassword: {
         type: String,
         required: true,
-        min: 6,
     },
     role: {
         type: String,
@@ -46,36 +50,46 @@ const UserSchema = new mongoose.Schema({
     },
     dateOfBirth: {
         type: Date,
+        default: null
     },
     gender: {
         type: String,
+        default: null
     },
     billingAddress: {
         country: {
             type: String,
+            default: null
         },
         city: {
             type: String,
+            default: null
         },
         streetAddress: {
             type: String,
+            default: null
         } 
     },
     shippingAddress: {
         country: {
             type: String,
+            default: null
         },
         city: {
             type: String,
+            default: null
         },
         streetAddress: {
             type: String,
+            default: null
         } 
     }
 }, { timestamps: true }
 )
 
-UserSchema.plugin(mongooseUniqueValidator,
-    { message: 'Error, a user with {PATH}:{VALUE} already exists.' })
+UserSchema.plugin(mongooseUniqueValidator, 
+
+    { message :'Error, a user with {PATH}:{VALUE} already exists.' }
+ )
 const User = mongoose.model("User", UserSchema)
 export default User
