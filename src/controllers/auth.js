@@ -1,6 +1,6 @@
 import User from "../models/User.js";
 import bcrypt from "bcrypt"
-import { signupValidationSchema } from "../validations/signupValidation.js";
+import { signupValidationSchema, loginValidationSchema } from "../validations/authValidations.js";
 import jwt from "jsonwebtoken"
 import dotenv from "dotenv"
 
@@ -50,7 +50,7 @@ export const userRegister = async (req, res) => {
         const savedUser = await User.create(newUser)
         const userToken = jwt.sign({
             id: savedUser._id
-        }, process.env.SECRET_KEY)
+        }, { expiresIn: '1h' }, process.env.SECRET_KEY)
 
         res.status(201).json({
             userToken,
@@ -60,4 +60,56 @@ export const userRegister = async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message })
     }
+}
+
+export const userLogin = async (req, res) => { 
+    try {
+        let { 
+            email,
+            password,
+        } = req.body
+
+        const { error } = loginValidationSchema.validate(
+            req.body,
+            { errors: { label: 'key', wrap: { label: false } } })
+        if (error) {
+            res.status(422).send({ message: error.message })
+        }
+        
+        let userInfo = {}
+        const account = await User.findOne({email:email})
+        if (!account) {
+            res.status(401).send({ message: "The email provided does not exist."})
+        } else {
+            
+            const passwordCheck = await bcrypt.compare(password, account.hashedPassword)
+            
+           
+            if (!passwordCheck) {
+                res.status(401).send({ message: "Wrong password."})
+            } else {
+                userInfo = {
+                    _id: account._id,
+                    firstname: account.firstname,
+                    lastname: account.lastname,
+                    username: account.username,
+                    role: account.role,
+                    profileImageUrl: account.profileImageUrl,
+
+                } 
+
+                const userToken = jwt.sign({
+                    _id: account._id
+                }, { expiresIn: '1h' }, process.env.SECRET_KEY)
+
+                res.status(200).json({
+                    token: userToken,
+                    user: userInfo,
+                })
+            }
+        }
+
+    } catch (error) {
+        res.status(500).json({ error: error.message })
+    }  
 }
