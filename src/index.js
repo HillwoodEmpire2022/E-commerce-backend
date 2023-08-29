@@ -19,7 +19,7 @@ app.use(cors())
 app.use(morgan("common"))
 
 app.use(session({ 
-    secret: process.env.SESSION_SECRET,
+    secret: "salfdjdsaoifnewalknfisafQ@WRFADSiosadhf2134",
     resave: false,
     saveUninitialized: false,
 }))
