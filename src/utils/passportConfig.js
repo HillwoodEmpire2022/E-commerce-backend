@@ -10,7 +10,8 @@ export const passportConfig = () => {
         callbackURL: process.env.GOOGLE_CLIENT_CALLBACK
     },
         (accessToken, refreshToken, profile, done) => { 
-            console.log(profile);
+            console.log(profile)
+            return done(null, profile)
         }));
     passport.serializeUser((user, done) => { 
         done(null, user.id)
