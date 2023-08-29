@@ -50,7 +50,7 @@ export const userRegister = async (req, res) => {
         const savedUser = await User.create(newUser)
         const userToken = jwt.sign({
             id: savedUser._id
-        }, { expiresIn: '1h' }, process.env.SECRET_KEY)
+        }, process.env.SECRET_KEY, { expiresIn: '1h' })
 
         res.status(201).json({
             userToken,
@@ -100,7 +100,7 @@ export const userLogin = async (req, res) => {
 
                 const userToken = jwt.sign({
                     _id: account._id
-                }, { expiresIn: '1h' }, process.env.SECRET_KEY)
+                }, process.env.SECRET_KEY, { expiresIn: '1h' })
 
                 res.status(200).json({
                     token: userToken,
