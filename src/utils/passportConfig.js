@@ -18,6 +18,9 @@ export const passportConfig = () => {
     })
 
     passport.deserializeUser((id, done) => { 
-        User.findById(id, (err, user) => done(err, user))
+
+        const user = User.findById(id)
+        return done(null, user)    
+
     })
 }
