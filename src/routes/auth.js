@@ -16,7 +16,6 @@ router.get("/google/callback", passport.authenticate("google",
 )    
 
 router.get("auth/google/success", (req, res) => { 
-
     try {
         console.log('try')
         console.log(req)
