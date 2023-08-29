@@ -7,7 +7,7 @@ const router = express.Router()
 
 router.post("/user/register", userRegister)
 router.post("/user/login", userLogin)
-router.get("/auth/google", passport.authenticate("google", { scope: ["profile"] }))
+router.get("/auth/google", passport.authenticate("google", { scope: ["email","profile"] }))
 router.get("/google/callback", passport.authenticate("google",
     {
         successRedirect: '/auth/google/success',
