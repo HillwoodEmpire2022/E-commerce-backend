@@ -28,9 +28,7 @@ const UserSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
-        unique: true,
         trim: true,
-        message: "Custom A user with {PATH}:{VALUE} already exists."
     },
     phoneNumber: {
         type: String,
@@ -39,7 +37,7 @@ const UserSchema = new mongoose.Schema({
     },
     hashedPassword: {
         type: String,
-        required: true,
+        required: false,
     },
     role: {
         type: String,
