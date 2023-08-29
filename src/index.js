@@ -31,11 +31,11 @@ mongoose.connect(process.env.MONGODB_URI, {
     })
 }).catch((error) => { console.log({ error: error.message }) })
 
-app.use(session({ 
-    secret: "slfjsalfjlksaf",
-    resave: false,
-    saveUninitialized: false,
-}))
+// app.use(session({ 
+//     secret: "",
+//     resave: false,
+//     saveUninitialized: false,
+// }))
 
 app.use(passport.initialize())
-app.use(passport.session())
+// app.use(passport.session())
