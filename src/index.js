@@ -12,12 +12,24 @@ import session from "express-session"
 dotenv.config()
 
 const app = express()
-passportConfig()
 
 app.use(express.json({}))
 app.use(helmet())
 app.use(cors())
 app.use(morgan("common"))
+
+app.use(session({ 
+    secret: "salfdjdsaoifnewalknfisafQ@WRFADSiosadhf2134",
+    resave: false,
+    saveUninitialized: false,
+}))
+
+passportConfig()
+
+app.use(passport.initialize())
+app.use(passport.session())
+
+//route handlers
 app.use(authRoutes)
 
 const PORT = process.env.PORT || 3001
@@ -31,11 +43,4 @@ mongoose.connect(process.env.MONGODB_URI, {
     })
 }).catch((error) => { console.log({ error: error.message }) })
 
-// app.use(session({ 
-//     secret: "",
-//     resave: false,
-//     saveUninitialized: false,
-// }))
 
-app.use(passport.initialize())
-// app.use(passport.session())
