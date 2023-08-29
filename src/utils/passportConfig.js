@@ -18,7 +18,7 @@ export const passportConfig = () => {
             //         });
             //     }
             // })
-            console.log(profile.name, profile.familyName, profile.photos, profile._json)
+            console.log(profile.name, profile.familyName, profile.photos, profile._json, profile)
             return done(null, profile)
         }));
     passport.serializeUser((user, done) => { 
