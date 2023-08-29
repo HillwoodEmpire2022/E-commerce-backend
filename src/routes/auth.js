@@ -7,7 +7,7 @@ const router = express.Router()
 
 router.post("/user/register", userRegister)
 router.post("/user/login", userLogin)
-router.get("/auth/google", passport.authenticate("google", { scope: ["profile"] }))
+router.get("/auth/google", passport.authenticate("google", { scope: ["email","profile"] }))
 router.get("/google/callback", passport.authenticate("google",
     {
         successRedirect: '/auth/google/success',
@@ -16,8 +16,17 @@ router.get("/google/callback", passport.authenticate("google",
 )    
 
 router.get("auth/google/success", (req, res) => { 
-    console.log(req)
-    res.status(200).json({ user: req.user})
+    try {
+        console.log('try')
+        console.log(req)
+        res.send(req.user)
+    } catch (err) { 
+        console.log(err.message)
+        res.status(500).send(err.message)
+    }
+
+    
+    // res.status(200).json({ user: req.user})
 })
 
 router.get("auth/google/failure", (req, res) => { 

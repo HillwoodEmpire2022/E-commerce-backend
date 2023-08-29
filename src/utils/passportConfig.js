@@ -10,7 +10,15 @@ export const passportConfig = () => {
         callbackURL: process.env.GOOGLE_CLIENT_CALLBACK
     },
         (accessToken, refreshToken, profile, done) => { 
-            console.log(profile)
+            // User.findOne({ googleId: profile.id }, (err, user) => { 
+            //     if (!user) {
+            //         user = new User({
+            //             googleId: profile.id,
+            //             firstname: profile.
+            //         });
+            //     }
+            // })
+            console.log(profile.name, profile.familyName, profile.photos, profile._json, profile)
             return done(null, profile)
         }));
     passport.serializeUser((user, done) => { 
@@ -18,6 +26,9 @@ export const passportConfig = () => {
     })
 
     passport.deserializeUser((id, done) => { 
-        User.findById(id, (err, user) => done(err, user))
+
+        const user = User.findById(id)
+        return done(null, user)    
+
     })
 }
