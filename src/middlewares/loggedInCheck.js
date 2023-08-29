@@ -3,4 +3,6 @@ export const isLoggedIn = (req, res, next) => {
         : res.status(401).send({
             message: "You are unauthorized. Please login again"
         })
- }
+}
+ 
+export default isLoggedIn
