@@ -1,5 +1,5 @@
 import express from "express";
-import { userRegister, userLogin } from "../controllers/auth.js"
+import { userRegister, userLogin, googleAuthenticationSuccess } from "../controllers/auth.js"
 import passport from "passport"
 import generateJWToken from "../utils/jwToken.js";
 import isLoggedIn from "../middlewares/loggedInCheck.js";
@@ -15,29 +15,23 @@ router.get("/google/callback", passport.authenticate("google",
     {
         successRedirect: '/auth/google/success',
         failureRedirect: '/auth/google/failure'
-    }), (req, res) => { 
-    const userToken = generateJWToken(req.user.id)
-    res.status(200).json({
-        token: userToken,
-        user: req.user,
-    })
-    // console.log(req.user);
-    }
-)    
-
-router.get("auth/google/success", isLoggedIn, (req, res) => { 
-    try {
-        console.log('try')
-        console.log(req)
-        res.send(req.user)
-    } catch (err) { 
-        console.log(err.message)
-        res.status(500).send(err.message)
-    }
+    }) )
+    // console.log(req.user);   
+    
+router.get("auth/google/success", isLoggedIn, googleAuthenticationSuccess)
+// (req, res) => { 
+//     try {
+//         console.log('try')
+//         console.log(req)
+//         res.send(req.user)
+//     } catch (err) { 
+//         console.log(err.message)
+//         res.status(500).send(err.message)
+//     }
 
     
-    // res.status(200).json({ user: req.user})
-})
+//     // res.status(200).json({ user: req.user})
+// }
 
 router.get("auth/google/failure", isLoggedIn, (req, res) => { 
     console.log(req.user);
