@@ -88,9 +88,9 @@ const UserSchema = new mongoose.Schema({
 }, { timestamps: true }
 )
 
-UserSchema.plugin(mongooseUniqueValidator, 
+// UserSchema.plugin(mongooseUniqueValidator, 
 
-    { message :'Error, a user with {PATH}:{VALUE} already exists.' }
- )
+//     { message :'Error, a user with {PATH}:{VALUE} already exists.' }
+//  )
 const User = mongoose.model("User", UserSchema)
 export default User

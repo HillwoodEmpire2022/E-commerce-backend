@@ -2,6 +2,7 @@ import express from "express";
 import { userRegister, userLogin } from "../controllers/auth.js"
 import passport from "passport"
 import generateJWToken from "../utils/jwToken.js";
+import isLoggedIn from "../middlewares/loggedInCheck.js";
 
 
 
@@ -37,8 +38,9 @@ router.get("auth/google/success", (req, res) => {
     // res.status(200).json({ user: req.user})
 })
 
-router.get("auth/google/failure", (req, res) => { 
-    console.log(failed);
+router.get("auth/google/failure", isLoggedIn, (req, res) => { 
+    console.log(req.user);
+    console.log("failed");
     res.status(401).json({
         message: "Unable to sign in using Google, please try again later"
     })

@@ -12,7 +12,7 @@ export const passportConfig = () => {
     },
         (accessToken, refreshToken, profile, done) => { 
             User.findOne({ googleId: profile.id }).then((user) => { 
-              
+
                 if (!user) {
                     generateUserName().then((userName) => { 
                         user = new User({
@@ -33,7 +33,7 @@ export const passportConfig = () => {
                 } else { 
                     return done(null, user)
                 }
-
+              
             }).catch(err => { 
                 return done(err.message)
             })              
