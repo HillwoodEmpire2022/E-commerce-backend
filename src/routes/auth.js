@@ -13,26 +13,28 @@ router.post("/user/login", userLogin)
 router.get("/auth/google", passport.authenticate("google", { scope: ["email","profile"] }))
 router.get("/google/callback", passport.authenticate("google",
     {
-        successRedirect: googleAuthenticationSuccess,
+
+        successRedirect: 'https://beautiful-colt-jeans.cyclic.cloud/auth/google/success',
         failureRedirect: '/auth/google/failure'
     }) )
     // console.log(req.user);   
     
-router.get("/auth/google/success", isLoggedIn, googleAuthenticationSuccess)
 
-// (req, res) => { 
-//     try {
-//         console.log('try')
-//         console.log(req)
-//         res.send(req.user)
-//     } catch (err) { 
-//         console.log(err.message)
-//         res.status(500).send(err.message)
-//     }
+router.get("/auth/google/success", isLoggedIn, (req, res) => { 
+    try {
+        
+        console.log('try')
+        console.log(req)
+        res.send(req.user)
+    } catch (err) { 
+        console.log(err.message)
+        res.status(500).send(err.message)
+    }
 
     
 //     // res.status(200).json({ user: req.user})
 // }
+
 
 
 router.get("auth/google/failure", isLoggedIn, (req, res) => { 
