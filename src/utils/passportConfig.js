@@ -1,6 +1,7 @@
 import passport from "passport";
 import { Strategy } from "passport-google-oauth20"
 import User from "../models/User.js";
+import { generateUserName } from "./userNameGenerator.js"
 
 
 export const passportConfig = () => { 
@@ -10,16 +11,26 @@ export const passportConfig = () => {
         callbackURL: process.env.GOOGLE_CLIENT_CALLBACK
     },
         (accessToken, refreshToken, profile, done) => { 
-            // User.findOne({ googleId: profile.id }, (err, user) => { 
-            //     if (!user) {
-            //         user = new User({
-            //             googleId: profile.id,
-            //             firstname: profile.
-            //         });
-            //     }
-            // })
-            console.log(profile.name, profile.familyName, profile.photos, profile._json, profile)
-            return done(null, profile)
+            User.findOne({ googleId: profile.id }, (err, user) => {
+                
+                if (!user) {
+                    const userName = generateUserName()
+
+                    user = new User({
+                        googleId: profile.id,
+                        firstname: profile._json.given_name,
+                        lastname: profile._json.family_name,
+                        username: userName,
+                        email: profile._json.email,
+                    });
+                    User.create(user).then((err, user) => {
+                        return done(null, user)
+                    })
+                } else { 
+                    return done(null, user)
+                }
+            })
+
         }));
     passport.serializeUser((user, done) => { 
         done(null, user.id)

@@ -1,6 +1,8 @@
 import express from "express";
 import { userRegister, userLogin } from "../controllers/auth.js"
 import passport from "passport"
+import generateJWToken from "../utils/jwToken.js";
+
 
 
 const router = express.Router()
@@ -12,7 +14,14 @@ router.get("/google/callback", passport.authenticate("google",
     {
         successRedirect: '/auth/google/success',
         failureRedirect: '/auth/google/failure'
-    })
+    }), (req, res) => { 
+    // const userToken = generateJWToken(req.user.id)
+    // res.status(200).json({
+    //     token: userToken,
+    //     user: req.user,
+    // })
+    console.log(req.user);
+    }
 )    
 
 router.get("auth/google/success", (req, res) => { 
@@ -24,6 +33,7 @@ router.get("auth/google/success", (req, res) => {
         console.log(err.message)
         res.status(500).send(err.message)
     }
+
 
     // res.status(200).json({ user: req.user})
 })
