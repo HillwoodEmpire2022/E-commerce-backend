@@ -110,3 +110,13 @@ export const userLogin = async (req, res) => {
         res.status(500).json({ error: error.message })
     }  
 }
+
+export const googleAuthenticationSuccess = (req, res) => { 
+    const userToken = generateJWToken(req.user.id)
+    
+    res.status(200).json({
+        token: userToken,
+        user: req.user,
+    })
+}
+
