@@ -34,7 +34,6 @@ router.get("auth/google/success", (req, res) => {
         res.status(500).send(err.message)
     }
 
-    
     // res.status(200).json({ user: req.user})
 })
 
