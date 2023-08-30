@@ -33,7 +33,7 @@ export const passportConfig = () => {
                 } else { 
                     return done(null, user)
                 }
-              
+
             }).catch(err => { 
                 return done(err.message)
             })              
