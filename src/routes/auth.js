@@ -37,7 +37,8 @@ router.get("/auth/google/success", isLoggedIn, (req, res) => {
 
 
 
-router.get("auth/google/failure", isLoggedIn, (req, res) => { 
+
+router.get("/auth/google/failure", isLoggedIn, (req, res) => { 
     console.log(req.user);
     console.log("failed");
     res.status(401).json({
