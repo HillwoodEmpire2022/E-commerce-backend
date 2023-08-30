@@ -18,7 +18,9 @@ router.get("/google/callback", passport.authenticate("google",
     }) )
     // console.log(req.user);   
 
+
 router.get("auth/google/success", isLoggedIn, (req, res) => { 
+
     try {
         console.log('try')
         console.log(req)
@@ -28,7 +30,6 @@ router.get("auth/google/success", isLoggedIn, (req, res) => {
         res.status(500).send(err.message)
     }
 
-    
     // res.status(200).json({ user: req.user})
 })
 
