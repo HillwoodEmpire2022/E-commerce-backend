@@ -11,8 +11,8 @@ export const passportConfig = () => {
         callbackURL: process.env.GOOGLE_CLIENT_CALLBACK
     },
         (accessToken, refreshToken, profile, done) => { 
-            User.findOne({ googleId: profile.id }, (err, user) => {
-                
+            User.findOne({ googleId: profile.id }).then((user) => { 
+
                 if (!user) {
                     const userName = generateUserName()
 
@@ -29,8 +29,10 @@ export const passportConfig = () => {
                 } else { 
                     return done(null, user)
                 }
-            })
 
+            }).catch(err => { 
+                return done(err.message)
+            })              
         }));
     passport.serializeUser((user, done) => { 
         done(null, user.id)
