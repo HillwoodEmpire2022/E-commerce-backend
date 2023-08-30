@@ -16,15 +16,15 @@ router.get("/google/callback", passport.authenticate("google",
         successRedirect: '/auth/google/success',
         failureRedirect: '/auth/google/failure'
     }), (req, res) => { 
-    // const userToken = generateJWToken(req.user.id)
-    // res.status(200).json({
-    //     token: userToken,
-    //     user: req.user,
-    // })
-    console.log(req.user);
+
+    const userToken = generateJWToken(req.user.id)
+    res.status(200).json({
+        token: userToken,
+        user: req.user,
+    })
+    // console.log(req.user);
     }
 )    
-
 
 router.get("auth/google/success", isLoggedIn, (req, res) => { 
 
