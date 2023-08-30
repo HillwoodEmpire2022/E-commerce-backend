@@ -18,7 +18,8 @@ router.get("/google/callback", passport.authenticate("google",
     }) )
     // console.log(req.user);   
     
-router.get("auth/google/success", isLoggedIn, googleAuthenticationSuccess)
+router.get("/auth/google/success", isLoggedIn, googleAuthenticationSuccess)
+
 // (req, res) => { 
 //     try {
 //         console.log('try')
