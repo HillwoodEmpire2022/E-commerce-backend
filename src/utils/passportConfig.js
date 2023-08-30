@@ -12,20 +12,24 @@ export const passportConfig = () => {
     },
         (accessToken, refreshToken, profile, done) => { 
             User.findOne({ googleId: profile.id }).then((user) => { 
-
+              
                 if (!user) {
-                    const userName = generateUserName()
-
-                    user = new User({
-                        googleId: profile.id,
-                        firstname: profile._json.given_name,
-                        lastname: profile._json.family_name,
-                        username: userName,
-                        email: profile._json.email,
-                    });
-                    User.create(user).then((err, user) => {
-                        return done(null, user)
+                    generateUserName().then((userName) => { 
+                        user = new User({
+                            googleId: profile.id,
+                            firstname: profile._json.given_name,
+                            lastname: profile._json.family_name,
+                            username: userName,
+                            email: profile._json.email,
+                        });
+                        User.create(user).then((err, user) => {
+                            return done(null, user)
+                        })
+                    }).catch(err => { 
+                        return done(err.message)
                     })
+
+                    
                 } else { 
                     return done(null, user)
                 }

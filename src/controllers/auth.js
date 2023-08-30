@@ -38,7 +38,7 @@ export const userRegister = async (req, res) => {
         firstname = firstname.charAt(0).toUpperCase() + firstname.slice(1).toLowerCase()
         lastname = lastname.charAt(0).toUpperCase()+lastname.slice(1).toLowerCase()
 
-        const newUserName = generateUserName();
+        const newUserName = await generateUserName();
 
         const newUser = {
             firstname,
