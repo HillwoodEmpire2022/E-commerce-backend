@@ -13,12 +13,13 @@ router.post("/user/login", userLogin)
 router.get("/auth/google", passport.authenticate("google", { scope: ["email","profile"] }))
 router.get("/google/callback", passport.authenticate("google",
     {
-        successRedirect: '/auth/google/success',
+        successRedirect: googleAuthenticationSuccess,
         failureRedirect: '/auth/google/failure'
     }) )
     // console.log(req.user);   
     
 router.get("/auth/google/success", isLoggedIn, googleAuthenticationSuccess)
+
 // (req, res) => { 
 //     try {
 //         console.log('try')
@@ -32,6 +33,7 @@ router.get("/auth/google/success", isLoggedIn, googleAuthenticationSuccess)
     
 //     // res.status(200).json({ user: req.user})
 // }
+
 
 router.get("auth/google/failure", isLoggedIn, (req, res) => { 
     console.log(req.user);
