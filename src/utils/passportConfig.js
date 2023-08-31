@@ -26,12 +26,14 @@ export const passportConfig = async () => {
           
           });  
           const createdUser = await User.create(user)  
-            
-          return done(` this is ${createdUser}`)  
+          
+          const returnPayload = googleAuthenticationSuccess(createdUser)
+          return done(returnPayload)  
 
         
         } else {
-            return done(`this ${user}`);
+          const returnPayload = googleAuthenticationSuccess(createdUser)
+          return done(returnPayload) 
         }  
       }
     )

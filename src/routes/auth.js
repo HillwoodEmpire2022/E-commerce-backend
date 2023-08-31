@@ -26,29 +26,9 @@ router.get(
 // console.log(req.user);
 
 router.get("/auth/google/success", isLoggedIn, (req, res) => {
-  
-  const user  = req.user
-  
-    console.log(user, "yes")
-    res.status(200).send({user: user});
 
-  try {
-    const user = req.user
-  
-    const displayedUserInfo = {
-      _id: user._id,
-      firstname: user.firstname,
-      lastname: user.lastname,
-      username: user.username,
-      role: user.role,
-      profileImageUrl: user.profileImageUrl,
-    }
-    res.status(200).json({ user: displayedUserInfo });
+  console.log(` mn ${req.returnPayload}`);
 
-
-  } catch (err) {
-    res.status(500).send(err.message);
-  }
 
 });
 
