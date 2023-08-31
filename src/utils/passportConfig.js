@@ -27,11 +27,11 @@ export const passportConfig = async () => {
           });  
           const createdUser = await User.create(user)  
             
-          return done(createdUser)  
+          return done(` this is ${createdUser}`)  
 
         
         } else {
-            return done( user);
+            return done(`this ${user}`);
         }  
       }
     )

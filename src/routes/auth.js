@@ -45,6 +45,7 @@ router.get("/auth/google/success", isLoggedIn, (req, res) => {
     }
     res.status(200).json({ user: displayedUserInfo });
 
+
   } catch (err) {
     res.status(500).send(err.message);
   }
