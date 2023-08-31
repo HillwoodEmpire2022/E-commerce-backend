@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import mongooseUniqueValidator from "mongoose-unique-validator";
 
 const UserSchema = new mongoose.Schema({
     googleId: {
@@ -88,9 +87,5 @@ const UserSchema = new mongoose.Schema({
 }, { timestamps: true }
 )
 
-// UserSchema.plugin(mongooseUniqueValidator, 
-
-//     { message :'Error, a user with {PATH}:{VALUE} already exists.' }
-//  )
 const User = mongoose.model("User", UserSchema)
 export default User
