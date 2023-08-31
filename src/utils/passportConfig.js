@@ -11,35 +11,29 @@ export const passportConfig = async () => {
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         callbackURL: process.env.GOOGLE_CLIENT_CALLBACK,
       },
-      (accessToken, refreshToken, profile, done) => {
-        User.findOne({ googleId: profile.id })
-          .then((user) => {
-            console.log(user, "log 1")
-            if (!user) {
-              generateUserName()
-                .then((userName) => {
-                  user = new User({
-                    googleId: profile.id,
-                    firstname: profile._json.given_name,
-                    lastname: profile._json.family_name,
-                    username: userName,
-                    email: profile._json.email,
-                  });
-                  User.create(user).then((err, user) => {
-                    console.log(user, "log 2");
-                    return done(user);
-                  });
-                })
-                .catch((err) => {
-                  return done(err.message);
-                });
-            } else {
-              return done(null, user);
-            }
-          })
-          .catch((err) => {
-            return done(err.message);
-          });
+      async (accessToken, refreshToken, profile, done) => {
+        const user = await User.findOne({ googleId: profile.id })
+        if (!user) {
+          const userName = await generateUserName()
+            
+          user = new User({
+            googleId: profile.id,
+            firstname: profile._json.given_name,
+            lastname: profile._json.family_name,
+            username: userName,
+            email: profile._json.email,
+
+          
+          });  
+          const createdUser = await User.create(user)  
+            
+          return done(createdUser)  
+
+        
+        } else {
+            return done( user);
+        }  
+
       }
     )
   );
