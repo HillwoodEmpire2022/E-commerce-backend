@@ -28,9 +28,9 @@ router.get(
 router.get("/auth/google/success", isLoggedIn, (req, res) => {
   try {
 
-
     console.log(req.user, "yes")
     console.log(res.user, "yes");
+
     res.status(200).send(user);
 
   } catch (err) {
