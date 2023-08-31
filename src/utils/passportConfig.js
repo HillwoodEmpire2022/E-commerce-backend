@@ -3,7 +3,7 @@ import { Strategy } from "passport-google-oauth20";
 import User from "../models/user.js";
 import { generateUserName } from "./userNameGenerator.js";
 
-export const passportConfig = () => {
+export const passportConfig = async () => {
   passport.use(
     new Strategy(
       {
@@ -14,6 +14,7 @@ export const passportConfig = () => {
       (accessToken, refreshToken, profile, done) => {
         User.findOne({ googleId: profile.id })
           .then((user) => {
+            console.log(user, "log 1")
             if (!user) {
               generateUserName()
                 .then((userName) => {
@@ -25,6 +26,7 @@ export const passportConfig = () => {
                     email: profile._json.email,
                   });
                   User.create(user).then((err, user) => {
+                    console.log(user, "log 2");
                     return done(null, user);
                   });
                 })
