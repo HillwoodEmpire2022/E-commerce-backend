@@ -4,9 +4,9 @@ import cors from "cors"
 import helmet from "helmet"
 import dotenv from "dotenv"
 import mongoose from "mongoose"
-import authRoutes from "./routes/auth.js"
+import authRoutes from "./routes/auth.mjs"
 import passport from "passport"
-import { passportConfig } from "./utils/passportConfig.js"
+import { passportConfig } from "./utils/passportConfig.mjs"
 import session from "express-session"
 
 dotenv.config()

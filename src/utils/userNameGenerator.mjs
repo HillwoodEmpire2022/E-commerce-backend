@@ -1,4 +1,4 @@
-import User from "../models/user.js";
+import User from "../models/user.mjs";
 
 export const generateUserName = async () => {
   const recentRegisteredUser = await User.find().sort({ _id: -1 }).limit(1);

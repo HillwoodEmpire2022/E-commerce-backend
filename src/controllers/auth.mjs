@@ -1,12 +1,12 @@
-import User from "../models/user.js";
+import User from "../models/user.mjs";
 import bcrypt from "bcrypt";
 import {
   signupValidationSchema,
   loginValidationSchema,
-} from "../validations/authValidations.js";
+} from "../validations/authValidations.mjs";
 import dotenv from "dotenv";
-import { generateUserName } from "../utils/userNameGenerator.js";
-import generateJWToken from "../utils/jwToken.js";
+import { generateUserName } from "../utils/userNameGenerator.mjs";
+import generateJWToken from "../utils/jwToken.mjs";
 
 dotenv.config();
 
