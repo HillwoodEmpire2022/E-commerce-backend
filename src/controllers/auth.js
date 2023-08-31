@@ -106,11 +106,25 @@ export const userLogin = async (req, res) => {
   }
 };
 
-export const googleAuthenticationSuccess = (req, res) => {
-  const userToken = generateJWToken(req.user.id);
+export const googleAuthenticationSuccess = (payload) => {
+  try {  
+    const displayedUserInfo = {
+      _id: payload._id,
+      firstname: payload.firstname,
+      lastname: payload.lastname,
+      username: payload.username,
+      role: payload.role,
+      profileImageUrl: payload.profileImageUrl,
+    }
 
-  res.status(200).json({
-    token: userToken,
-    user: req.user,
-  });
+    const userToken = generateJWToken(payload.id);
+    return {
+      token: userToken,
+      user: displayedUserInfo
+    }   
+
+  } catch (err) {
+    return err.message
+  }
+
 };
