@@ -107,19 +107,18 @@ export const userLogin = async (req, res) => {
 };
 
 export const googleAuthenticationSuccess = (payload) => {
-  try {
-    const user = payload
-  
+  try {  
     const displayedUserInfo = {
-      _id: user._id,
-      firstname: user.firstname,
-      lastname: user.lastname,
-      username: user.username,
-      role: user.role,
-      profileImageUrl: user.profileImageUrl,
+      _id: payload._id,
+      firstname: payload.firstname,
+      lastname: payload.lastname,
+      username: payload.username,
+      role: payload.role,
+      profileImageUrl: payload.profileImageUrl,
     }
 
-    const userToken = generateJWToken(req.user.id);
+    const userToken = generateJWToken(payload.id);
+
     return {
       token: userToken,
       user: displayedUserInfo
@@ -128,8 +127,6 @@ export const googleAuthenticationSuccess = (payload) => {
   } catch (err) {
     return err.message
   }
-
-
 
 
 };
