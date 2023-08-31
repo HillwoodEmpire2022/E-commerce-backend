@@ -44,9 +44,7 @@ const UserSchema = new mongoose.Schema({
     },
     profileImageUrl: {
         type: String,
-        default: `https://res.cloudinary.com/hervebu
-            /image/upload/v1692276423/hill_ecommerce/
-            user_default_img_wrxrou.png`
+        default: "https://res.cloudinary.com/hervebu/image/upload/v1692276423/hill_ecommerce/user_default_img_wrxrou.png"
     },
     dateOfBirth: {
         type: Date,
@@ -83,9 +81,12 @@ const UserSchema = new mongoose.Schema({
             type: String,
             default: null
         } 
+    },
+    userValidated: {
+        type: Boolean,
+        default: false
     }
-}, { timestamps: true }
-)
+}, { timestamps: true })
 
 const User = mongoose.model("User", UserSchema)
 export default User
