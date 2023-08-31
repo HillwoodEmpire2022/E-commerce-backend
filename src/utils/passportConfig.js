@@ -3,7 +3,7 @@ import { Strategy } from "passport-google-oauth20";
 import User from "../models/user.js";
 import { generateUserName } from "./userNameGenerator.js";
 
-export const passportConfig = () => {
+export const passportConfig = async () => {
   passport.use(
     new Strategy(
       {
@@ -11,33 +11,28 @@ export const passportConfig = () => {
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         callbackURL: process.env.GOOGLE_CLIENT_CALLBACK,
       },
-      (accessToken, refreshToken, profile, done) => {
-        User.findOne({ googleId: profile.id })
-          .then((user) => {
-            if (!user) {
-              generateUserName()
-                .then((userName) => {
-                  user = new User({
-                    googleId: profile.id,
-                    firstname: profile._json.given_name,
-                    lastname: profile._json.family_name,
-                    username: userName,
-                    email: profile._json.email,
-                  });
-                  User.create(user).then((err, user) => {
-                    return done(null, user);
-                  });
-                })
-                .catch((err) => {
-                  return done(err.message);
-                });
-            } else {
-              return done(null, user);
-            }
-          })
-          .catch((err) => {
-            return done(err.message);
-          });
+      async (accessToken, refreshToken, profile, done) => {
+        const user = await User.findOne({ googleId: profile.id })
+        if (!user) {
+          const userName = await generateUserName()
+            
+          user = new User({
+            googleId: profile.id,
+            firstname: profile._json.given_name,
+            lastname: profile._json.family_name,
+            username: userName,
+            email: profile._json.email,
+
+          
+          });  
+          const createdUser = await User.create(user)  
+            
+          return done(` this is ${createdUser}`)  
+
+        
+        } else {
+            return done(`this ${user}`);
+        }  
       }
     )
   );
