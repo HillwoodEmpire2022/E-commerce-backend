@@ -69,6 +69,7 @@ export const userLogin = async (req, res) => {
     });
     if (error) {
       res.status(422).send({ message: error.message });
+      return
     }
 
     let userInfo = {};
@@ -107,10 +108,30 @@ export const userLogin = async (req, res) => {
 };
 
 export const googleAuthenticationSuccess = (req, res) => {
-  const userToken = generateJWToken(req.user.id);
+  try { 
+    const user = req.user
+    const displayedUserInfo = {
+      _id: user._id,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      username: user.username,
+      role: user.role,
+      profileImageUrl: user.profileImageUrl,
+    }
 
-  res.status(200).json({
-    token: userToken,
-    user: req.user,
-  });
+    const userToken = generateJWToken(user.id);
+    console.log(" log", displayedUserInfo);
+    console.log(JSON.stringify({
+      token: userToken,
+      user: displayedUserInfo
+    }));
+    res.status(200).json({
+      token: userToken,
+      user: displayedUserInfo
+    })   
+
+  } catch (err) {
+    res.status(500).json({ err: err.message})
+  }
+
 };
