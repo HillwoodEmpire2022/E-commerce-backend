@@ -27,7 +27,7 @@ export const passportConfig = async () => {
                   });
                   User.create(user).then((err, user) => {
                     console.log(user, "log 2");
-                    return done(null, user);
+                    return done(user);
                   });
                 })
                 .catch((err) => {
