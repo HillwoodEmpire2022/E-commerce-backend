@@ -118,7 +118,6 @@ export const googleAuthenticationSuccess = (payload) => {
     }
 
     const userToken = generateJWToken(payload.id);
-
     return {
       token: userToken,
       user: displayedUserInfo
@@ -127,6 +126,5 @@ export const googleAuthenticationSuccess = (payload) => {
   } catch (err) {
     return err.message
   }
-
 
 };
