@@ -26,6 +26,12 @@ router.get(
 // console.log(req.user);
 
 router.get("/auth/google/success", isLoggedIn, (req, res) => {
+  
+  const user  = req.user
+  
+    console.log(user, "yes")
+    res.status(200).send({user: user});
+
   try {
     const user = req.user
   
@@ -38,7 +44,6 @@ router.get("/auth/google/success", isLoggedIn, (req, res) => {
       profileImageUrl: user.profileImageUrl,
     }
     res.status(200).json({ user: displayedUserInfo });
-    
 
   } catch (err) {
     res.status(500).send(err.message);
