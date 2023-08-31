@@ -33,14 +33,23 @@ router.get("/auth/google/success", isLoggedIn, (req, res) => {
     res.status(200).send({user: user});
 
   try {
-
-
+    const user = req.user
+  
+    const displayedUserInfo = {
+      _id: user._id,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      username: user.username,
+      role: user.role,
+      profileImageUrl: user.profileImageUrl,
+    }
+    res.status(200).send({user: displayedUserInfo});
+    
 
   } catch (err) {
     res.status(500).send(err.message);
   }
 
-  // res.status(200).json({ user: req.user})
 });
 
 router.get("/auth/google/failure", isLoggedIn, (req, res) => {
