@@ -43,8 +43,7 @@ router.get("/auth/google/success", isLoggedIn, (req, res) => {
       role: user.role,
       profileImageUrl: user.profileImageUrl,
     }
-    res.status(200).send({user: displayedUserInfo});
-    
+    res.status(200).json({ user: displayedUserInfo });
 
   } catch (err) {
     res.status(500).send(err.message);
