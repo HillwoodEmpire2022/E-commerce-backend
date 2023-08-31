@@ -1,4 +1,6 @@
 export const isLoggedIn = (req, res, next) => {
+    console.log(req);
+    console.log("log", req.user);
     req.user ? next()
         : res.status(401).send({
             message: "You are unauthorized. Please login again"
