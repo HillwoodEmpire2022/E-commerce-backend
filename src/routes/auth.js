@@ -25,21 +25,10 @@ router.get(
 );
 // console.log(req.user);
 
-router.get("/auth/google/success", isLoggedIn, (req, res) => {
-  try {
-    console.log("try");
-    console.log(req);
-    res.send(req.user);
-  } catch (err) {
-    console.log(err.message);
-    res.status(500).send(err.message);
-  }
+router.get("/auth/google/success", googleAuthenticationSuccess);
 
-  // res.status(200).json({ user: req.user})
-});
-
-router.get("/auth/google/failure", isLoggedIn, (req, res) => {
-  console.log(req.user);
+router.get("/auth/google/failure", (req, res) => {
+  console.log(req.err)
   console.log("failed");
   res.status(401).json({
     message: "Unable to sign in using Google, please try again later",
