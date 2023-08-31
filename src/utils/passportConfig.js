@@ -33,7 +33,7 @@ export const passportConfig = async () => {
 
         
         } else {
-          const returnPayload = googleAuthenticationSuccess(createdUser)
+          const returnPayload = googleAuthenticationSuccess(user)
           return done(returnPayload) 
         }  
       }
