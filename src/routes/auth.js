@@ -27,11 +27,13 @@ router.get(
 
 router.get("/auth/google/success", isLoggedIn, (req, res) => {
   try {
-    console.log("try");
-    console.log(req);
-    res.send(req.user);
+
+    const {user} = req.user
+    console.log(req.user, "yes")
+    console.log(res.user, "yes");
+    res.status(200).send(req.user);
+
   } catch (err) {
-    console.log(err.message);
     res.status(500).send(err.message);
   }
 
