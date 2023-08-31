@@ -3,10 +3,10 @@ import {
   userRegister,
   userLogin,
   googleAuthenticationSuccess,
-} from "../controllers/auth.mjs";
+} from "../controllers/auth.js";
 import passport from "passport";
-import generateJWToken from "../utils/jwToken.mjs";
-import isLoggedIn from "../middlewares/loggedInCheck.mjs";
+import generateJWToken from "../utils/jwToken.js";
+import isLoggedIn from "../middlewares/loggedInCheck.js";
 
 const router = express.Router();
 

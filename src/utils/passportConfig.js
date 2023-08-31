@@ -1,7 +1,7 @@
 import passport from "passport";
 import { Strategy } from "passport-google-oauth20";
-import User from "../models/user.mjs";
-import { generateUserName } from "./userNameGenerator.mjs";
+import User from "../models/user.js";
+import { generateUserName } from "./userNameGenerator.js";
 
 export const passportConfig = () => {
   passport.use(
