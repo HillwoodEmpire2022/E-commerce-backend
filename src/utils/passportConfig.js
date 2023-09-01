@@ -17,7 +17,7 @@ export const passportConfig = async () => {
         if (!user) {
           const userName = await generateUserName()
             
-          user = new User({
+          const newUser = new User({
             googleId: profile.id,
             firstname: profile._json.given_name,
             lastname: profile._json.family_name,
@@ -26,12 +26,10 @@ export const passportConfig = async () => {
 
           
           });  
-          const createdUser = await User.create(user)  
+          const createdUser = await User.create(newUser)  
           
           const returnPayload = googleAuthenticationSuccess(createdUser)
           return done(err,JSON.stringify(returnPayload))  
-
-
         
         } else {
           const returnPayload = googleAuthenticationSuccess(user)
