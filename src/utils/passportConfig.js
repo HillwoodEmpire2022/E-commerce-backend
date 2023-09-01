@@ -24,7 +24,6 @@ export const passportConfig = async () => {
             username: userName,
             email: profile._json.email,
 
-          
           });  
           const createdUser = await User.create(newUser)              
           const returnPayload = googleAuthenticationSuccess(createdUser)
