@@ -69,6 +69,7 @@ export const userLogin = async (req, res) => {
     });
     if (error) {
       res.status(422).send({ message: error.message });
+      return
     }
 
     let userInfo = {};
