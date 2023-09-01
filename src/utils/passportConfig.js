@@ -12,29 +12,35 @@ export const passportConfig = async () => {
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         callbackURL: process.env.GOOGLE_CLIENT_CALLBACK,
       },
-      async (accessToken, refreshToken, profile, done) => {
-        const user = await User.findOne({ googleId: profile.id })
-        if (!user) {
-          const userName = await generateUserName()
+      async (accessToken, refreshToken, profile, done, res) => {
+        try {
+          const user = await User.findOne({ googleId: profile.id })
+          if (!user) {
+            const userName = await generateUserName()
+              
+            const newUser = new User({
+              googleId: profile.id,
+              firstname: profile._json.given_name,
+              lastname: profile._json.family_name,
+              username: userName,
+              email: profile._json.email,
+  
             
-          const newUser = new User({
-            googleId: profile.id,
-            firstname: profile._json.given_name,
-            lastname: profile._json.family_name,
-            username: userName,
-            email: profile._json.email,
-
+            });  
+            const createdUser = await User.create(newUser)  
+            
+            const returnPayload = googleAuthenticationSuccess(createdUser)
+            return done(JSON.stringify(returnPayload))  
+  
           
-          });  
-          const createdUser = await User.create(newUser)  
-          
-          const returnPayload = googleAuthenticationSuccess(createdUser)
-          return done(err,JSON.stringify(returnPayload))  
-        
-        } else {
-          const returnPayload = googleAuthenticationSuccess(user)
-          return done(err,JSON.stringify(returnPayload)) 
-        }  
+          } else {
+            const returnPayload = googleAuthenticationSuccess(user)
+            return res.status(200).json(JSON.stringify(returnPayload))  
+            // return done(JSON.stringify(returnPayload)) 
+          } 
+        } catch (err) { 
+          return done(JSON.stringify({ error: err.message }))
+        }
       }
     )
   );
