@@ -12,7 +12,7 @@ export const passportConfig = async () => {
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         callbackURL: process.env.GOOGLE_CLIENT_CALLBACK,
       },
-      async (accessToken, refreshToken, profile, done, res) => {
+      async (accessToken, refreshToken, profile, done) => {
         try {
           const user = await User.findOne({ googleId: profile.id })
           if (!user) {
@@ -27,16 +27,14 @@ export const passportConfig = async () => {
   
             
             });  
-            const createdUser = await User.create(newUser)  
-            
+            const createdUser = await User.create(newUser)              
             const returnPayload = googleAuthenticationSuccess(createdUser)
             return done(JSON.stringify(returnPayload))  
   
-          
           } else {
-            const returnPayload = googleAuthenticationSuccess(user)
-            return res.status(200).json(JSON.stringify(returnPayload))  
-            // return done(JSON.stringify(returnPayload)) 
+            const returnPayload = googleAuthenticationSuccess(user)              
+            return done(JSON.stringify(returnPayload)) 
+
           } 
         } catch (err) { 
           return done(JSON.stringify({ error: err.message }))
