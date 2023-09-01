@@ -29,13 +29,13 @@ export const passportConfig = async () => {
           const createdUser = await User.create(user)  
           
           const returnPayload = googleAuthenticationSuccess(createdUser)
-          return done(JSON.stringify(returnPayload))  
+          return done(err,JSON.stringify(returnPayload))  
 
 
         
         } else {
           const returnPayload = googleAuthenticationSuccess(user)
-          return done(JSON.stringify(returnPayload)) 
+          return done(err,JSON.stringify(returnPayload)) 
         }  
       }
     )
