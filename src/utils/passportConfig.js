@@ -27,13 +27,16 @@ export const passportConfig = async () => {
               userValidated: true,
             });  
             const createdUser = await User.create(newUser)              
-            const returnPayload = googleAuthenticationSuccess(createdUser)
-            return done(null, createdUser)  
+            // const returnPayload = googleAuthenticationSuccess(createdUser)
+
+            const returnPayload = createdUser
+            return done(null, returnPayload)  
   
           } else {
-            const returnPayload = googleAuthenticationSuccess(user) 
-            
-            return done(null, user) 
+            // const returnPayload = googleAuthenticationSuccess(user) 
+
+            const returnPayload = user
+            return done(null, returnPayload) 
           } 
         } catch (err) { 
           return done(err, null)
