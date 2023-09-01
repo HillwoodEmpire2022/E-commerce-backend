@@ -26,12 +26,12 @@ router.get(
 // console.log(req.user);
 
 router.get("/auth/google/success", isLoggedIn, (req, res) => {
-  console.log(` mn ${returnPayload}`);
+  console.log(` mn ${req.returnPayload}`);
 
 });
 
 router.get("/auth/google/failure", isLoggedIn, (req, res) => {
-  console.log(req.user);
+  console.log(req.err)
   console.log("failed");
   res.status(401).json({
     message: "Unable to sign in using Google, please try again later",

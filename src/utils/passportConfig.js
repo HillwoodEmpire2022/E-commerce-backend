@@ -12,33 +12,32 @@ export const passportConfig = async () => {
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         callbackURL: process.env.GOOGLE_CLIENT_CALLBACK,
       },
-      async (accessToken, refreshToken, profile, done) => {
-        const user = await User.findOne({ googleId: profile.id })
-        if (!user) {
-          const userName = await generateUserName()
+      async (accessToken, refreshToken, profile, done) => { 
+        try {
+          const user = await User.findOne({ googleId: profile.id })
+          if (!user) {
+            const userName = await generateUserName()
+              
+            const newUser = new User({
+              googleId: profile.id,
+              firstname: profile._json.given_name,
+              lastname: profile._json.family_name,
+              username: userName,
+              email: profile._json.email,
+              userValidated: true,
+            });  
+            const createdUser = await User.create(newUser)              
+            const returnPayload = JSON.stringify(googleAuthenticationSuccess(createdUser))
+            return done(returnPayload)  
+  
+          } else {
+            const returnPayload = JSON.stringify(googleAuthenticationSuccess(user)) 
             
-          const newUser = new User({
-            googleId: profile.id,
-            firstname: profile._json.given_name,
-            lastname: profile._json.family_name,
-            username: userName,
-            email: profile._json.email,
-
-          });  
-          const createdUser = await User.create(newUser)              
-          const returnPayload = googleAuthenticationSuccess(createdUser)
-          return done(JSON.stringify(returnPayload))  
-
-        } else {
-          const returnPayload = googleAuthenticationSuccess(user)              
-          return done(JSON.stringify(returnPayload)) 
-        } 
-        
-        // try {
-
-        // } catch (err) { 
-        //   return done(JSON.stringify({ error: err.message }))
-        // }
+            return done(returnPayload) 
+          } 
+        } catch (err) { 
+          return done(err)
+        }
       }
     )
   );
