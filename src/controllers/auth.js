@@ -107,25 +107,29 @@ export const userLogin = async (req, res) => {
   }
 };
 
-export const googleAuthenticationSuccess = (payload) => {
+export const googleAuthenticationSuccess = (req, res) => {
   try {  
     const displayedUserInfo = {
-      _id: payload._id,
-      firstname: payload.firstname,
-      lastname: payload.lastname,
-      username: payload.username,
-      role: payload.role,
-      profileImageUrl: payload.profileImageUrl,
+      _id: req.user._id,
+      firstname: req.user.firstname,
+      lastname: req.user.lastname,
+      username: req.user.username,
+      role: req.user.role,
+      profileImageUrl: req.user.profileImageUrl,
     }
 
-    const userToken = generateJWToken(payload.id);
-    return {
+    const userToken = generateJWToken(req.user.id);
+    console.log(JSON.stringify({
       token: userToken,
       user: displayedUserInfo
-    }   
+    }));
+    res.status(200).json({
+      token: userToken,
+      user: displayedUserInfo
+    })   
 
   } catch (err) {
-    return err.message
+    res.status(500).json({ err: err.message})
   }
 
 };

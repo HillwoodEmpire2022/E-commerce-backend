@@ -23,15 +23,10 @@ router.get(
     failureRedirect: "/auth/google/failure",
   })
 );
-// console.log(req.user);
 
-router.get("/auth/google/success", (req, res) => {
-  const userInfo = googleAuthenticationSuccess(req.user)
-  res.status(200).json(userInfo)
+router.get("/auth/google/success", googleAuthenticationSuccess);
 
-});
-
-router.get("/auth/google/failure", isLoggedIn, (req, res) => {
+router.get("/auth/google/failure", (req, res) => {
   console.log(req.err)
   console.log("failed");
   res.status(401).json({
