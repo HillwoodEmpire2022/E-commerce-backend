@@ -119,7 +119,8 @@ export const userLogin = async (req, res) => {
 
 export const googleAuthenticationSuccess = (req, res) => {
   try { 
-    const response = returnedUserInfo(req.user._conditions._id)
+    console.log(req.user)
+    const response = returnedUserInfo(req.user._id)
     res.status(200).json(response)   
   } catch (err) {
     res.status(500).json({ err: err.message})

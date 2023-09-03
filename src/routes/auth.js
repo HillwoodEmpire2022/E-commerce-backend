@@ -19,6 +19,7 @@ router.get(
   passport.authenticate("google", {
     successRedirect: "/auth/google/success",
     failureRedirect: "/auth/google/failure",
+    session: false,
   })
 );
 
