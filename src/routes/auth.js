@@ -23,7 +23,6 @@ router.get(
     failureRedirect: "/auth/google/failure",
   })
 );
-// console.log(req.user);
 
 router.get("/auth/google/success", googleAuthenticationSuccess);
 
