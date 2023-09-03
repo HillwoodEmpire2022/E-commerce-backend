@@ -1,5 +1,4 @@
 export const isLoggedIn = (req, res, next) => {
-
     console.log("log", JSON.stringify(req.user));
     req.user ? next()
         : res.status(401).send({
