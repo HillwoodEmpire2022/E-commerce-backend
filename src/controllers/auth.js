@@ -10,6 +10,23 @@ import generateJWToken from "../utils/jwToken.js";
 
 dotenv.config();
 
+const returnedUserInfo = (user) => { 
+  const displayedUserInfo = {
+    _id: user._id,
+    firstname: user.firstname,
+    lastname: user.lastname,
+    username: user.username,
+    role: user.role,
+    profileImageUrl: user.profileImageUrl,
+  }
+
+  const userToken = generateJWToken(user._id);
+  return {
+    token: userToken,
+    user: displayedUserInfo
+  }
+}
+
 export const userRegister = async (req, res) => {
   try {
     let { firstname, lastname, email, password } = req.body;
@@ -49,12 +66,9 @@ export const userRegister = async (req, res) => {
     };
 
     const savedUser = await User.create(newUser);
-    const userToken = generateJWToken(savedUser._id);
+    const response = returnedUserInfo(savedUser)
 
-    res.status(201).json({
-      userToken,
-      user: savedUser,
-    });
+    res.status(201).json(response);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -77,7 +91,7 @@ export const userLogin = async (req, res) => {
     if (!account) {
       res.status(401).send({ message: "The email provided does not exist." });
     } else {
-      const passwordCheck = await bcrypt.compare(
+      const passwordCheck = bcrypt.compare(
         password,
         account.hashedPassword
       );
@@ -94,12 +108,8 @@ export const userLogin = async (req, res) => {
           profileImageUrl: account.profileImageUrl,
         };
 
-        const userToken = generateJWToken(account._id);
-
-        res.status(200).json({
-          token: userToken,
-          user: userInfo,
-        });
+        const response = returnedUserInfo(account)
+        res.status(200).json(response);
       }
     }
   } catch (error) {
@@ -109,32 +119,12 @@ export const userLogin = async (req, res) => {
 
 export const googleAuthenticationSuccess = (req, res) => {
   try { 
-
-    const user = req.user._conditions._id
-    // console.log("log", user);
-    // console.log("mn", user.user);
-    const displayedUserInfo = {
-      _id: user._id,
-      firstname: user.firstname,
-      lastname: user.lastname,
-      username: user.username,
-      role: user.role,
-      profileImageUrl: user.profileImageUrl,
-    }
-
-    const userToken = generateJWToken(user.id);
-    console.log(" log", displayedUserInfo);
-    console.log(JSON.stringify({
-      token: userToken,
-      user: displayedUserInfo
-    }));
-    res.status(200).json({
-      token: userToken,
-      user: displayedUserInfo
-    })   
-
+    const response = returnedUserInfo(req.user._conditions._id)
+    res.status(200).json(response)   
   } catch (err) {
     res.status(500).json({ err: err.message})
   }
 
 };
+
+

@@ -31,7 +31,6 @@ export const passportConfig = async () => {
             return done(null, user)  
           } else {
             const user = existingUser
-            console.log("yay", user);
             return done(null, user) 
           } 
         } catch (err) { 
@@ -41,6 +40,7 @@ export const passportConfig = async () => {
     )
   );
   passport.serializeUser((user, done) => {
+    console.log(user);
     done(null, user);
   });
 
