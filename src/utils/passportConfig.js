@@ -31,7 +31,8 @@ export const passportConfig = async () => {
             return done(null, user)  
           } else {
             const user = existingUser
-            console.log(user);
+            console.log("yay", user);
+
             return done(null, user) 
           } 
         } catch (err) { 
