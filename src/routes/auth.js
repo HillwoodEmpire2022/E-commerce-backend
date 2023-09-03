@@ -27,6 +27,8 @@ router.get(
 
 router.get("/auth/google/success", isLoggedIn, (req, res) => {
   console.log(` mn ${req.user}`);
+  res.status(200)
+
 });
 
 router.get("/auth/google/failure", isLoggedIn, (req, res) => {
