@@ -14,8 +14,8 @@ export const passportConfig = async () => {
       },
       async (accessToken, refreshToken, profile, done) => { 
         try {
-          const user = await User.findOne({ googleId: profile.id })
-          if (!user) {
+          const existingUser = await User.findOne({ googleId: profile.id })
+          if (!existingUser) {
             const userName = await generateUserName()
               
             const newUser = new User({
@@ -26,17 +26,12 @@ export const passportConfig = async () => {
               email: profile._json.email,
               userValidated: true,
             });  
-            const createdUser = await User.create(newUser)              
-            // const returnPayload = googleAuthenticationSuccess(createdUser)
+            const user = await User.create(newUser)              
 
-            const returnPayload = createdUser
-            return done(null, returnPayload)  
-  
+            return done(null, user)  
           } else {
-            // const returnPayload = googleAuthenticationSuccess(user) 
-
-            const returnPayload = user
-            return done(null, returnPayload) 
+            const user = existingUser
+            return done(null, user) 
           } 
         } catch (err) { 
           return done(err, null)
@@ -45,7 +40,7 @@ export const passportConfig = async () => {
     )
   );
   passport.serializeUser((user, done) => {
-    done(null, user.id);
+    done(null, user);
   });
 
   passport.deserializeUser((id, done) => {
