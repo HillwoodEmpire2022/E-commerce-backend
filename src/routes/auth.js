@@ -27,8 +27,7 @@ router.get(
 
 router.get("/auth/google/success", (req, res) => {
   const userInfo = googleAuthenticationSuccess(req.user)
-  console.log(` mn ${userInfo}`);
-  res.status(200)
+  res.status(200).json(userInfo)
 
 });
 
