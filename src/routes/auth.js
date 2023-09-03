@@ -25,8 +25,9 @@ router.get(
 );
 // console.log(req.user);
 
-router.get("/auth/google/success", isLoggedIn, (req, res) => {
-  console.log(` mn ${req.user}`);
+router.get("/auth/google/success", (req, res) => {
+  const userInfo = googleAuthenticationSuccess(req.user)
+  console.log(` mn ${userInfo}`);
   res.status(200)
 
 });
