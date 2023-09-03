@@ -38,13 +38,5 @@ export const passportConfig = async () => {
       }
     )
   );
-  passport.serializeUser((user, done) => {
-    console.log(user);
-    done(null, user);
-  });
-
-  passport.deserializeUser((id, done) => {
-    const user = User.findById(id);
-    return done(null, user);
-  });
+  
 };
