@@ -40,10 +40,10 @@ export const userRegister = async (req, res) => {
     }
     const existingUser = await User.findOne({ email: email });
 
-    if (existingUser && existingUser.googleId === null) {
-      res
-        .status(409)
-        .json({ message: `A user with email: ${email} already exists.` });
+    if (existingUser && !existingUser.googleId ) {
+      res.status(409).json({
+        message: `A user with email: ${email} already exists.`
+      });
       return;
     }
 

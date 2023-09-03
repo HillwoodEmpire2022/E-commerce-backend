@@ -7,7 +7,6 @@ import mongoose from "mongoose"
 import authRoutes from "./routes/auth.js"
 import passport from "passport"
 import { passportConfig } from "./utils/passportConfig.js"
-import session from "express-session"
 
 dotenv.config()
 
@@ -18,16 +17,9 @@ app.use(helmet())
 app.use(cors())
 app.use(morgan("common"))
 
-app.use(session({ 
-    secret: "salfdjdsaoifnewalknfisafQ@WRFADSiosadhf2134",
-    resave: false,
-    saveUninitialized: false,
-}))
-
 passportConfig()
 
 app.use(passport.initialize())
-app.use(passport.session())
 
 //route handlers
 app.use(authRoutes)
