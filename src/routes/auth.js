@@ -19,15 +19,7 @@ router.get(
   passport.authenticate("google", {
     failureRedirect: "/auth/google/failure",
     session: false,
-  }),
-  (req, res) => { 
-    console.log(req.user)
-  }
-);
-
-// router.get("/auth/google/success",  
-// // googleAuthenticationSuccess
-// );
+  }),  googleAuthenticationSuccess);
 
 router.get("/auth/google/failure", (req, res) => {
   res.status(401).json({
