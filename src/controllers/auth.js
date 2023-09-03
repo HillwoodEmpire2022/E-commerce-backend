@@ -110,6 +110,8 @@ export const userLogin = async (req, res) => {
 export const googleAuthenticationSuccess = (req, res) => {
   try { 
     const user = req.user
+    console.log("log", user);
+    console.log("mn", user.user);
     const displayedUserInfo = {
       _id: user._id,
       firstname: user.firstname,

@@ -27,10 +27,11 @@ export const passportConfig = async () => {
               userValidated: true,
             });  
             const user = await User.create(newUser)              
-
+            
             return done(null, user)  
           } else {
             const user = existingUser
+            console.log(user);
             return done(null, user) 
           } 
         } catch (err) { 
