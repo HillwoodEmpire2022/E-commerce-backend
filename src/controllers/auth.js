@@ -109,8 +109,7 @@ export const userLogin = async (req, res) => {
 
 export const googleAuthenticationSuccess = (req, res) => {
   try { 
-    _conditions: {
-      _id: {
+
     const user = req.user._conditions._id
     // console.log("log", user);
     // console.log("mn", user.user);
