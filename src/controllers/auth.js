@@ -108,17 +108,19 @@ export const userLogin = async (req, res) => {
 };
 
 export const googleAuthenticationSuccess = (req, res) => {
-  try {  
+  try { 
+    const user = req.user
     const displayedUserInfo = {
-      _id: req.user._id,
-      firstname: req.user.firstname,
-      lastname: req.user.lastname,
-      username: req.user.username,
-      role: req.user.role,
-      profileImageUrl: req.user.profileImageUrl,
+      _id: user._id,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      username: user.username,
+      role: user.role,
+      profileImageUrl: user.profileImageUrl,
     }
 
-    const userToken = generateJWToken(req.user.id);
+    const userToken = generateJWToken(user.id);
+    console.log(" log", displayedUserInfo);
     console.log(JSON.stringify({
       token: userToken,
       user: displayedUserInfo
