@@ -6,7 +6,7 @@ import {
 } from "../validations/authValidations.js";
 import dotenv from "dotenv";
 import { generateUserName } from "../utils/userNameGenerator.js";
-import generateJWToken from "../utils/jwToken.js";
+import { generateJWToken } from "../utils/jsonbWebToken.js";
 
 dotenv.config();
 
@@ -20,7 +20,7 @@ const returnedUserInfo = (user) => {
     profileImageUrl: user.profileImageUrl,
   }
 
-  const userToken = generateJWToken(user._id);
+  const userToken = generateJWToken({ _id: user._id, role: user.role});
   return {
     token: userToken,
     user: displayedUserInfo
@@ -86,7 +86,6 @@ export const userLogin = async (req, res) => {
       return
     }
 
-    let userInfo = {};
     const account = await User.findOne({ email: email });
     if (!account) {
       res.status(401).send({ message: "The email provided does not exist." });
@@ -99,14 +98,6 @@ export const userLogin = async (req, res) => {
       if (!passwordCheck) {
         res.status(401).send({ message: "Wrong password." });
       } else {
-        userInfo = {
-          _id: account._id,
-          firstname: account.firstname,
-          lastname: account.lastname,
-          username: account.username,
-          role: account.role,
-          profileImageUrl: account.profileImageUrl,
-        };
 
         const response = returnedUserInfo(account)
         res.status(200).json(response);
