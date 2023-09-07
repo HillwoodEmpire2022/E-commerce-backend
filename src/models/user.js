@@ -82,7 +82,7 @@ const UserSchema = new mongoose.Schema({
             default: null
         } 
     },
-    userValidated: {
+    userActivated: {
         type: Boolean,
         default: false
     }

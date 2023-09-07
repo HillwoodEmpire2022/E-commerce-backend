@@ -1,9 +1,6 @@
 import mongoose from "mongoose";
 
 const ProductSchema = new mongoose.Schema({
-    sku: {
-        type: String,
-    },
     name: {
         type: String,
         required: true,
@@ -11,14 +8,79 @@ const ProductSchema = new mongoose.Schema({
     description: {
         type: String,
     },
+    subcategory: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "SubCategory"
+    },
     price: {
         type: Number,
         required: true,
     },
-    brand: {
+    stockQuantity: {
+        type: Number,
+        required: true,
+    },
+    quantityLabel: {
         type: String,
+        required: true,
+    },
+    seller: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Seller",
+    },
+    discountPercentage: {
+        type: Number, 
+    },
+    discountedPrice: {
+        type: Number,
+    },
+    productImages: {
+        imageThumbnail: {
+            id: {
+                type: String, 
+                required: true,
+            },
+            url: {
+                type: String,
+                required: true,
+            },
+            
+        },
+        otherImages: [
+            {
+                id: {
+                    type: String,
+                    required: true,
+                },
+                url: {
+                    type: String,
+                    required: true,
+                }
+            }
+        ],
+        colorImages: [
+            {
+                id: {
+                    type: String,
+                },
+                url: {
+                    type: String,
+                }
+            }
+        ]
         
+    },
+    sizes: [
+        {
+            type: String,
+        }   
+    ],
+    brandName: {
+        type: String,
     }
+
+    
+
 
 }, { timestamps: true });
 
