@@ -4,13 +4,10 @@ import {
   signupValidationSchema,
   loginValidationSchema,
 } from "../validations/authValidations.js";
-import dotenv from "dotenv";
 import { generateUserName } from "../utils/userNameGenerator.js";
-import { generateJWToken } from "../utils/jsonbWebToken.js";
+import { generateJWToken } from "../utils/jsonWebToken.js";
 
-dotenv.config();
-
-const returnedUserInfo = (user) => { 
+const returnedUserInfo = (user) => {
   const displayedUserInfo = {
     _id: user._id,
     firstname: user.firstname,
@@ -18,14 +15,14 @@ const returnedUserInfo = (user) => {
     username: user.username,
     role: user.role,
     profileImageUrl: user.profileImageUrl,
-  }
+  };
 
-  const userToken = generateJWToken({ _id: user._id, role: user.role});
+  const userToken = generateJWToken({ _id: user._id, role: user.role });
   return {
     token: userToken,
-    user: displayedUserInfo
-  }
-}
+    user: displayedUserInfo,
+  };
+};
 
 export const userRegister = async (req, res) => {
   try {
