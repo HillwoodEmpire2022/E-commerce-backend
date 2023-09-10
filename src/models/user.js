@@ -54,20 +54,6 @@ const UserSchema = new mongoose.Schema({
         type: String,
         default: null
     },
-    billingAddress: {
-        country: {
-            type: String,
-            default: null
-        },
-        city: {
-            type: String,
-            default: null
-        },
-        streetAddress: {
-            type: String,
-            default: null
-        } 
-    },
     shippingAddress: {
         country: {
             type: String,
