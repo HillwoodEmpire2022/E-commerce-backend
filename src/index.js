@@ -10,6 +10,7 @@ import { passportConfig } from "./utils/passportConfig.js"
 import fs from "fs"
 import sellerRoutes from "./routes/seller.js"
 import categoryRoutes from "./routes/category.js"
+import productRoutes from "./routes/product.js"
 
 
 dotenv.config()
@@ -34,6 +35,7 @@ if (!fs.existsSync("./uploads")) {
 app.use(authRoutes)
 app.use(sellerRoutes)
 app.use(categoryRoutes)
+app.use(productRoutes)
 
 const PORT = process.env.PORT || 3000
 

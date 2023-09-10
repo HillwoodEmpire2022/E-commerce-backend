@@ -8,6 +8,10 @@ const ProductSchema = new mongoose.Schema({
     description: {
         type: String,
     },
+    category: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Category"
+    },
     subcategory: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "SubCategory"
@@ -20,7 +24,7 @@ const ProductSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    quantityLabel: {
+    quantityParameter: {
         type: String,
         required: true,
     },
@@ -35,10 +39,9 @@ const ProductSchema = new mongoose.Schema({
         type: Number,
     },
     productImages: {
-        imageThumbnail: {
-            id: {
-                type: String, 
-                required: true,
+        productThumbnail: {
+            public_id: {
+                type: String,
             },
             url: {
                 type: String,
@@ -48,9 +51,8 @@ const ProductSchema = new mongoose.Schema({
         },
         otherImages: [
             {
-                id: {
+                public_id: {
                     type: String,
-                    required: true,
                 },
                 url: {
                     type: String,
@@ -60,17 +62,20 @@ const ProductSchema = new mongoose.Schema({
         ],
         colorImages: [
             {
-                id: {
+                public_id: {
                     type: String,
                 },
                 url: {
+                    type: String,
+                },
+                colorName: {
                     type: String,
                 }
             }
         ]
         
     },
-    sizes: [
+    availableSizes: [
         {
             type: String,
         }   
