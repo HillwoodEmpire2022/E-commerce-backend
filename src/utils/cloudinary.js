@@ -1,18 +1,21 @@
 import { v2 as cloudinary } from 'cloudinary';
+import fs from "fs"
 
-cloudinary.config({ 
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
-  api_key: process.env.CLOUDINARY_API_KEY, 
-  api_secret: process.env.CLOUDINARY_API_SECRET, 
-});
+if (!fs.existsSync("./uploads")) { 
+    fs.mkdirSync("./uploads")
+}
 
 export const uploadToCloudinary = async (localFilePath, sellerName, productName, imageCategoryFolder) => {
+    cloudinary.config({ 
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
+        api_key: process.env.CLOUDINARY_API_KEY, 
+        api_secret: process.env.CLOUDINARY_API_SECRET, 
+    });
 
-
-    let filePathOnCloudinary = `${sellerName}/${productName}/${imageCategoryFolder}/${localFilePath}`
+    let filePathOnCloudinary = `${sellerName}/${productName}/${imageCategoryFolder}/`
     
     const result = await cloudinary.uploader.upload(localFilePath, {
-        public_id: filePathOnCloudinary,
+        folder: filePathOnCloudinary,
     })
     fs.unlinkSync(localFilePath)
     if (result) { 

@@ -5,7 +5,6 @@ let storage = multer.diskStorage({
         callback(null, "./uploads")
     },
     filename: (req, file, callback) => {
-        console.log(file.fieldname);
         callback(null, file.fieldname + "-" + file.originalname)
     },
 })
@@ -17,7 +16,7 @@ export const upload = multer({
             cb(null, true);
         } else {
             cb(null, false);
-            const err = new Error('Only .png, .jpg and .jpeg formats for files are allowed!')
+            const err = new Error('Only .png, .jpg and .jpeg formats for images are allowed!')
             err.name = 'ExtensionError'
             return cb(err);
         }

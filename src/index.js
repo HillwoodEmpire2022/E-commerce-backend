@@ -7,7 +7,6 @@ import mongoose from "mongoose"
 import authRoutes from "./routes/auth.js"
 import passport from "passport"
 import { passportConfig } from "./utils/passportConfig.js"
-import fs from "fs"
 import sellerRoutes from "./routes/seller.js"
 import categoryRoutes from "./routes/category.js"
 import productRoutes from "./routes/product.js"
@@ -27,15 +26,13 @@ passportConfig()
 
 app.use(passport.initialize())
 
-if (!fs.existsSync("./uploads")) { 
-    fs.mkdirSync("./uploads")
-}
-
 //route handlers
 app.use(authRoutes)
 app.use(sellerRoutes)
 app.use(categoryRoutes)
-app.use(productRoutes)
+app.use(productRoutes, (error, req, res, next) => {
+    res.status(500).send({ error: error })
+  })
 
 const PORT = process.env.PORT || 3000
 
