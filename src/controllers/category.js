@@ -12,7 +12,6 @@ export const addCategory = async (req, res) => {
             return res.status(422).send({ message: error.message })    
         }
         const existingCategory = await Category.findOne({ name: req.body.name })
-        console.log(existingCategory);
         if (existingCategory) { 
             return res.status(400).send({ message: `Category ${req.body.name} already exists.` })    
         }
@@ -44,7 +43,6 @@ export const addSubCategory = async (req, res) => {
             return res.status(422).send({ message: error.message })    
         }
         const existingSubCategory = await SubCategory.findOne({ name: req.body.name })
-        console.log(existingSubCategory);
         if (existingSubCategory) { 
             return res.status(400).send({ message: `Sub category ${req.body.name} already exists.` })    
         }
