@@ -1,5 +1,6 @@
 import Product from "../models/product.js";
 import Seller from "../models/seller.js";
+import { base64FileStringGenerator } from "../utils/base64Converter.js";
 import { uploadToCloudinary } from "../utils/cloudinary.js";
 import { uploadProductValidation } from "../validations/productValidation.js";
 
@@ -29,11 +30,12 @@ export const uploadNewProduct = async (req, res) => {
       return res.status(409).send({ message: "You have already uploaded this same product."})
     }
 
-    let productThumbnail = req.files.productThumbnail[0];
-    if (!productThumbnail) { 
+
+    let productThumbnailString = base64FileStringGenerator(req.files.productThumbnail[0]).content;
+    if (!productThumbnailString) { 
       return res.status(400).send({message: "There is no thumbnail image attached."})
     }
-    const uploadedThumbnail = await uploadToCloudinary(productThumbnail.path, seller.companyName, req.body.name, "productThumbnail")
+    const uploadedThumbnail = await uploadToCloudinary(productThumbnailString, seller.companyName, req.body.name, "productThumbnail")
 
     let otherImages = req.files.otherImages;
 
@@ -43,7 +45,8 @@ export const uploadNewProduct = async (req, res) => {
 
     let uploadedOtherImages = []
     for (let i = 0; i < otherImages.length; i++) {
-      let uploadedImage = await uploadToCloudinary(otherImages[i].path, seller.companyName, req.body.name, "otherImages")
+      let imageString = base64FileStringGenerator(otherImages[i]).content;
+      let uploadedImage = await uploadToCloudinary(imageString, seller.companyName, req.body.name, "otherImages")
       uploadedOtherImages[i] = { public_id: uploadedImage.public_id, url: uploadedImage.url }
     }
   
@@ -55,7 +58,8 @@ export const uploadNewProduct = async (req, res) => {
     
     let uploadedColorImages = []
     for (let i = 0; i < colorImages.length; i++) {
-      let uploadedImage = await uploadToCloudinary(colorImages[i].path, seller.companyName, req.body.name, "colorImages")
+      let imageString = base64FileStringGenerator(colorImages[i]).content;
+      let uploadedImage = await uploadToCloudinary(imageString, seller.companyName, req.body.name, "colorImages")
       uploadedColorImages[i] = { public_id: uploadedImage.public_id, url: uploadedImage.url, colorName: req.body.colorNames[i] }
     }
   
