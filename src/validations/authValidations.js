@@ -7,3 +7,8 @@ export const signupValidationSchema = Joi.object({
     password: Joi.string().required().min(6),    
 
 })
+
+export const loginValidationSchema = Joi.object({
+    email: Joi.string().required().lowercase().email(),
+    password: Joi.string().required(),    
+})

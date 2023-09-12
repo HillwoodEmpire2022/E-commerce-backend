@@ -1,7 +1,9 @@
 import mongoose from "mongoose";
-import mongooseUniqueValidator from "mongoose-unique-validator";
 
 const UserSchema = new mongoose.Schema({
+    googleId: {
+        type: String,
+    },
     firstname: {
         type: String,
         required: true,
@@ -25,9 +27,7 @@ const UserSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
-        unique: true,
         trim: true,
-        message: "Custom A user with {PATH}:{VALUE} already exists."
     },
     phoneNumber: {
         type: String,
@@ -36,7 +36,7 @@ const UserSchema = new mongoose.Schema({
     },
     hashedPassword: {
         type: String,
-        required: true,
+        required: false,
     },
     role: {
         type: String,
@@ -44,9 +44,7 @@ const UserSchema = new mongoose.Schema({
     },
     profileImageUrl: {
         type: String,
-        default: `https://res.cloudinary.com/hervebu
-            /image/upload/v1692276423/hill_ecommerce/
-            user_default_img_wrxrou.png`
+        default: "https://res.cloudinary.com/hervebu/image/upload/v1692276423/hill_ecommerce/user_default_img_wrxrou.png"
     },
     dateOfBirth: {
         type: Date,
@@ -55,20 +53,6 @@ const UserSchema = new mongoose.Schema({
     gender: {
         type: String,
         default: null
-    },
-    billingAddress: {
-        country: {
-            type: String,
-            default: null
-        },
-        city: {
-            type: String,
-            default: null
-        },
-        streetAddress: {
-            type: String,
-            default: null
-        } 
     },
     shippingAddress: {
         country: {
@@ -83,13 +67,12 @@ const UserSchema = new mongoose.Schema({
             type: String,
             default: null
         } 
+    },
+    userActivated: {
+        type: Boolean,
+        default: false
     }
-}, { timestamps: true }
-)
+}, { timestamps: true })
 
-UserSchema.plugin(mongooseUniqueValidator, 
-
-    { message :'Error, a user with {PATH}:{VALUE} already exists.' }
- )
 const User = mongoose.model("User", UserSchema)
 export default User

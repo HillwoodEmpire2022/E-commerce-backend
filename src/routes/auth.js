@@ -1,9 +1,30 @@
 import express from "express";
-import { userRegister } from "../controllers/user.js"
+import {
+  userRegister,
+  userLogin,
+  googleAuthenticationSuccess,
+} from "../controllers/auth.js";
+import passport from "passport";
 
+const router = express.Router();
 
-const router = express.Router()
+router.post("/user/register", userRegister);
+router.post("/user/login", userLogin);
+router.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["email", "profile"] })
+);
+router.get(
+  "/google/callback",
+  passport.authenticate("google", {
+    failureRedirect: "/auth/google/failure",
+    session: false,
+  }),  googleAuthenticationSuccess);
 
-router.post("/user/account/register", userRegister)
+router.get("/auth/google/failure", (req, res) => {
+  res.status(401).json({
+    message: "Unable to sign in using Google, please try again later",
+  });
+});
 
-export default router
+export default router;
