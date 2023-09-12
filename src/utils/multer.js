@@ -1,13 +1,6 @@
 import multer from "multer"
 
-let storage = multer.diskStorage({
-    destination: (req, file, callback) => {
-        callback(null, "./uploads")
-    },
-    filename: (req, file, callback) => {
-        callback(null, file.fieldname + "-" + file.originalname)
-    },
-})
+let storage = multer.memoryStorage()
 
 export const upload = multer({
     storage: storage,
