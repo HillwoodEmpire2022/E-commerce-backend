@@ -7,12 +7,17 @@ import mongoose from "mongoose"
 import authRoutes from "./routes/auth.js"
 import passport from "passport"
 import { passportConfig } from "./utils/passportConfig.js"
+import sellerRoutes from "./routes/seller.js"
+import categoryRoutes from "./routes/category.js"
+import productRoutes from "./routes/product.js"
+
 
 dotenv.config()
 
 const app = express()
 
 app.use(express.json({}))
+app.use(express.urlencoded({ extended: true }))
 app.use(helmet())
 app.use(cors())
 app.use(morgan("common"))
@@ -23,6 +28,11 @@ app.use(passport.initialize())
 
 //route handlers
 app.use(authRoutes)
+app.use(sellerRoutes)
+app.use(categoryRoutes)
+app.use(productRoutes, (error, req, res, next) => {
+    res.status(500).send({ error: error })
+  })
 
 const PORT = process.env.PORT || 3000
 
@@ -34,5 +44,3 @@ mongoose.connect(process.env.MONGODB_URI, {
         console.log(`Server connected on port ${PORT}`)
     })
 }).catch((error) => { console.log({ error: error.message }) })
-
-
