@@ -4,7 +4,6 @@ import {
   signupValidationSchema,
   loginValidationSchema,
 } from "../validations/authValidations.js";
-import { generateUserName } from "../utils/userNameGenerator.js";
 import { generateJWToken } from "../utils/jsonWebToken.js";
 
 const returnedUserInfo = (user) => {
@@ -22,6 +21,20 @@ const returnedUserInfo = (user) => {
     token: userToken,
     user: displayedUserInfo,
   };
+};
+
+export const generateUserName = async () => {
+  const recentRegisteredUser = await User.find().sort({ _id: -1 }).limit(1);
+  let newUserName = "";
+
+  if (recentRegisteredUser.length !== 0) {
+    const collectionCount = recentRegisteredUser[0].username.slice(4);
+    newUserName = `user${parseInt(collectionCount) + 1}`;
+  } else {
+    newUserName = `user${1}`;
+  }
+
+  return newUserName;
 };
 
 export const userRegister = async (req, res) => {
