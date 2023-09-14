@@ -10,6 +10,8 @@ import { passportConfig } from "./utils/passportConfig.js"
 import sellerRoutes from "./routes/seller.js"
 import categoryRoutes from "./routes/category.js"
 import productRoutes from "./routes/product.js"
+import swaggerUI from "swagger-ui-express"
+import { specs } from "./utils/swaggerDocsSpecs.js"
 
 
 dotenv.config()
@@ -27,6 +29,7 @@ passportConfig()
 app.use(passport.initialize())
 
 //route handlers
+app.use("/docs", swaggerUI.serve, swaggerUI.setup(specs))
 app.use(authRoutes)
 app.use(sellerRoutes)
 app.use(categoryRoutes)
