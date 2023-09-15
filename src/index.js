@@ -22,7 +22,7 @@ app.use(express.json({}))
 app.use(express.urlencoded({ extended: true }))
 app.use(helmet())
 app.use(cors({
-    origin: "*"
+    origin: ["https://localhost:3000"]
 }))
 app.use(morgan("common"))
 
