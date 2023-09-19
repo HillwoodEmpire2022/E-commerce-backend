@@ -33,7 +33,7 @@ Router.post("/product/upload",
  * @swagger
  * /products:
  *    get:
- *      summary: Returns the array of all products.
+ *      summary: Get all products.
  *      tags: [Products]
  *      responses:
  *        200:
@@ -73,7 +73,7 @@ Router.get("/product/:productId", getSingleProduct)
  * @swagger
  * /products/category/{categoryId}:
  *    get:
- *      summary: Get the products by their category
+ *      summary: Get products by their category
  *      tags: [Products]
  *      parameters:
  *        - in: path
@@ -96,7 +96,7 @@ Router.get("/products/category/:categoryId", getProductsByCategory)
  * @swagger
  * /products/subcategory/{subcategoryId}:
  *    get:
- *      summary: Get the products by their subcategory
+ *      summary: Get products by their subcategory
  *      tags: [Products]
  *      parameters:
  *        - in: path

@@ -18,7 +18,7 @@ Router.post("/category/create", isAdmin, addCategory)
  * @swagger
  * /categories:
  *    get:
- *      summary: Returns the array of all product categories.
+ *      summary: Get Categories
  *      tags: [Categories]
  *      responses:
  *        200:
@@ -37,7 +37,7 @@ Router.post("/subcategory/create", isAdmin, addSubCategory)
  * @swagger
  * /subcategories:
  *    get:
- *      summary: Returns the array of all product subcategories.
+ *      summary: Get Subcategories.
  *      tags: [Categories]
  *      responses:
  *        200:
