@@ -21,7 +21,9 @@ const app = express()
 app.use(express.json({}))
 app.use(express.urlencoded({ extended: true }))
 app.use(helmet())
-app.options("*", cors())
+app.use(cors({
+    origin: ["*"]
+}))
 app.use(morgan("common"))
 
 passportConfig()
@@ -29,7 +31,7 @@ passportConfig()
 app.use(passport.initialize())
 
 //route handlers
-app.use("/docs", swaggerUI.serve, swaggerUI.setup(specs))
+app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs))
 app.use(authRoutes)
 app.use(sellerRoutes)
 app.use(categoryRoutes)
