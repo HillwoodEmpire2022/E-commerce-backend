@@ -57,7 +57,7 @@ export const getSubCategories = async (req, res) => {
     try {
         const allSubCategories = await SubCategory.find().populate("category").exec()
         if (allSubCategories.length === 0) { 
-            return res.status(404).send({ message: "There is no any category."})
+            return res.status(404).send({ message: "There is no any subcategory."})
         }
         res.status(200).json(allSubCategories)
     } catch (error) { 
