@@ -19,7 +19,7 @@ const router = express.Router();
  * @swagger
  * /user/register:
  *    post:
- *      summary: Returns the object of some registered user information with an authorization token.
+ *      summary: Sign up API
  *      tags: [Authentication]
  *      requestBody:
  *       description: JSON user data for registering a new user.
@@ -55,7 +55,7 @@ router.post("/user/register", userRegister);
  * @swagger
  * /user/login:
  *    post:
- *      summary: Returns the object of some of the logged in user information with an authorization token.
+ *      summary: Log In API.
  *      tags: [Authentication]
  *      requestBody:
  *       description: JSON user data for logging in a user.
