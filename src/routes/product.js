@@ -1,7 +1,13 @@
 import express from "express"
 
 import {  isAdmin } from "../middlewares/auth.js"
-import { getAllProducts, getProductsByCategory, getProductsBySubCategory, getSingleProduct, uploadNewProduct } from "../controllers/product.js"
+import {
+  getAllProducts,
+  getProductsByCategory,
+  getProductsBySubCategory,
+  getSingleProduct,
+  uploadNewProduct
+} from "../controllers/product.js"
 import { upload } from "../utils/multer.js"
 
 const Router = express.Router()
@@ -13,8 +19,6 @@ const Router = express.Router()
  *  name: Products
  *  description: Products APIs
  */
-
-
 
 Router.post("/product/upload", 
        isAdmin,
@@ -46,7 +50,7 @@ Router.get("/products", getAllProducts)
  * @swagger
  * /product/{productId}:
  *    get:
- *      summary: Get the product by id
+ *      summary: Get the product by its id
  *      tags: [Products]
  *      parameters:
  *        - in: path
@@ -54,7 +58,7 @@ Router.get("/products", getAllProducts)
  *          schema:
  *            type: string
  *          required: true
- *          description: The product id
+ *          description: The value from the _id field of the product object 
  *      responses:
  *        200:
  *          description: An object of product details with some data from the associated models
@@ -65,7 +69,50 @@ Router.get("/products", getAllProducts)
  */
 Router.get("/product/:productId", getSingleProduct) 
 
+/**
+ * @swagger
+ * /products/category/{categoryId}:
+ *    get:
+ *      summary: Get the products by their category
+ *      tags: [Products]
+ *      parameters:
+ *        - in: path
+ *          name: categoryId
+ *          schema:
+ *            type: string
+ *          required: true
+ *          description: The value from the _id field of category object 
+ *      responses:
+ *        200:
+ *          description: An array of products that belong to the products category of id passed as category id.
+ *          contents:
+ *            application/json:
+ *              schema: 
+ *                type: array
+ */
 Router.get("/products/category/:categoryId", getProductsByCategory)
+
+/**
+ * @swagger
+ * /products/subcategory/{subcategoryId}:
+ *    get:
+ *      summary: Get the products by their subcategory
+ *      tags: [Products]
+ *      parameters:
+ *        - in: path
+ *          name: subcategoryId
+ *          schema:
+ *            type: string
+ *          required: true
+ *          description: The value from the _id field of the subcategory object 
+ *      responses:
+ *        200:
+ *          description: An array of products that belong to the products subcategory of id passed as subcategory id.
+ *          contents:
+ *            application/json:
+ *              schema: 
+ *                type: array
+ */
 Router.get("/products/subcategory/:subcategoryId", getProductsBySubCategory)
 
 export default Router
