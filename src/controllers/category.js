@@ -44,10 +44,10 @@ export const addSubCategory = async (req, res) => {
         }
         const existingSubCategory = await SubCategory.findOne({ name: req.body.name })
         if (existingSubCategory) { 
-            return res.status(400).send({ message: `Sub category ${req.body.name} already exists.` })    
+            return res.status(400).send({ message: `Subcategory ${req.body.name} already exists.` })    
         }
         const addedSubCategory = await SubCategory.create({ name: req.body.name, category: req.body.categoryId })
-        res.status(201).send({ message: `Sub category ${addedSubCategory.name} added successfully.` })
+        res.status(201).send({ message: `Subcategory ${addedSubCategory.name} added successfully.` })
     } catch (error) {
         res.status(500).send({ message: error.message })
     }
