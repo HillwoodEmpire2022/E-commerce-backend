@@ -21,9 +21,7 @@ const app = express()
 app.use(express.json({}))
 app.use(express.urlencoded({ extended: true }))
 app.use(helmet())
-app.use(cors({
-    origin: ["*", "http://localhost:3000"]
-}))
+app.use(cors())
 app.use(morgan("common"))
 
 passportConfig()
@@ -41,7 +39,11 @@ app.use(productRoutes, (error, req, res, next) => {
 
 const PORT = process.env.PORT || 3000
 
-mongoose.connect(process.env.MONGODB_URI, {
+let databaseUrl = process.env.DEVELOPMENT_MONGODB_URI
+if (process.env.NODE_ENVIRONMENT === 'production') {
+    databaseUrl = process.env.PRODUCTION_MONGODB_URI
+}
+mongoose.connect(databaseUrl, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => {
