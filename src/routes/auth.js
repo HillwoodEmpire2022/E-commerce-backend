@@ -89,7 +89,7 @@ router.get(
 );
 
 router.get("/auth/google/success", (req, res) => { 
-  
+ 
   try { 
     res.header("Access-Control-Allow-Origin", "*");
     const response = returnedUserInfo(req.user)
