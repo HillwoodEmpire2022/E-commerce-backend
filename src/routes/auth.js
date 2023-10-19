@@ -3,6 +3,7 @@ import {
   userRegister,
   userLogin,
   googleAuthenticationSuccess,
+  returnedUserInfo,
 } from "../controllers/auth.js";
 import passport from "passport";
 
@@ -82,21 +83,37 @@ router.post("/user/register", userRegister);
  *          description: Wrong email or password error.                  
  */ 
 router.post("/user/login", userLogin);
-router.get(
-  "/auth/google",
-  passport.authenticate("google", { scope: ["email", "profile"] })
-);
-router.get(
-  "/google/callback",
-  passport.authenticate("google", {
-    failureRedirect: "/auth/google/failure",
-    session: false,
-  }),  googleAuthenticationSuccess);
+
+router.get("/auth/google/success", (req, res) => {   
+  try { 
+    const response = returnedUserInfo(req.user)
+    res.header("Access-Control-Allow-Origin", "https://classy-salamander-0a7429.netlify.app/");
+    res.status(200).json(response)   
+  } catch (err) {
+    
+    res.status(500).json({ err: err.message})
+  }
+})
 
 router.get("/auth/google/failure", (req, res) => {
   res.status(401).json({
     message: "Unable to sign in using Google, please try again later",
   });
 });
+
+router.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["email", "profile"] })
+);
+
+router.get(
+  "/google/callback",
+  passport.authenticate("google", {
+    successRedirect: "https://classy-salamander-0a7429.netlify.app/",
+    failureRedirect: "/auth/google/failure",
+    session: false,
+  }));
+
+
 
 export default router;
