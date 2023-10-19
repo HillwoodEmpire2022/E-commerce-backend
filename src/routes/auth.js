@@ -89,7 +89,7 @@ router.get(
 router.get(
   "/google/callback",
   passport.authenticate("google", {
-    successRedirect: "https://localhost:3000/signin",
+    successRedirect: "https://classy-salamander-0a7429.netlify.app/",
     failureRedirect: "/auth/google/failure",
     session: false,
   }),  googleAuthenticationSuccess);
