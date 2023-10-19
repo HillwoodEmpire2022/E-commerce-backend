@@ -6,7 +6,7 @@ import {
 } from "../validations/authValidations.js";
 import { generateJWToken } from "../utils/jsonWebToken.js";
 
-const returnedUserInfo = (user) => {
+export const returnedUserInfo = (user) => {
   const displayedUserInfo = {
     _id: user._id,
     firstname: user.firstname,
