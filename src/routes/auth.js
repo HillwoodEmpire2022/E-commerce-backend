@@ -83,22 +83,22 @@ router.post("/user/register", userRegister);
  *          description: Wrong email or password error.                  
  */ 
 router.post("/user/login", userLogin);
-router.get(
-  "/auth/google",
-  passport.authenticate("google", { scope: ["email", "profile"] })
-);
 
-router.get("/auth/google/success", (req, res) => { 
- 
+router.get("/auth/google/success", (req, res) => {   
   try { 
-    res.header("Access-Control-Allow-Origin", "*");
     const response = returnedUserInfo(req.user)
+    res.header("Access-Control-Allow-Origin", "https://classy-salamander-0a7429.netlify.app/");
     res.status(200).json(response)   
   } catch (err) {
     
     res.status(500).json({ err: err.message})
   }
 })
+
+router.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["email", "profile"] })
+);
 
 router.get(
   "/google/callback",
