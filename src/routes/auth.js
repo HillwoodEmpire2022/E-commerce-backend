@@ -97,7 +97,7 @@ router.get("/auth/google/success", (req, res) => {
 
 router.get(
   "/auth/google",
-  passport.authenticate("google", { scope: ["email", "profile"] })
+  passport.authenticate("google", ["email", "profile"] )
 );
 
 router.get(
