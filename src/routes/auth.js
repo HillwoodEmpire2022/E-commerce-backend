@@ -87,7 +87,6 @@ router.post("/user/login", userLogin);
 router.get("/auth/google/success", (req, res) => {   
   try { 
     const response = returnedUserInfo(req.user)
-    res.header("Access-Control-Allow-Origin", "https://classy-salamander-0a7429.netlify.app/");
     res.status(200).json(response)   
   } catch (err) {
     
@@ -111,7 +110,6 @@ router.get(
   passport.authenticate("google", {
     successRedirect: "https://classy-salamander-0a7429.netlify.app/",
     failureRedirect: "/auth/google/failure",
-    session: false,
   }));
 
 
