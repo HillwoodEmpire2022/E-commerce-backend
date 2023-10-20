@@ -26,6 +26,7 @@ app.use(morgan("common"))
 
 passportConfig()
 
+
 app.use(passport.initialize())
 
 //route handlers
