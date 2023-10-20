@@ -12,6 +12,7 @@ import categoryRoutes from "./routes/category.js"
 import productRoutes from "./routes/product.js"
 import swaggerUI from "swagger-ui-express"
 import { specs } from "./utils/swaggerDocsSpecs.js"
+import cookieSession from "cookie-session"
 
 
 dotenv.config()
@@ -26,7 +27,16 @@ app.use(morgan("common"))
 
 passportConfig()
 
+app.use(
+    cookieSession({
+        name: "session",
+        keys: ["feli_ecommerce"],
+        maxAge: 24 * 60 * 60 * 100,
+    })
+)
+
 app.use(passport.initialize())
+app.use(passport.session())
 
 //route handlers
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs))
