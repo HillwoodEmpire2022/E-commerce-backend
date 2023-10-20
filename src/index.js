@@ -12,6 +12,7 @@ import categoryRoutes from "./routes/category.js"
 import productRoutes from "./routes/product.js"
 import swaggerUI from "swagger-ui-express"
 import { specs } from "./utils/swaggerDocsSpecs.js"
+import cookieSession from "cookie-session"
 
 
 dotenv.config()
@@ -21,12 +22,25 @@ const app = express()
 app.use(express.json({}))
 app.use(express.urlencoded({ extended: true }))
 app.use(helmet())
-app.use(cors())
+app.use(cors({
+    origin: "https://classy-salamander-0a7429.netlify.app/",
+    methods: "GET, POST, PUT, DELETE",
+    credentials: true,
+}))
 app.use(morgan("common"))
 
 passportConfig()
 
+app.use(
+    cookieSession({
+        name: "session",
+        keys: ["feli_ecommerce"],
+        maxAge: 24 * 60 * 60 * 100,
+    })
+)
+
 app.use(passport.initialize())
+app.use(passport.session())
 
 //route handlers
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs))
