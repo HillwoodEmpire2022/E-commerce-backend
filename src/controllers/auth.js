@@ -5,6 +5,7 @@ import {
   loginValidationSchema,
 } from "../validations/authValidations.js";
 import { generateJWToken } from "../utils/jsonWebToken.js";
+import { resourceLimits } from "worker_threads";
 
 export const returnedUserInfo = (user) => {
   const displayedUserInfo = {
@@ -100,15 +101,15 @@ export const userLogin = async (req, res) => {
     if (!account) {
       res.status(401).send({ message: "The email provided does not exist." });
     } else {
-      const passwordCheck = bcrypt.compare(
+      const passwordCheck = await bcrypt.compare(
         password,
         account.hashedPassword
       );
 
-      if (!passwordCheck) {
-        res.status(401).send({ message: "Wrong password." });
-      } else {
-
+      if (passwordCheck === false) {
+        res.status(401).json({ message: "Wrong password." });
+        
+      } else if (passwordCheck === true) {
         const response = returnedUserInfo(account)
         res.status(200).json(response);
       }
