@@ -95,9 +95,15 @@ router.get("/auth/google/success", (req, res) => {
   }
 })
 
+router.get("/auth/google/failure", (req, res) => {
+  res.status(401).json({
+    message: "Unable to sign in using Google, please try again later",
+  });
+});
+
 router.get(
   "/auth/google",
-  passport.authenticate("google", { scope: ["email", "profile"] })
+  passport.authenticate("google", ["email", "profile"] )
 );
 
 router.get(
@@ -108,10 +114,5 @@ router.get(
     session: false,
   }));
 
-router.get("/auth/google/failure", (req, res) => {
-  res.status(401).json({
-    message: "Unable to sign in using Google, please try again later",
-  });
-});
 
 export default router;
