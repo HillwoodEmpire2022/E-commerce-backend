@@ -103,7 +103,7 @@ router.get("/auth/google/failure", (req, res) => {
 
 router.get(
   "/auth/google",
-  passport.authenticate("google", { scope: ["email", "profile"] })
+  passport.authenticate("google", ["email", "profile"] )
 );
 
 router.get(
@@ -113,7 +113,6 @@ router.get(
     failureRedirect: "/auth/google/failure",
     session: false,
   }));
-
 
 
 export default router;
