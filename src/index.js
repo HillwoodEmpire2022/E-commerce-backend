@@ -22,7 +22,7 @@ app.use(express.json({}))
 app.use(express.urlencoded({ extended: true }))
 app.use(helmet())
 app.use(cors({
-    origin: "*", 
+    origin: "https://classy-salamander-0a7429.netlify.app", 
     credentials: true, 
   }));
 app.use(morgan("common"))
