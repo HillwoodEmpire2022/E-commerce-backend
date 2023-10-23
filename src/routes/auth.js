@@ -87,26 +87,26 @@ router.post("/user/login", userLogin);
 router.get("/auth/google/success", (req, res) => {   
   try { 
     const response = returnedUserInfo(req.user)
-    res.header("Access-Control-Allow-Origin", "https://classy-salamander-0a7429.netlify.app");
-    res.status(200).json(response)   
+    res.status(200).json(req.user)   
   } catch (err) {
-    
     res.status(500).json({ err: err.message})
   }
 })
 
 router.get(
   "/auth/google",
-  passport.authenticate("google", ["email", "profile"] )
+  passport.authenticate("google", {
+    scope: ["email", "profile"],
+    passReqToCallback: true,
+  })
 );
-
+ 
 router.get(
   "/google/callback",
-  passport.authenticate("google", {
-    successRedirect: "https://classy-salamander-0a7429.netlify.app/",
-    failureRedirect: "/auth/google/failure",
-    session: false,
-  }));
+  passport.authenticate("google"), (req, res) => { 
+    console.log(req.user, "message");
+    res.status(200).json({data: req.user})
+  });
 
 router.get("/auth/google/failure", (req, res) => {
   res.status(401).json({

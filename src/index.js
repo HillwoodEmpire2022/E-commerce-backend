@@ -19,7 +19,7 @@ dotenv.config()
 const app = express()
 
 app.use(cors({
-    origin: ["https://classy-salamander-0a7429.netlify.app", "https://localhost:3000"], 
+    origin: ["https://classy-salamander-0a7429.netlify.app", "http://localhost:3000"], 
     credentials: true, 
     methods: ["GET", "POST", "PUT", "DELETE"],
   }));
