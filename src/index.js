@@ -12,6 +12,8 @@ import categoryRoutes from "./routes/category.js"
 import productRoutes from "./routes/product.js"
 import swaggerUI from "swagger-ui-express"
 import { specs } from "./utils/swaggerDocsSpecs.js"
+import cookieSession from "cookie-session"
+
 
 
 dotenv.config()
@@ -32,11 +34,35 @@ app.use(morgan("common"))
 
 passportConfig()
 
+app.use(cookieSession({
+    maxAge: 24 * 60 * 60 * 1000,
+    keys: [process.env.COOKIE_KEY],
+}))
+
 app.use(passport.initialize())
+app.use(passport.session())
+
+app.use((req, res, next) => {
+    if (req.session && !req.session.regenerate) {
+        req.session.regenerate = (cb) => {
+            cb()
+        }
+    }
+    if (req.session && !req.session.save) {
+        req.session.save = (cb) => {
+            cb()
+        }
+    }
+    next()
+})
 
 //route handlers
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs))
-app.use(authRoutes)
+app.use(authRoutes, (error, req, res, next) => {
+    res.status(500).json({ error: error.message });
+})
+
+
 app.use(sellerRoutes)
 app.use(categoryRoutes)
 app.use(productRoutes, (error, req, res, next) => {

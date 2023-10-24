@@ -96,17 +96,21 @@ router.get("/auth/google/success", (req, res) => {
 router.get(
   "/auth/google",
   passport.authenticate("google", {
-    scope: ["email", "profile"],
-    passReqToCallback: true,
-  })
-);
+    scope: ["email", "profile"]
+  }));
  
 router.get(
   "/google/callback",
-  passport.authenticate("google"), (req, res) => { 
-    console.log(req.user, "message");
-    res.status(200).json({data: req.user})
-  });
+  passport.authenticate("google", {
+    successRedirect: "https://classy-salamander-0a7429.netlify.app/",
+    failureRedirect: "/auth/google/failure",
+    failureMessage: "Cannot login to google, please try again later",
+  }),
+  ((req, res) => { 
+    console.log("user", req.user);
+    res.send("Thank you for signing in!")
+  })
+);
 
 router.get("/auth/google/failure", (req, res) => {
   res.status(401).json({
