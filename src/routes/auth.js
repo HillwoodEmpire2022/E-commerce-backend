@@ -5,7 +5,6 @@ import {
   googleAuthenticationSuccess,
   returnedUserInfo,
 } from "../controllers/auth.js";
-import passport from "passport";
 
 const router = express.Router();
 
@@ -87,35 +86,11 @@ router.post("/user/login", userLogin);
 router.get("/auth/google/success", (req, res) => {   
   try { 
     const response = returnedUserInfo(req.user)
-    res.status(200).json(req.user)   
+    res.status(200).json(response)   
   } catch (err) {
     res.status(500).json({ err: err.message})
   }
 })
 
-router.get(
-  "/auth/google",
-  passport.authenticate("google", {
-    scope: ["email", "profile"]
-  }));
- 
-router.get(
-  "/google/callback",
-  passport.authenticate("google", {
-    successRedirect: "https://classy-salamander-0a7429.netlify.app/",
-    failureRedirect: "/auth/google/failure",
-    failureMessage: "Cannot login to google, please try again later",
-  }),
-  ((req, res) => { 
-    console.log("user", req.user);
-    res.send("Thank you for signing in!")
-  })
-);
-
-router.get("/auth/google/failure", (req, res) => {
-  res.status(401).json({
-    message: "Unable to sign in using Google, please try again later",
-  });
-});
 
 export default router;

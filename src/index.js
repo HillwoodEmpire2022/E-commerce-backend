@@ -4,17 +4,10 @@ import cors from "cors"
 import helmet from "helmet"
 import dotenv from "dotenv"
 import mongoose from "mongoose"
-import authRoutes from "./routes/auth.js"
 import passport from "passport"
 import { passportConfig } from "./utils/passportConfig.js"
-import sellerRoutes from "./routes/seller.js"
-import categoryRoutes from "./routes/category.js"
-import productRoutes from "./routes/product.js"
-import swaggerUI from "swagger-ui-express"
-import { specs } from "./utils/swaggerDocsSpecs.js"
 import cookieSession from "cookie-session"
-
-
+import apiRoutes from "./routes/index.js"
 
 dotenv.config()
 
@@ -41,33 +34,32 @@ app.use(cookieSession({
 
 app.use(passport.initialize())
 app.use(passport.session())
-
-app.use((req, res, next) => {
-    if (req.session && !req.session.regenerate) {
-        req.session.regenerate = (cb) => {
-            cb()
-        }
-    }
-    if (req.session && !req.session.save) {
-        req.session.save = (cb) => {
-            cb()
-        }
-    }
-    next()
-})
-
-//route handlers
-app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs))
-app.use(authRoutes, (error, req, res, next) => {
+app.use(apiRoutes, (error, req, res, next) => {
     res.status(500).json({ error: error.message });
 })
 
+// Routes for Google OAuth
+app.get("/auth/google", passport.authenticate("google", {
+    scope: ["email", "profile"]
+}));
+ 
+app.get(
+    "/google/callback",
+    passport.authenticate("google", {
+        successRedirect: "https://classy-salamander-0a7429.netlify.app/",
+        failureRedirect: "/auth/google/failure",
+        failureMessage: "Cannot login to google, please try again later",
+    }),
+    ((req, res) => {     
+        res.send("Signed in successfully!")
+    })
+);
 
-app.use(sellerRoutes)
-app.use(categoryRoutes)
-app.use(productRoutes, (error, req, res, next) => {
-    res.status(500).send({ error: error })
-  })
+app.get("/auth/google/failure", (req, res) => {
+    res.status(401).json({
+        message: "Unable to sign in using Google, please try again later",
+    });
+});
 
 const PORT = process.env.PORT || 3000
 

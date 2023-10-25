@@ -47,11 +47,12 @@ export const passportConfig = async () => {
 };
 
 passport.serializeUser((user, cb) => { 
-  cb(null, user.id)
+  cb(null, user._id)
 })
 
 passport.deserializeUser(async (id, cb) => { 
-  const user = await User.findOne({ where: { id } }).catch((error) => { 
-    cb(err, null)
+  const user = await User.findOne({ _id:id  }).catch((error) => { 
+    cb(error, null)
   })
+  if(user) cb(null, user)
 })
