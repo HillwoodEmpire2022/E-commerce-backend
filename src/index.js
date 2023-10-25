@@ -12,9 +12,11 @@ import apiRoutes from "./routes/index.js"
 dotenv.config()
 
 const app = express()
+const clientUrl = process.env.CLIENT_URL
+const clientLocalhostUrl = process.env.CLIENT_LOCALHOST_URL
 
 app.use(cors({
-    origin: ["https://classy-salamander-0a7429.netlify.app", "http://localhost:3000"], 
+    origin: [clientUrl, clientLocalhostUrl], 
     credentials: true, 
     methods: ["GET", "POST", "PUT", "DELETE"],
   }));
@@ -46,7 +48,7 @@ app.get("/auth/google", passport.authenticate("google", {
 app.get(
     "/google/callback",
     passport.authenticate("google", {
-        successRedirect: "https://classy-salamander-0a7429.netlify.app/",
+        successRedirect: clientUrl,
         failureRedirect: "/auth/google/failure",
         failureMessage: "Cannot login to google, please try again later",
     }),
