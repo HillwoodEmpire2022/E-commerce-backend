@@ -5,8 +5,11 @@ import {
   googleAuthenticationSuccess,
   returnedUserInfo,
 } from "../controllers/auth.js";
+import passport from "passport"
 
 const router = express.Router();
+const clientUrl = process.env.CLIENT_URL
+
 
 /**
  * @swagger
@@ -91,6 +94,31 @@ router.get("/auth/google/success", (req, res) => {
     res.status(500).json({ err: err.message})
   }
 })
+
+// Routes for Google OAuth
+router.get("/auth/google", passport.authenticate("google", {
+  scope: ["email", "profile"]
+}));
+
+router.get(
+  "/google/callback",
+  passport.authenticate("google", {
+      successRedirect: clientUrl,
+      failureRedirect: "/auth/google/failure",
+      failureMessage: "Cannot login to google, please try again later",
+  }),
+  ((req, res) => {     
+      res.send("Signed in successfully!")
+  })
+);
+
+router.get("/auth/google/failure", (req, res) => {
+  res.status(401).json({
+      message: "Unable to sign in using Google, please try again later",
+  });
+});
+
+
 
 
 export default router;

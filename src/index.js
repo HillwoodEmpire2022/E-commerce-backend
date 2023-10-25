@@ -39,29 +39,41 @@ app.use(passport.session())
 app.use(apiRoutes, (error, req, res, next) => {
     res.status(500).json({ error: error.message });
 })
+// app.post('/logout', (req, res) => {
+//     req.session = null;
+    
+//     console.log(req.session);
+//     req.logout();
+//     res.status(200).send("Logged out successfully");
+// });
 
-// Routes for Google OAuth
-app.get("/auth/google", passport.authenticate("google", {
-    scope: ["email", "profile"]
-}));
- 
-app.get(
-    "/google/callback",
-    passport.authenticate("google", {
-        successRedirect: clientUrl,
-        failureRedirect: "/auth/google/failure",
-        failureMessage: "Cannot login to google, please try again later",
-    }),
-    ((req, res) => {     
-        res.send("Signed in successfully!")
-    })
-);
+// app.post('/logout', (req, res) => {
+//     req.session.destroy((e) => {
+//         req.logout();
+//         res.redirect('/');
+//     });
+// });
 
-app.get("/auth/google/failure", (req, res) => {
-    res.status(401).json({
-        message: "Unable to sign in using Google, please try again later",
+// app.get('/logout',  function (req, res, next)  {
+//     // If the user is loggedin
+//     if (req.session.loggedin) {
+//           req.session.loggedin = false;
+//           res.redirect('/');
+//     }else{
+//         // Not logged in
+//         res.redirect('/');
+//     }
+// });
+
+app.post('/logout', (req, res, next) => {
+    req.logOut((err) => {
+        if (err) { return next(err) }
+        console.log("logged out");
+      res.redirect('/');
     });
+
 });
+
 
 const PORT = process.env.PORT || 3000
 
