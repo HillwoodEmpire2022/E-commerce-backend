@@ -8,73 +8,58 @@ import passport from "passport"
 import { passportConfig } from "./utils/passportConfig.js"
 import cookieSession from "cookie-session"
 import apiRoutes from "./routes/index.js"
-
-dotenv.config()
+import cookieParser from "cookie-parser"
 
 const app = express()
+dotenv.config()
+
 const clientUrl = process.env.CLIENT_URL
 const clientLocalhostUrl = process.env.CLIENT_LOCALHOST_URL
 
+app.use(express.json({}))
 app.use(cors({
     origin: [clientUrl, clientLocalhostUrl], 
     credentials: true, 
     methods: ["GET", "POST", "PUT", "DELETE"],
-  }));
-
-app.use(express.json({}))
+}));
+app.set("trust proxy", 1)
 app.use(express.urlencoded({ extended: true }))
 app.use(helmet())
-
 app.use(morgan("common"))
+
+
+app.use(cookieSession({
+    secret: process.env.SESSION_SECRET,
+    resave: true,
+    saveUninitialized: true,
+    cookie: {
+        sameSite: "none",
+        secure: true,
+        maxAge: 24 * 60 * 60 * 1000,
+    }    
+}))
+
+app.use(cookieParser())
+app.use(passport.initialize())
+app.use(passport.session())
 
 passportConfig()
 
-app.use(cookieSession({
-    maxAge: 24 * 60 * 60 * 1000,
-    keys: [process.env.COOKIE_KEY],
-}))
-
-app.use(passport.initialize())
-app.use(passport.session())
 app.use(apiRoutes, (error, req, res, next) => {
     res.status(500).json({ error: error.message });
 })
-// app.post('/logout', (req, res) => {
-//     req.session = null;
-    
-//     console.log(req.session);
-//     req.logout();
-//     res.status(200).send("Logged out successfully");
-// });
 
-// app.post('/logout', (req, res) => {
-//     req.session.destroy((e) => {
-//         req.logout();
-//         res.redirect('/');
-//     });
-// });
 
-// app.get('/logout',  function (req, res, next)  {
-//     // If the user is loggedin
-//     if (req.session.loggedin) {
-//           req.session.loggedin = false;
-//           res.redirect('/');
-//     }else{
-//         // Not logged in
-//         res.redirect('/');
-//     }
-// });
-
-app.post('/logout', (req, res, next) => {
-    req.logOut((err) => {
-        if (err) { return next(err) }
+app.get("/logout", function(req,res,next){
+    req.logout(function (err) {
         console.log("logged out");
-      res.redirect('/');
+      if (err)
+      {
+        return next(err);
+      }
+      res.send("done");
     });
-
-});
-
-
+  });
 const PORT = process.env.PORT || 3000
 
 let databaseUrl = process.env.DEVELOPMENT_MONGODB_URI
