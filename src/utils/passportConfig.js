@@ -3,6 +3,7 @@ import { Strategy } from "passport-google-oauth20";
 import User from "../models/user.js";
 import { generateUserName } from "../controllers/auth.js";
 
+
 export const passportConfig = async () => {
   passport.use(
     new Strategy(
