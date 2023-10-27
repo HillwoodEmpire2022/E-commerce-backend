@@ -5,7 +5,6 @@ import {
   loginValidationSchema,
 } from "../validations/authValidations.js";
 import { generateJWToken } from "../utils/jsonWebToken.js";
-import { resourceLimits } from "worker_threads";
 
 export const returnedUserInfo = (user) => {
   const displayedUserInfo = {

@@ -10,6 +10,7 @@ import cookieSession from "cookie-session"
 import apiRoutes from "./routes/index.js"
 import cookieParser from "cookie-parser"
 
+
 const app = express()
 dotenv.config()
 
@@ -69,7 +70,7 @@ app.get('/logout', (req, res) => {
         console.log(req.session.isPopulated);
       res.redirect(clientUrl); 
     });
-  });
+});
 
 // app.get("/logout", function(req,res,next){
 //     req.logout(function (err) {

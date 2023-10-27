@@ -4,7 +4,7 @@ import sellerRoutes from "./seller.js"
 import categoryRoutes from "./category.js"
 import productRoutes from "./product.js"
 import swaggerUI from "swagger-ui-express"
-import { specs } from "./../utils/swaggerDocsSpecs.js"
+import { specs } from "../utils/swaggerDocsSpecs.js"
 
 const app = express()
 
