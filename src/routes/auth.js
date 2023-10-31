@@ -9,6 +9,7 @@ import passport from "passport"
 
 const router = express.Router();
 const clientUrl = process.env.CLIENT_URL
+const webUrl = process.env.CLIENT_LOCALHOST_URL || `http://localhost:${process.env.PORT}`
 
 
 /**
@@ -101,7 +102,7 @@ router.get("/auth/google", passport.authenticate("google", {
 }));
 
 router.get(
-  "/google/callback",
+  `${clientUrl}/google/callback`,
   passport.authenticate("google", {
       successRedirect: clientUrl,
       failureRedirect: "/auth/google/failure",
