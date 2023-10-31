@@ -40,6 +40,7 @@ export const isAdmin = (req, res, next) => {
     return res.status(401).send({ message: "You have to provide JWToken for Authorizaion header for this API." })
         
     } catch (error) {
-        res.status(500).send({ message: error.message })
+        // res.status(500).send({ message: error.message })
+        return res.status(500).send({message: error.message})
     }
 };
