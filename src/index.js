@@ -14,6 +14,8 @@ import cookieParser from "cookie-parser"
 const app = express()
 dotenv.config()
 
+const session = require('express-session')
+
 const clientUrl = process.env.CLIENT_URL
 const clientLocalhostUrl = process.env.CLIENT_LOCALHOST_URL
 
@@ -30,10 +32,11 @@ app.use(cors({
 }));
 
 
-app.use(cookieSession({
+app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: true,
-    saveUninitialized: true,   
+    saveUninitialized: true,
+    cookie: { secure: true }
 }))
 
 app.use(cookieParser())
@@ -57,6 +60,7 @@ passportConfig()
 // });
 
 app.use(apiRoutes, (error, req, res, next) => {
+    console.log(`Error Occurs: ${error.message}`);
     res.status(500).json({ error: error.message });
 })
 
