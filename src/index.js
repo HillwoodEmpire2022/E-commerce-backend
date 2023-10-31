@@ -14,7 +14,7 @@ import cookieParser from "cookie-parser"
 const app = express()
 dotenv.config()
 
-const session = require('express-session')
+// const session = require('express-session')
 
 const clientUrl = process.env.CLIENT_URL
 const clientLocalhostUrl = process.env.CLIENT_LOCALHOST_URL
