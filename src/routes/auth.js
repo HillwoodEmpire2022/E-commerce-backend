@@ -102,7 +102,7 @@ router.get("/auth/google", passport.authenticate("google", {
 }));
 
 router.get(
-  `${clientUrl}/google/callback`,
+  `/google/callback`,
   passport.authenticate("google", {
       successRedirect: clientUrl,
       failureRedirect: "/auth/google/failure",
