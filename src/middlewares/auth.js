@@ -16,8 +16,8 @@ export const isLoggedIn = (req, res, next) => {
     return res.status(401).send({ message: "You have to provide JWToken for Authorizaion header for this API." })
     
  } catch (error) {
-    console.log('Error is here');
     res.status(500).send({message: error.message})
+    return 'Error is here'
  }
 };
 
