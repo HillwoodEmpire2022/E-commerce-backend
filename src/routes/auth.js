@@ -11,18 +11,6 @@ const router = express.Router();
 const clientUrl = process.env.CLIENT_URL;
 const webUrl = process.env.CLIENT_LOCALHOST_URL || `http://localhost:${process.env.PORT}`
 
-// passport.use(new GoogleStrategy({
-//   clientID: process.env.GOOGLE_CLIENT_ID,
-//   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-//   callbackURL: 'https://hillglobalmarket.netlify.app/google/callback'
-// }, (accessToken, refreshToken, profile, done) => {
-//   // Your strategy implementation
-//   done(null, profile);
-// }));
-
-// app.use(passport.initialize());
-// app.use(passport.session());
-
 /**
  * @swagger
  * tags:
