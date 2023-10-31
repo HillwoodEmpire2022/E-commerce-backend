@@ -62,14 +62,19 @@ app.use(apiRoutes, (error, req, res, next) => {
 
 
 app.get('/logout', (req, res) => {
+    console.log(req.session);
 
-    req.session.destroy((err) => {
-      if (err) {
-        console.error('Error destroying session:', err);
-        }
-        console.log(req.session.isPopulated);
-      res.redirect(clientUrl); 
-    });
+    req.session = null
+    res.clearCookie('session');
+    res.redirect(clientUrl); 
+
+    // req.session.destroy((err) => {
+    //   if (err) {
+    //     console.error('Error destroying session:', err);
+    //     }
+    //     console.log(req.session.isPopulated);
+    //   res.redirect(clientUrl); 
+    // });
 });
 
 // app.get("/logout", function(req,res,next){
