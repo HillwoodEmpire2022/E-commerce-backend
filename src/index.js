@@ -83,7 +83,7 @@ app.get('/logout', (req, res) => {
     console.log(req.session);
 
     req.session = null
-    res.clearCookie('session');
+    // res.clearCookie('session');
     res.redirect(clientUrl); 
 
     // req.session.destroy((err) => {
