@@ -14,8 +14,6 @@ import cookieParser from "cookie-parser"
 const app = express()
 dotenv.config()
 
-// const session = require('express-session')
-
 const clientUrl = process.env.CLIENT_URL
 const clientLocalhostUrl = process.env.CLIENT_LOCALHOST_URL
 
@@ -62,19 +60,6 @@ app.use(passport.session())
 
 passportConfig()
 
-// app.get("/logout", function(req, res) {
-//     try {
-//         req.session = null
-//         req.user = null
-//         // req.logOut(); 
-        
-
-//         res.status(200).send("Logged out"); 
-//     } catch (error) {
-//         console.error("Error during logout:", error);
-//         res.status(500).send("Error during logout");
-//     }
-// });
 
 app.use(apiRoutes, (error, req, res, next) => {
     console.log(`Error Occurs: ${error.message}`);
@@ -83,7 +68,6 @@ app.use(apiRoutes, (error, req, res, next) => {
 
 
 app.get('/logout', (req, res) => {
-    console.log(req.session);
 
     for (const key in req.session) {
         if (req.session.hasOwnProperty(key)) {
@@ -96,28 +80,7 @@ app.get('/logout', (req, res) => {
 
     res.redirect(clientUrl); 
 
-    // req.session.destroy((err) => {
-    //   if (err) {
-    //     console.error('Error destroying session:', err);
-    //     }
-    //     console.log(req.session.isPopulated);
-    //   res.redirect(clientUrl); 
-    // });
 });
-
-// app.get("/logout", function(req,res,next){
-//     req.logout(function (err) {
-//         console.log("logged out");
-//       if (err)
-//       {
-//         return next(err);
-//       }
-//       res.send("done");
-//     });
-// });
-  
-
-
 
 const PORT = process.env.PORT || 3000
 
