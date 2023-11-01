@@ -36,7 +36,10 @@ app.use(cookieSession({
     secret: process.env.SESSION_SECRET,
     resave: true,
     saveUninitialized: true,
-    cookie: { secure: true }
+    cookie: { 
+        secure: true,
+        name: 'session_cookie'
+    }
 }))
 
 app.use(function(request, response, next) {
@@ -82,8 +85,15 @@ app.use(apiRoutes, (error, req, res, next) => {
 app.get('/logout', (req, res) => {
     console.log(req.session);
 
-    req.session = null
-    // res.clearCookie('session');
+    for (const key in req.session) {
+        if (req.session.hasOwnProperty(key)) {
+            delete req.session[key];
+        }
+    }
+
+    req.session = null;
+    res.clearCookie('session_cookie');
+
     res.redirect(clientUrl); 
 
     // req.session.destroy((err) => {
