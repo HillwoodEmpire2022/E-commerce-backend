@@ -22,7 +22,6 @@ export const uploadNewProduct = async (req, res) => {
 
     const existingProduct = await Product.find({
       name: req.body.name,
-      description: req.body.description,
       seller: req.body.seller
     })
 
