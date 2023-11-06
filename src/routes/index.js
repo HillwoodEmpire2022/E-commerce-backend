@@ -3,6 +3,7 @@ import authRoutes from "./auth.js"
 import sellerRoutes from "./seller.js"
 import categoryRoutes from "./category.js"
 import productRoutes from "./product.js"
+import cartRoutes from "./cart.js"
 import swaggerUI from "swagger-ui-express"
 import { specs } from "../utils/swaggerDocsSpecs.js"
 
@@ -15,5 +16,6 @@ app.use(authRoutes)
 app.use(sellerRoutes)
 app.use(categoryRoutes)
 app.use(productRoutes)
+app.use(cartRoutes)
 
 export default app;
