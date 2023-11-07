@@ -99,10 +99,37 @@ export const deleteCartItem = async (req, res) => {
         const deletedCartItem = await Cart.findOneAndDelete({ _id: req.params.cartItemId })
         if (deletedCartItem) {
             return res.status(200).send({ message: "Cart item deleted successfully." })
-        } else {
-            return res.status(404).send({ message: "Unable to delete cart item. Please try again or contact the technical support team." })
+        }
+        
+        const cartItems = await Cart.find({ user: req.userId })
+        if (cartItems.length === 0) { 
+            return res.status(404).send({ message: "Your cart is empty." })
         }
             
+    } catch (error) {
+        return res.status(500).send({ message: error.message })
+    }
+}
+
+export const deleteAllCartItems = async (req, res) => { 
+    try {
+        const DBUserInfo = await User.findOne({_id: req.userId})
+        if (DBUserInfo === null) { 
+            return res.status(401).send({ message: "User does not exist! Please signup or login again." });
+        }
+
+        const deleteManyResponse = await Cart.deleteMany({ user: req.userId })
+        console.log(deleteManyResponse);
+        if (deleteManyResponse.deletedCount >= 0) {
+            return res.status(200).send({ message: "All cart items deleted successfully." })
+        } 
+
+        const cartItems = await Cart.find({ user: req.userId })
+        if (cartItems.length === 0) { 
+            return res.status(404).send({ message: "Your cart is empty." })
+        }
+            
+        
     } catch (error) {
         return res.status(500).send({ message: error.message })
     }
