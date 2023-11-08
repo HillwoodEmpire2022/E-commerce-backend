@@ -82,7 +82,19 @@ const ProductSchema = new mongoose.Schema({
     ],
     brandName: {
         type: String,
-    }
+    },
+    deliveryInfo: [
+        {
+            deliveryType: {
+                type: String,
+                default: "Free delivery"
+            },
+            deliveryFee: {
+                type: Number,
+                default: 0,
+            }
+        }
+    ]
 
     
 
