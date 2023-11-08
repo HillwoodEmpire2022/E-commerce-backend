@@ -78,7 +78,7 @@ app.get('/logout', (req, res) => {
     req.session = null;
     res.clearCookie('session_cookie');
 
-    res.redirect(clientUrl); 
+    res.redirect(302, clientUrl); 
 
 });
 
