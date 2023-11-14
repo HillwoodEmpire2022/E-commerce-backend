@@ -25,16 +25,23 @@ export const addToCart = async (req, res) => {
             return res.status(400).send({ message: "The product you are trying to add to cart has been removed from the stock." });
         } 
         
-        const newCartItem = new Cart({
-            product: DBProductInfo._id, 
-            colorId,
-            size, 
-            deliveryFee,
-            quantity,
-            user: DBUserInfo._id,
-        })
-        
-        const savedCartItem = await newCartItem.save();
+        const existingCartItem = await Cart.find({ _id: DBProductInfo, colorId, size, deliveryFee, user: DBUserInfo._id })
+        let savedCartItem = {}
+        if (existingCartItem.length > 0) {
+            savedCartItem = await Cart.findOneAndUpdate({ _id: existingCartItem._id }, { $set: { quantity: quantity } }, {
+                new: true,
+            })
+        } else if (existingCartItem.length === 0) { 
+            const newCartItem = new Cart({
+                product: DBProductInfo._id, 
+                colorId,
+                size, 
+                deliveryFee,
+                quantity,
+                user: DBUserInfo._id,
+            })
+            savedCartItem = await newCartItem.save();
+        } 
         if (savedCartItem) {
             return res.status(201).json(savedCartItem)
         }
