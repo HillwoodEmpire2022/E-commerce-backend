@@ -1,7 +1,41 @@
 import Product from "../models/product.js";
 import Cart from "../models/productsCart.js";
 import User from "../models/user.js";
+import mongoose from "mongoose";
 import { addToCartValidation, updateCartValidation } from "../validations/cartValidations.js";
+
+
+const formatCartItemInfo = (cartItem) => {
+    const { ObjectId } = mongoose.Types;
+    let itemCost = 0;
+    let price = 0;
+    if (cartItem.product.discountedPrice > 0) {
+        price = cartItem.product.discountedPrice;
+        itemCost = (price * cartItem.quantity) + cartItem.deliveryFee;
+    } else if (cartItem.product.discountedPrice === 0) {
+        price = cartItem.product.price;
+        itemCost = (price * cartItem.quantity) + cartItem.deliveryFee;
+    }
+
+    let selectedProductImage = cartItem.product.productImages.productThumbnail.url;
+    let selectedProductColor = ""
+    let item = {
+        ...cartItem,
+        productTotalCost: itemCost,
+        selectedProductImage,
+        selectedProductColor,
+        price,
+        availableUnits: cartItem.product.stockQuantity,
+        quantityParameter: cartItem.product.quantityParameter,
+    }
+    const cartItemColorId = new ObjectId(cartItem.colorId);
+    const colorImages = cartItem.product.productImages.colorImages
+    const selectedColor = colorImages.filter((colorImage) => (colorImage._id.equals(cartItemColorId)))
+    item.selectedProductImage = selectedColor[0].url;
+    item.selectedProductColor = selectedColor[0].colorName;
+
+    return item;    
+}
 
 export const addToCart = async (req, res) => { 
     try {
@@ -42,8 +76,10 @@ export const addToCart = async (req, res) => {
             })
             savedCartItem = await newCartItem.save();
         } 
+        
         if (savedCartItem) {
-            return res.status(201).json(savedCartItem)
+            const populatedSavedCartItem = await savedCartItem.populate("product");
+            return res.status(201).json(formatCartItemInfo(populatedSavedCartItem))
         }
         
     } catch (error) {
@@ -62,37 +98,7 @@ export const getCartItems = async (req, res) => {
             .populate("product")
             .lean()
             .exec()
-        let formattedCartItems = allCartItems.map((cartItem) => { 
-            let itemCost = 0;
-            let price = 0;
-            if (cartItem.product.discountedPrice > 0) {
-                price = cartItem.product.discountedPrice;
-                itemCost = (price * cartItem.quantity) + cartItem.deliveryFee;
-            } else if (cartItem.product.discountedPrice === 0) {
-                price = cartItem.product.price;
-                itemCost = (price * cartItem.quantity) + cartItem.deliveryFee;
-            }
-
-            let selectedProductImage = cartItem.product.productImages.productThumbnail.url;
-            let selectedProductColor = ""
-            for (let i = 0; i < cartItem.product.productImages.colorImages.length; i++) { 
-                if (cartItem.product.productImages.colorImages[i]._id === cartItem.colorId) { 
-                    selectedProductImage = cartItem.product.productImages.colorImages[i].url;
-                    selectedProductColor = cartItem.product.productImages.colorImages[i].colorName;
-                    break;
-                }
-            }
-            const item = {
-                ...cartItem,
-                productTotalCost: itemCost,
-                selectedProductImage,
-                selectedProductColor,
-                price,
-                availableUnits: cartItem.product.stockQuantity,
-                quantityParameter: cartItem.product.quantityParameter,
-            }
-            return item;
-        })
+        let formattedCartItems = allCartItems.map((cartItem) => formatCartItemInfo(cartItem))
         if (formattedCartItems.length > 0) {
             return res.status(200).json(formattedCartItems)
         } else { 
@@ -132,7 +138,6 @@ export const deleteAllCartItems = async (req, res) => {
         }
 
         const deleteManyResponse = await Cart.deleteMany({ user: req.userId })
-        console.log(deleteManyResponse);
         if (deleteManyResponse.deletedCount >= 0) {
             return res.status(200).send({ message: "All cart items deleted successfully." })
         } 
@@ -168,9 +173,13 @@ export const updateCartItem = async (req, res) => {
 
         const updatedCartItem = await Cart.findOneAndUpdate({ _id: req.params.cartItemId }, { $set: updates }, {
             new: true,
-        })
+        }).populate("product")
         if (updatedCartItem) {
-            return res.status(200).send({ message: "Cart item updated successfully." })
+            const formattedResponse = formatCartItemInfo(updatedCartItem)
+            return res.status(200).send({
+                message: "Cart item updated successfully.",
+                data: formattedResponse
+            })
         } else { 
             return res.status(500).send({ message: "Unable to update cart item. The cart item may have been removed." })
         }
