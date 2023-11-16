@@ -64,10 +64,13 @@ export const getCartItems = async (req, res) => {
             .exec()
         let formattedCartItems = allCartItems.map((cartItem) => { 
             let itemCost = 0;
+            let price = 0;
             if (cartItem.product.discountedPrice > 0) {
-                itemCost = (cartItem.product.discountedPrice * cartItem.quantity) + cartItem.deliveryFee;
-            } else if (cartItem.product.discountedPrice === 0) { 
-                itemCost = (cartItem.product.price * cartItem.quantity) + cartItem.deliveryFee;
+                price = cartItem.product.discountedPrice;
+                itemCost = (price * cartItem.quantity) + cartItem.deliveryFee;
+            } else if (cartItem.product.discountedPrice === 0) {
+                price = cartItem.product.price;
+                itemCost = (price * cartItem.quantity) + cartItem.deliveryFee;
             }
 
             let selectedProductImage = cartItem.product.productImages.productThumbnail.url;
@@ -84,9 +87,9 @@ export const getCartItems = async (req, res) => {
                 productTotalCost: itemCost,
                 selectedProductImage,
                 selectedProductColor,
+                price,
                 availableUnits: cartItem.product.stockQuantity,
                 quantityParameter: cartItem.product.quantityParameter,
-                
             }
             return item;
         })
