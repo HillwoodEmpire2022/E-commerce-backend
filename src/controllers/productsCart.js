@@ -71,9 +71,11 @@ export const getCartItems = async (req, res) => {
             }
 
             let selectedProductImage = cartItem.product.productImages.productThumbnail.url;
+            let selectedProductColor = ""
             for (let i = 0; i < cartItem.product.productImages.colorImages.length; i++) { 
                 if (cartItem.product.productImages.colorImages[i]._id === cartItem.colorId) { 
                     selectedProductImage = cartItem.product.productImages.colorImages[i].url;
+                    selectedProductColor = cartItem.product.productImages.colorImages[i].colorName;
                     break;
                 }
             }
@@ -81,6 +83,7 @@ export const getCartItems = async (req, res) => {
                 ...cartItem,
                 productTotalCost: itemCost,
                 selectedProductImage,
+                selectedProductColor,
                 availableUnits: cartItem.product.stockQuantity,
                 quantityParameter: cartItem.product.quantityParameter,
                 
