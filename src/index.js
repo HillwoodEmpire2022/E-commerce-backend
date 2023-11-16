@@ -88,10 +88,7 @@ let databaseUrl = process.env.DEVELOPMENT_MONGODB_URI
 if (process.env.NODE_ENVIRONMENT === 'production') {
     databaseUrl = process.env.PRODUCTION_MONGODB_URI
 }
-mongoose.connect(databaseUrl, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(() => {
+mongoose.connect(databaseUrl).then(() => {
     app.listen(PORT, () => { 
         console.log(`Server connected on port ${PORT}`)
     })
