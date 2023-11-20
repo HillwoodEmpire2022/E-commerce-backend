@@ -17,13 +17,11 @@ const formatCartItemInfo = (cartItem) => {
         itemCost = (price * cartItem.quantity) + cartItem.deliveryFee;
     }
 
-    let selectedProductImage = cartItem.product.productImages.productThumbnail.url;
-    let selectedProductColor = ""
+    // let selectedProductImage = cartItem.product.productImages.productThumbnail.url;
+    // let selectedProductColor = ""
     let item = {
         ...cartItem,
         productTotalCost: itemCost,
-        selectedProductImage,
-        selectedProductColor,
         price,
         availableUnits: cartItem.product.stockQuantity,
         quantityParameter: cartItem.product.quantityParameter,
@@ -59,12 +57,15 @@ export const addToCart = async (req, res) => {
             return res.status(400).send({ message: "The product you are trying to add to cart has been removed from the stock." });
         } 
         
-        const existingCartItem = await Cart.find({ _id: DBProductInfo, colorId, size, deliveryFee, user: DBUserInfo._id })
+        const existingCartItem = await Cart.find({ product: DBProductInfo._id, colorId, size, deliveryFee, user: DBUserInfo._id })
+        
         let savedCartItem = {}
         if (existingCartItem.length > 0) {
-            savedCartItem = await Cart.findOneAndUpdate({ _id: existingCartItem._id }, { $set: { quantity: quantity } }, {
+            savedCartItem = await Cart.findOneAndUpdate({ _id: existingCartItem[0]._id }, { $set: { quantity: (existingCartItem[0].quantity + quantity) } }, {
                 new: true,
-            })
+            }).populate("product")
+                .lean()
+                .exec()
         } else if (existingCartItem.length === 0) { 
             const newCartItem = new Cart({
                 product: DBProductInfo._id, 
@@ -74,12 +75,11 @@ export const addToCart = async (req, res) => {
                 quantity,
                 user: DBUserInfo._id,
             })
-            savedCartItem = await newCartItem.save();
-        } 
-        
-        if (savedCartItem) {
-            const populatedSavedCartItem = await savedCartItem.populate("product");
-            return res.status(201).json(formatCartItemInfo(populatedSavedCartItem))
+            const rawNewCartItem = await newCartItem.save();
+            savedCartItem = await rawNewCartItem.populate("product")
+        }
+        if (Object.keys(savedCartItem).length > 0) {
+            return res.status(201).json(formatCartItemInfo(savedCartItem))
         }
         
     } catch (error) {
@@ -173,7 +173,7 @@ export const updateCartItem = async (req, res) => {
 
         const updatedCartItem = await Cart.findOneAndUpdate({ _id: req.params.cartItemId }, { $set: updates }, {
             new: true,
-        }).populate("product")
+        }).populate("product").lean().exec()
         if (updatedCartItem) {
             const formattedResponse = formatCartItemInfo(updatedCartItem)
             return res.status(200).send({

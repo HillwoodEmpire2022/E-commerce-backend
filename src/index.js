@@ -26,7 +26,7 @@ app.use(morgan("common"))
 app.use(cors({
     origin: [clientUrl, clientLocalhostUrl], 
     credentials: true, 
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
 }));
 
 
