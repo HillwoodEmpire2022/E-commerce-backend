@@ -16,6 +16,7 @@ dotenv.config()
 
 const clientUrl = process.env.CLIENT_URL
 const clientLocalhostUrl = process.env.CLIENT_LOCALHOST_URL
+const adminClientUrl = process.env.ADMIN_CLIENT_URL
 
 app.use(express.json({}))
 
@@ -24,7 +25,7 @@ app.use(helmet())
 app.use(morgan("common"))
 
 app.use(cors({
-    origin: [clientUrl, clientLocalhostUrl], 
+    origin: [clientUrl, clientLocalhostUrl, adminClientUrl], 
     credentials: true, 
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
 }));
