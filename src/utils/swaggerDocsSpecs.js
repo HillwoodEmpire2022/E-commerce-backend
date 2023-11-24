@@ -1,5 +1,7 @@
-import swaggerJsDoc from "swagger-jsdoc" 
-
+import swaggerJsDoc from "swagger-jsdoc"
+ 
+const LIVE_SERVER = process.env.BACKEND_LIVE_URL
+const LOCALHOST_URL = process.env.BACKEND_LOCALHOST_URL
 
 
 const options = {
@@ -12,11 +14,11 @@ const options = {
         },
         servers: [
             {
-                url: "https://smiling-neckerchief-eel.cyclic.app",
+                url: LIVE_SERVER,
                 description: "Live server"
             },
             {
-                url: "http://localhost:3002",
+                url: LOCALHOST_URL,
                 description: "Localhost Server",
             }
         ],

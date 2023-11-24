@@ -80,7 +80,7 @@ Router.get("/categories", getCategories)
  *              properties:
  *                  name: 
  *                     type: string
- *                  category:
+ *                  categoryId:
  *                     type: string
  *      responses:
  *        201:
