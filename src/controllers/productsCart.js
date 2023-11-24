@@ -17,8 +17,6 @@ const formatCartItemInfo = (cartItem) => {
         itemCost = (price * cartItem.quantity) + cartItem.deliveryFee;
     }
 
-    // let selectedProductImage = cartItem.product.productImages.productThumbnail.url;
-    // let selectedProductColor = ""
     let item = {
         ...cartItem,
         productTotalCost: itemCost,
