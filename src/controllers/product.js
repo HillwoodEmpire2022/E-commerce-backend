@@ -64,13 +64,23 @@ export const uploadNewProduct = async (req, res) => {
   
     let discountedPrice = req.body.price - (req.body.discountPercentage/100)*req.body.price
     let deliveryInfo = []
-    for (let i = 0; i < deliveryFees.length; i++) { 
+    for (let i = 0; i < req.body.deliveryFees.length; i++) { 
       deliveryInfo[i] = { deliveryType: req.body.deliveryTypes[i], deliveryFee: req.body.deliveryFees[i]}
     }
 
     let productObject = new Product({
-      ...req.body,
+      name: req.body.name,
+      description: req.body.description,
+      category: req.body.category,
+      subcategory: req.body.subcategory,
+      seller: req.body.seller,
+      price: req.body.price,
+      discountPercentage: req.body.discountPercentage,
       discountedPrice: discountedPrice,
+      stockQuantity: req.body.stockQuantity,
+      quantityParameter: req.body.quantityParameter,
+      brandName: req.body.brandName,
+      availableSizes: req.body.availableSizes,
       productImages: {
         productThumbnail: uploadedThumbnail,
         otherImages: uploadedOtherImages,
@@ -79,8 +89,6 @@ export const uploadNewProduct = async (req, res) => {
       deliveryInfo,
     })
 
-    
-  
     const savedProduct = await productObject.save()
     res.status(201).json(savedProduct)
   } catch (error) {
