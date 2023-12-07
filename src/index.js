@@ -37,7 +37,8 @@ app.use(cookieSession({
     saveUninitialized: true,
     cookie: { 
         secure: true,
-        name: 'session_cookie'
+        name: 'session_cookie',
+        sameSite: 'None'
     }
 }))
 
