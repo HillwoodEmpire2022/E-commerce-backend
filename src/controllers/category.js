@@ -1,6 +1,9 @@
 import Category from "../models/category.js"
 import SubCategory from "../models/subcategory.js"
 import { SubCategoryValidation, addCategoryValidation } from "../validations/productValidation.js"
+import mongoose from "mongoose";
+
+const { ObjectId } = mongoose.Types;
 
 
 export const addCategory = async (req, res) => { 
@@ -24,11 +27,37 @@ export const addCategory = async (req, res) => {
 
 export const getCategories = async (req, res) => { 
     try {
-        const allCategories = await Category.find()
-        if (allCategories.length === 0) { 
+        const allCategories = await Category.find().exec()
+        if (allCategories.length === 0) {
             return res.status(404).send({ message: "There is no any category."})
         }
-        res.status(200).json(allCategories)
+        const allSubCategories = await SubCategory.find().exec()
+
+        const outputCategories = allCategories.map((category) => { 
+            
+            const filteredSubCategories = allSubCategories.filter((subcategory) => { 
+                const categoryId = new ObjectId(subcategory.category);
+                return category._id.equals(categoryId)
+            })
+
+            let formattedFilteredSubCategories = []
+            if (filteredSubCategories.length > 0) { 
+                formattedFilteredSubCategories = filteredSubCategories.map(item => { 
+                    return {
+                        _id: item._id,
+                        subcategoryname: item.name
+                    }
+                })
+            }
+             
+            return {
+                _id: category._id,
+                categoryname: category.name,
+                subcategories: formattedFilteredSubCategories
+            }
+        })
+
+        res.status(200).json(outputCategories)
     } catch (error) { 
         res.status(500).send({ message: error.message })
     }
