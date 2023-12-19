@@ -77,7 +77,13 @@ const UserSchema = new mongoose.Schema(
       default: false,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+    versionKey: false,
+    id: true,
+  }
 );
 
 const User = mongoose.model("User", UserSchema);

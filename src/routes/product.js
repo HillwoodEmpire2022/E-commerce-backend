@@ -5,7 +5,7 @@ import {
   getProductsByCategory,
   getProductsBySubCategory,
   getSingleProduct,
-  uploadNewProduct,
+  createProduct,
 } from "../controllers/product.js";
 import { upload } from "../utils/multer.js";
 import { isLoggedIn } from "../middlewares/authentication.js";
@@ -23,13 +23,13 @@ const Router = express.Router();
 Router.post(
   "/product/upload",
   isLoggedIn,
-  restrictTo("admin"),
+  restrictTo("admin", "seller"),
   upload.fields([
     { name: "productThumbnail", maxCount: 1 },
     { name: "otherImages", maxCount: 6 },
     { name: "colorImages", maxCount: 6 },
   ]),
-  uploadNewProduct
+  createProduct
 );
 
 /**

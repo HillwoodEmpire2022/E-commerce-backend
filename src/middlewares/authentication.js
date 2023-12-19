@@ -1,4 +1,5 @@
 import { verifyJWToken } from "../utils/jsonWebToken.js";
+import User from "../models/user.js";
 
 // Protect
 export const isLoggedIn = async (req, res, next) => {
@@ -15,17 +16,22 @@ export const isLoggedIn = async (req, res, next) => {
     }
 
     // 2) VELIFY THE TOKEN (VERIFY AND CHECK TIMESPAN)
-    const { id } = verifyJWToken(token);
+    const {
+      userInfo: { id },
+    } = verifyJWToken(token);
 
     // 3) CHECK IF USER STILL EXIST
-    const currentUser = await User.findById({ _id: id });
-    if (!currentUser) return next(new AppError("User no longer exists", 401));
+    const currentUser = await User.findById(id);
+    if (!currentUser)
+      return res
+        .status(401)
+        .json({ status: "fail", message: "User no longer exists" });
 
     // 5) GRANT ACCESS (AUTHORIZE)
     req.user = currentUser;
     next();
   } catch (error) {
-    res.status(5000).json({
+    res.status(500).json({
       status: "fail",
       message: error.message,
     });

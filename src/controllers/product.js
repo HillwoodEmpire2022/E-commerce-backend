@@ -1,26 +1,27 @@
 import Product from "../models/product.js";
-import Seller from "../models/seller.js";
+import User from "../models/user.js";
 import { base64FileStringGenerator } from "../utils/base64Converter.js";
 import { uploadToCloudinary } from "../utils/cloudinary.js";
 import { uploadProductValidation } from "../validations/productValidation.js";
 
-export const uploadNewProduct = async (req, res) => {
+export const createProduct = async (req, res) => {
   try {
-    const { error } = uploadProductValidation.validate(req.body, {
+    const { error } = await uploadProductValidation.validate(req.body, {
       errors: { label: "key", wrap: { label: false } },
       allowUnknown: true,
     });
+
     if (error) {
       res.status(422).send({ message: error.message });
       return;
     }
-    const seller = await Seller.findOne({ _id: req.body.seller });
+
+    const seller = await User.findById(req.body.seller);
     if (!seller) {
       return res.status(400).send({
         message: "There is no seller that matches the provided seller Id.",
       });
     }
-
     const existingProduct = await Product.find({
       name: req.body.name,
       seller: req.body.seller,
@@ -96,16 +97,6 @@ export const uploadNewProduct = async (req, res) => {
       };
     }
 
-    let discountedPrice =
-      req.body.price - (req.body.discountPercentage / 100) * req.body.price;
-    let deliveryInfo = [];
-    for (let i = 0; i < req.body.deliveryFees.length; i++) {
-      deliveryInfo[i] = {
-        deliveryType: req.body.deliveryTypes[i],
-        deliveryFee: req.body.deliveryFees[i],
-      };
-    }
-
     let productObject = new Product({
       name: req.body.name,
       description: req.body.description,
@@ -114,7 +105,6 @@ export const uploadNewProduct = async (req, res) => {
       seller: req.body.seller,
       price: req.body.price,
       discountPercentage: req.body.discountPercentage,
-      discountedPrice: discountedPrice,
       stockQuantity: req.body.stockQuantity,
       quantityParameter: req.body.quantityParameter,
       brandName: req.body.brandName,
@@ -124,12 +114,12 @@ export const uploadNewProduct = async (req, res) => {
         otherImages: uploadedOtherImages,
         colorImages: uploadedColorImages,
       },
-      deliveryInfo,
     });
 
     const savedProduct = await productObject.save();
     res.status(201).json(savedProduct);
   } catch (error) {
+    console.log(error);
     res.status(500).send({ message: error.message });
   }
 };

@@ -17,7 +17,7 @@ const ProductSchema = new mongoose.Schema(
       ref: "Category",
       required: true,
     },
-    subCategory: {
+    subcategory: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "SubCategory",
       required: true,
@@ -35,7 +35,7 @@ const ProductSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    discount: {
+    discountPercentage: {
       type: Number,
     },
     // availableSizes ["xs", "sm", m, lg, xlg,xxlg]
@@ -82,13 +82,8 @@ const ProductSchema = new mongoose.Schema(
     timestamps: true,
     toObject: { virtuals: true },
     versionKey: false,
-    id: true,
     toJSON: {
       virtuals: true,
-      //   transform: (doc, ret) => {
-      //     ret.id = _id;
-      //     return ret;
-      //   },
     },
   }
 );

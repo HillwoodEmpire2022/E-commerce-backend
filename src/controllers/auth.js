@@ -38,7 +38,6 @@ export const generateUserName = async () => {
 };
 
 export const userRegister = async (req, res) => {
-  console.log(req);
   try {
     let { firstname, lastname, email, password } = req.body;
 
