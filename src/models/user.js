@@ -1,78 +1,84 @@
 import mongoose from "mongoose";
 
-const UserSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema(
+  {
     googleId: {
-        type: String,
+      type: String,
     },
     firstname: {
-        type: String,
-        required: true,
-        min: 2,
-        max: 255,
-        trim: true,
+      type: String,
+      required: true,
+      min: 2,
+      max: 255,
+      trim: true,
     },
+
+    role: ["admin", "seller", "retailer", "customer", "user"],
     lastname: {
-        type: String,
-        required: true,
-        min: 2,
-        max: 255,
-        trim: true,
+      type: String,
+      required: true,
+      min: 2,
+      max: 255,
+      trim: true,
     },
     username: {
-        type: String,
-        min: 2,
-        max: 255,
-        unique: true,
+      type: String,
+      min: 2,
+      max: 255,
+      unique: true,
     },
     email: {
-        type: String,
-        required: true,
-        trim: true,
+      type: String,
+      required: true,
+      trim: true,
     },
     phoneNumber: {
-        type: String,
-        default: null,
-        trim: true,
+      type: String,
+      default: null,
+      trim: true,
     },
     hashedPassword: {
-        type: String,
-        required: false,
+      type: String,
+      required: false,
     },
     role: {
-        type: String,
-        default: "user",
+      type: String,
+      default: "user",
     },
     profileImageUrl: {
-        type: String,
-        default: "https://res.cloudinary.com/hervebu/image/upload/v1692276423/hill_ecommerce/user_default_img_wrxrou.png"
+      type: String,
+      default:
+        "https://res.cloudinary.com/hervebu/image/upload/v1692276423/hill_ecommerce/user_default_img_wrxrou.png",
     },
     dateOfBirth: {
-        type: Date,
-        default: null
+      type: Date,
+      default: null,
     },
     gender: {
-        type: String,
-        default: null
+      type: String,
+      default: null,
     },
     shippingAddress: {
-        country: {
-            type: String,
-            default: null
-        },
-        city: {
-            type: String,
-            default: null
-        },
-        streetAddress: {
-            type: String,
-            default: null
-        } 
+      country: {
+        type: String,
+        default: null,
+      },
+      city: {
+        type: String,
+        default: null,
+      },
+      streetAddress: {
+        type: String,
+        default: null,
+      },
     },
     userActivated: {
-        type: Boolean,
-        default: false
-    }
-}, { timestamps: true })
+      type: Boolean,
+      default: false,
+    },
+  },
+  { timestamps: true }
+);
 
-const User = mongoose.model("User", UserSchema)
-export default User
+const User = mongoose.model("User", UserSchema);
+export default User;

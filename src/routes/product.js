@@ -1,17 +1,17 @@
-import express from "express"
+import express from "express";
 
-import {  isAdmin } from "../middlewares/auth.js"
 import {
   getAllProducts,
   getProductsByCategory,
   getProductsBySubCategory,
   getSingleProduct,
-  uploadNewProduct
-} from "../controllers/product.js"
-import { upload } from "../utils/multer.js"
+  uploadNewProduct,
+} from "../controllers/product.js";
+import { upload } from "../utils/multer.js";
+import { isLoggedIn } from "../middlewares/authentication.js";
+import { restrictTo } from "../middlewares/authorization.js";
 
-const Router = express.Router()
-
+const Router = express.Router();
 
 /**
  * @swagger
@@ -20,15 +20,18 @@ const Router = express.Router()
  *  description: Products APIs
  */
 
-Router.post("/product/upload", 
-       isAdmin,
-       upload.fields([
-        { name: 'productThumbnail', maxCount: 1 },
-        { name: 'otherImages', maxCount: 6 },
-        { name: 'colorImages', maxCount: 6 },
-      ]),
-  uploadNewProduct)
-    
+Router.post(
+  "/product/upload",
+  isLoggedIn,
+  restrictTo("admin"),
+  upload.fields([
+    { name: "productThumbnail", maxCount: 1 },
+    { name: "otherImages", maxCount: 6 },
+    { name: "colorImages", maxCount: 6 },
+  ]),
+  uploadNewProduct
+);
+
 /**
  * @swagger
  * /products:
@@ -38,13 +41,13 @@ Router.post("/product/upload",
  *      responses:
  *        200:
  *          description: The array of all products.
- *          content: 
+ *          content:
  *            application/json:
  *              schema:
  *                type: array
- *          
- */  
-Router.get("/products", getAllProducts) 
+ *
+ */
+Router.get("/products", getAllProducts);
 
 /**
  * @swagger
@@ -58,16 +61,16 @@ Router.get("/products", getAllProducts)
  *          schema:
  *            type: string
  *          required: true
- *          description: The value from the _id field of the product object 
+ *          description: The value from the _id field of the product object
  *      responses:
  *        200:
  *          description: An object of product details with some data from the associated models
  *          contents:
  *            application/json:
- *              schema: 
+ *              schema:
  *                type: object
  */
-Router.get("/product/:productId", getSingleProduct) 
+Router.get("/product/:productId", getSingleProduct);
 
 /**
  * @swagger
@@ -81,16 +84,16 @@ Router.get("/product/:productId", getSingleProduct)
  *          schema:
  *            type: string
  *          required: true
- *          description: The value from the _id field of category object 
+ *          description: The value from the _id field of category object
  *      responses:
  *        200:
  *          description: An array of products that belong to the products category of id passed as category id.
  *          contents:
  *            application/json:
- *              schema: 
+ *              schema:
  *                type: array
  */
-Router.get("/products/category/:categoryId", getProductsByCategory)
+Router.get("/products/category/:categoryId", getProductsByCategory);
 
 /**
  * @swagger
@@ -104,15 +107,15 @@ Router.get("/products/category/:categoryId", getProductsByCategory)
  *          schema:
  *            type: string
  *          required: true
- *          description: The value from the _id field of the subcategory object 
+ *          description: The value from the _id field of the subcategory object
  *      responses:
  *        200:
  *          description: An array of products that belong to the products subcategory of id passed as subcategory id.
  *          contents:
  *            application/json:
- *              schema: 
+ *              schema:
  *                type: array
  */
-Router.get("/products/subcategory/:subcategoryId", getProductsBySubCategory)
+Router.get("/products/subcategory/:subcategoryId", getProductsBySubCategory);
 
-export default Router
+export default Router;

@@ -16,7 +16,7 @@ export const returnedUserInfo = (user) => {
     profileImageUrl: user.profileImageUrl,
   };
 
-  const userToken = generateJWToken({ _id: user._id, role: user.role });
+  const userToken = generateJWToken({ id: user._id, role: user.role });
   return {
     token: userToken,
     user: displayedUserInfo,
@@ -38,6 +38,7 @@ export const generateUserName = async () => {
 };
 
 export const userRegister = async (req, res) => {
+  console.log(req);
   try {
     let { firstname, lastname, email, password } = req.body;
 
@@ -50,9 +51,9 @@ export const userRegister = async (req, res) => {
     }
     const existingUser = await User.findOne({ email: email });
 
-    if (existingUser && !existingUser.googleId ) {
+    if (existingUser && !existingUser.googleId) {
       res.status(409).json({
-        message: `A user with email: ${email} already exists.`
+        message: `A user with email: ${email} already exists.`,
       });
       return;
     }
@@ -76,7 +77,7 @@ export const userRegister = async (req, res) => {
     };
 
     const savedUser = await User.create(newUser);
-    const response = returnedUserInfo(savedUser)
+    const response = returnedUserInfo(savedUser);
 
     res.status(201).json(response);
   } catch (error) {
@@ -93,12 +94,12 @@ export const userLogin = async (req, res) => {
     });
     if (error) {
       res.status(422).send({ message: error.message });
-      return
+      return;
     }
 
     const account = await User.findOne({ email: email });
     if (!account) {
-      res.status(401).send({ message: "The email provided does not exist." });
+      res.status(401).send({ message: "Invalid credentials." });
     } else {
       const passwordCheck = await bcrypt.compare(
         password,
@@ -106,10 +107,9 @@ export const userLogin = async (req, res) => {
       );
 
       if (passwordCheck === false) {
-        res.status(401).json({ message: "Wrong password." });
-        
+        res.status(401).json({ message: "Invalid credentials." });
       } else if (passwordCheck === true) {
-        const response = returnedUserInfo(account)
+        const response = returnedUserInfo(account);
         res.status(200).json(response);
       }
     }
@@ -119,10 +119,10 @@ export const userLogin = async (req, res) => {
 };
 
 export const googleAuthenticationSuccess = (req, res) => {
-  try { 
-    const response = returnedUserInfo(req.user)
-    return res.status(200).json(response)   
+  try {
+    const response = returnedUserInfo(req.user);
+    return res.status(200).json(response);
   } catch (err) {
-    res.status(500).json({ err: err.message})
+    res.status(500).json({ err: err.message });
   }
 };
