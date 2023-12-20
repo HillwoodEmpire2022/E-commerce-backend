@@ -116,27 +116,35 @@ export const createProduct = async (req, res) => {
       },
     });
 
-    const savedProduct = await productObject.save();
-    res.status(201).json(savedProduct);
+    const product = await productObject.save();
+    res.status(201).json({
+      status: "success",
+      data: {
+        product,
+      },
+    });
   } catch (error) {
-    console.log(error);
     res.status(500).send({ message: error.message });
   }
 };
 
 export const getAllProducts = async (req, res) => {
   try {
-    const allProducts = await Product.find()
-      .populate("category", "name")
+    const categories = await Product.find()
       .populate("subcategory", "name")
       .exec();
 
-    if (allProducts.length === 0) {
+    if (categories.length === 0) {
       return res
         .status(404)
         .send({ message: "There are no products available." });
     }
-    res.status(200).json(allProducts);
+    res.status(200).json({
+      status: "success",
+      data: {
+        categories,
+      },
+    });
   } catch (error) {
     res.status(500).send({ error: error.message });
   }

@@ -1,15 +1,29 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
 
-const SubCategorySchema = new mongoose.Schema({
+const SubCategorySchema = new mongoose.Schema(
+  {
     name: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
     category: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Category"
-    }
-}, { timestamps: true })
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+    },
+  },
+  {
+    // Removes _id add id
+    toJSON: {
+      virtuals: true,
+      transform(doc, ret) {
+        delete ret._id;
+      },
+    },
 
-const SubCategory = mongoose.model("SubCategory", SubCategorySchema)
-export default SubCategory
+    versionKey: false,
+    timestamps: true,
+  }
+);
+
+const SubCategory = mongoose.model("SubCategory", SubCategorySchema);
+export default SubCategory;

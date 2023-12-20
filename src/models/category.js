@@ -1,11 +1,32 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
 
-const CategorySchema = new mongoose.Schema({
+const categorySchema = new mongoose.Schema(
+  {
     name: {
-        type: String,
-        required: true,
-    }
-}, { timestamps: true })
+      type: String,
+      required: true,
+      unique: true,
+    },
+  },
+  {
+    // Removes _id add id
+    toJSON: {
+      virtuals: true,
+      transform(doc, ret) {
+        delete ret._id;
+      },
+    },
 
-const Category = mongoose.model("Category", CategorySchema)
-export default Category
+    versionKey: false,
+    timestamps: true,
+  }
+);
+
+categorySchema.virtual("subCategories", {
+  ref: "SubCategory",
+  localField: "_id",
+  foreignField: "category",
+});
+
+const Category = mongoose.model("Category", categorySchema);
+export default Category;
