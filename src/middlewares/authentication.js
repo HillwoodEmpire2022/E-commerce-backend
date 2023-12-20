@@ -11,7 +11,12 @@ export const isLoggedIn = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
 
     if (!token) {
-      res.status(401).json({ message: "Access denied. Please login again." });
+      res
+        .status(401)
+        .json({
+          status: "fail",
+          message: "Access denied. Please login again.",
+        });
       return;
     }
 

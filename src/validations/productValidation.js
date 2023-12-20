@@ -20,7 +20,7 @@ export const addCategoryValidation = Joi.object({
 
 export const SubCategoryValidation = Joi.object({
   name: Joi.string().required().min(2),
-  categoryId: Joi.string()
+  category: Joi.string()
     .required()
     .regex(/^[0-9a-fA-F]{24}$/),
 });

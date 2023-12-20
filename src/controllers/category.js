@@ -4,9 +4,6 @@ import {
   SubCategoryValidation,
   addCategoryValidation,
 } from "../validations/productValidation.js";
-import mongoose from "mongoose";
-
-const { ObjectId } = mongoose.Types;
 
 export const addCategory = async (req, res) => {
   try {
@@ -55,39 +52,44 @@ export const addSubCategory = async (req, res) => {
     const { error } = SubCategoryValidation.validate(req.body, {
       errors: { label: "key", wrap: { label: false } },
     });
+
     if (error) {
-      return res.status(422).send({ message: error.message });
+      return res.status(404).json({
+        status: "fail",
+        message: error.message,
+      });
     }
-    const existingSubCategory = await SubCategory.findOne({
+
+    const category = await SubCategory.create({
       name: req.body.name,
+      category: req.body.category,
     });
-    if (existingSubCategory) {
-      return res
-        .status(400)
-        .send({ message: `Subcategory ${req.body.name} already exists.` });
-    }
-    const addedSubCategory = await SubCategory.create({
-      name: req.body.name,
-      category: req.body.categoryId,
-    });
-    res.status(201).send({
-      message: `Subcategory ${addedSubCategory.name} added successfully.`,
+
+    res.status(201).json({
+      status: "success",
+      data: {
+        category,
+      },
     });
   } catch (error) {
-    res.status(500).send({ message: error.message });
+    res.status(500).json({
+      status: "fail",
+      message: error.message,
+    });
   }
 };
 
 export const getSubCategories = async (req, res) => {
   try {
-    const allSubCategories = await SubCategory.find()
-      .populate("category")
-      .exec();
-    if (allSubCategories.length === 0) {
-      return res.status(404).send({ message: "There is no any subcategory." });
-    }
-    res.status(200).json(allSubCategories);
+    const subCategories = await SubCategory.find().populate("category").exec();
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        subCategories,
+      },
+    });
   } catch (error) {
-    res.status(500).send({ message: error.message });
+    res.status(500).json({ status: "fail", message: error.message });
   }
 };

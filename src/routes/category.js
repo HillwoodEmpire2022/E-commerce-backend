@@ -11,6 +11,7 @@ import { restrictTo } from "../middlewares/authorization.js";
 
 const Router = express.Router();
 
+Router.use(isLoggedIn, restrictTo("admin"));
 /**
  * @swagger
  * tags:
@@ -48,7 +49,7 @@ const Router = express.Router();
  *        422:
  *          description: Request body validation errors
  */
-Router.post("/category/create", isLoggedIn, restrictTo("admin"), addCategory);
+Router.post("/category/create", addCategory);
 
 /**
  * @swagger
@@ -100,12 +101,7 @@ Router.get("/categories", getCategories);
  *        422:
  *          description: Request body validation errors
  */
-Router.post(
-  "/subcategory/create",
-  isLoggedIn,
-  restrictTo("admin"),
-  addSubCategory
-);
+Router.post("/subcategory/create", addSubCategory);
 
 /**
  * @swagger
