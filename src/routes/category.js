@@ -3,14 +3,23 @@ import express from "express";
 import {
   addCategory,
   addSubCategory,
+  deleteCategory,
+  deleteSubCategory,
   getCategories,
+  getCategory,
   getSubCategories,
+  getSubCategory,
+  updateCategory,
+  updateSubCategory,
 } from "../controllers/category.js";
 import { isLoggedIn } from "../middlewares/authentication.js";
 import { restrictTo } from "../middlewares/authorization.js";
 
 const Router = express.Router();
 
+Router.use(isLoggedIn, restrictTo("admin"));
+
+// Categories
 /**
  * @swagger
  * tags:
@@ -48,8 +57,7 @@ const Router = express.Router();
  *        422:
  *          description: Request body validation errors
  */
-Router.post("/category/create", isLoggedIn, restrictTo("admin"), addCategory);
-
+Router.post("/category/create", addCategory);
 /**
  * @swagger
  * /categories:
@@ -68,6 +76,11 @@ Router.post("/category/create", isLoggedIn, restrictTo("admin"), addCategory);
  */
 Router.get("/categories", getCategories);
 
+Router.get("/categories/:id", getCategory);
+Router.patch("/categories/:id", updateCategory);
+Router.delete("/categories/:id", deleteCategory);
+
+// Subcategories
 /**
  * @swagger
  * /subcategory/create:
@@ -100,13 +113,7 @@ Router.get("/categories", getCategories);
  *        422:
  *          description: Request body validation errors
  */
-Router.post(
-  "/subcategory/create",
-  isLoggedIn,
-  restrictTo("admin"),
-  addSubCategory
-);
-
+Router.post("/subcategory/create", addSubCategory);
 /**
  * @swagger
  * /subcategories:
@@ -124,5 +131,8 @@ Router.post(
  *          description: There is no any subcategory.
  */
 Router.get("/subcategories", getSubCategories);
+Router.get("/subcategories/:id", getSubCategory);
+Router.patch("/subcategories/:id", updateSubCategory);
+Router.delete("/subcategories/:id", deleteSubCategory);
 
 export default Router;

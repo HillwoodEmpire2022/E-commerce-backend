@@ -21,7 +21,7 @@ app.use(express.json({}));
 
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
-app.use(morgan("common"));
+app.use(morgan("dev"));
 
 app.use(
   cors({
@@ -64,10 +64,7 @@ app.use(passport.session());
 
 passportConfig();
 
-app.use(apiRoutes, (error, req, res, next) => {
-  console.log(`Error Occurs: ${error.message}`);
-  res.status(500).json({ error: error.message });
-});
+app.use(apiRoutes);
 
 app.get("/logout", (req, res) => {
   for (const key in req.session) {
@@ -80,6 +77,13 @@ app.get("/logout", (req, res) => {
   res.clearCookie("session_cookie");
 
   res.redirect(302, clientUrl);
+});
+
+app.use("*", (req, res, next) => {
+  res.status(400).json({
+    status: "fail",
+    message: `Root (${req.originalUrl}) does not exist.`,
+  });
 });
 
 export default app;

@@ -79,12 +79,15 @@ const ProductSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true,
-    toObject: { virtuals: true },
-    versionKey: false,
+    // Removes _id add id
     toJSON: {
       virtuals: true,
+      transform(doc, ret) {
+        delete ret._id;
+      },
     },
+    timestamps: true,
+    versionKey: false,
   }
 );
 
