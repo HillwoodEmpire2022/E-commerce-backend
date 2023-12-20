@@ -1,107 +1,92 @@
 import mongoose from "mongoose";
 
-const ProductSchema = new mongoose.Schema({
+const ProductSchema = new mongoose.Schema(
+  {
     name: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
-    description: {
-        type: String,
+
+    seller: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
     category: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Category"
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
     },
     subcategory: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "SubCategory"
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "SubCategory",
+      required: true,
     },
-    price: {
-        type: Number,
-        required: true,
+    description: {
+      type: String,
     },
     stockQuantity: {
-        type: Number,
-        required: true,
+      type: Number,
     },
-    quantityParameter: {
-        type: String,
-        required: true,
+    stockLocation: {
+      type: String,
     },
-    seller: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Seller",
+    price: {
+      type: Number,
+      required: true,
     },
     discountPercentage: {
-        type: Number, 
+      type: Number,
     },
-    discountedPrice: {
-        type: Number,
-    },
+    // availableSizes ["xs", "sm", m, lg, xlg,xxlg]
+    // availableSizes ["120px", "2000px"]
+    // availableSizes ["8", "12", "14", "16"]
+    availableSizes: [String],
     productImages: {
-        productThumbnail: {
-            public_id: {
-                type: String,
-            },
-            url: {
-                type: String,
-                required: true,
-            },
-            
+      productThumbnail: {
+        public_id: {
+          type: String,
         },
-        otherImages: [
-            {
-                public_id: {
-                    type: String,
-                },
-                url: {
-                    type: String,
-                    required: true,
-                }
-            }
-        ],
-        colorImages: [
-            {
-                public_id: {
-                    type: String,
-                },
-                url: {
-                    type: String,
-                },
-                colorName: {
-                    type: String,
-                }
-            }
-        ]
-        
-    },
-    availableSizes: [
+        url: {
+          type: String,
+          required: true,
+        },
+      },
+      otherImages: [
         {
+          public_id: {
             type: String,
-        }   
-    ],
-    brandName: {
-        type: String,
-    },
-    deliveryInfo: [
+          },
+          url: {
+            type: String,
+            required: true,
+          },
+        },
+      ],
+      colorImages: [
         {
-            deliveryType: {
-                type: String,
-                default: "Free delivery"
-            },
-            deliveryFee: {
-                type: Number,
-                default: 0,
-            }
-        }
-    ]
+          public_id: {
+            type: String,
+          },
+          url: {
+            type: String,
+          },
+          colorName: {
+            type: String,
+          },
+        },
+      ],
+    },
+  },
+  {
+    timestamps: true,
+    toObject: { virtuals: true },
+    versionKey: false,
+    toJSON: {
+      virtuals: true,
+    },
+  }
+);
 
-    
-
-
-}, { timestamps: true });
-
-const Product = mongoose.model("Product", ProductSchema)
-
-export default Product
-
+const Product = mongoose.model("Product", ProductSchema);
+export default Product;

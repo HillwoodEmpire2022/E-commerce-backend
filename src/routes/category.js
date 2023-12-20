@@ -1,9 +1,15 @@
-import express from "express"
+import express from "express";
 
-import {  isAdmin } from "../middlewares/auth.js"
-import { addCategory, addSubCategory, getCategories, getSubCategories } from "../controllers/category.js"
+import {
+  addCategory,
+  addSubCategory,
+  getCategories,
+  getSubCategories,
+} from "../controllers/category.js";
+import { isLoggedIn } from "../middlewares/authentication.js";
+import { restrictTo } from "../middlewares/authorization.js";
 
-const Router = express.Router()
+const Router = express.Router();
 
 /**
  * @swagger
@@ -18,7 +24,7 @@ const Router = express.Router()
  *    post:
  *      summary: API for creating a new category. Only admin users are given access to this route.
  *      tags: [Categories]
- *      security: 
+ *      security:
  *          - bearerAuth: []
  *      requestBody:
  *       description: Object of new category data to be saved.
@@ -28,21 +34,21 @@ const Router = express.Router()
  *           schema:
  *              type: object
  *              properties:
- *                  name: 
+ *                  name:
  *                     type: string
  *      responses:
  *        201:
  *          description: Category [category name] added successfully.
- *          content: 
+ *          content:
  *            application/json:
  *              schema:
  *                type: object
  *        400:
  *          description: Category [Category name] already exists.
  *        422:
- *          description: Request body validation errors                 
- */ 
-Router.post("/category/create", isAdmin, addCategory)
+ *          description: Request body validation errors
+ */
+Router.post("/category/create", isLoggedIn, restrictTo("admin"), addCategory);
 
 /**
  * @swagger
@@ -53,14 +59,14 @@ Router.post("/category/create", isAdmin, addCategory)
  *      responses:
  *        200:
  *          description: The array of all objects of product categories.
- *          content: 
+ *          content:
  *            application/json:
  *              schema:
  *                type: array
  *        404:
- *          description: There is no any category.                  
- */ 
-Router.get("/categories", getCategories)
+ *          description: There is no any category.
+ */
+Router.get("/categories", getCategories);
 
 /**
  * @swagger
@@ -68,7 +74,7 @@ Router.get("/categories", getCategories)
  *    post:
  *      summary: API for creating a new sub category. Only admin users are given access to this route.
  *      tags: [Categories]
- *      security: 
+ *      security:
  *          - bearerAuth: []
  *      requestBody:
  *       description: Object of new subcategory data; name and category which takes object id of the referenced category.
@@ -78,23 +84,28 @@ Router.get("/categories", getCategories)
  *           schema:
  *              type: object
  *              properties:
- *                  name: 
+ *                  name:
  *                     type: string
  *                  categoryId:
  *                     type: string
  *      responses:
  *        201:
  *          description: Subcategory [subcategory name] added successfully.
- *          content: 
+ *          content:
  *            application/json:
  *              schema:
  *                type: object
  *        400:
  *          description: Subcategory [subcategory name] already exists.
  *        422:
- *          description: Request body validation errors                  
- */ 
-Router.post("/subcategory/create", isAdmin, addSubCategory)
+ *          description: Request body validation errors
+ */
+Router.post(
+  "/subcategory/create",
+  isLoggedIn,
+  restrictTo("admin"),
+  addSubCategory
+);
 
 /**
  * @swagger
@@ -105,13 +116,13 @@ Router.post("/subcategory/create", isAdmin, addSubCategory)
  *      responses:
  *        200:
  *          description: The array of all product subcategories.
- *          content: 
+ *          content:
  *            application/json:
  *              schema:
  *                type: array
  *        404:
- *          description: There is no any subcategory.                  
- */ 
-Router.get("/subcategories", getSubCategories)
+ *          description: There is no any subcategory.
+ */
+Router.get("/subcategories", getSubCategories);
 
-export default Router
+export default Router;
