@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import {
   signupValidationSchema,
   loginValidationSchema,
+  emailValidation,
 } from "../validations/authValidations.js";
 import { generateJWToken } from "../utils/jsonWebToken.js";
 
@@ -125,3 +126,43 @@ export const googleAuthenticationSuccess = (req, res) => {
     res.status(500).json({ err: err.message });
   }
 };
+
+export const resetUserPassword = async (req, res, user) => {
+  try {
+    const {email} = req.body;
+
+    
+    const { error } = emailValidation.validate(req.body, {
+      errors: { label: "key", wrap: { label: false } },
+    });
+    if (error) {
+      res.status(422).send({ message: error.message });
+      return;
+    }
+    
+
+    const checkUserEmail = await User.findOne({email:email});
+
+    if(!checkUserEmail){
+      return res.status(404).json({message:"email does not exist"});
+    }
+
+  const userToken = generateJWToken({ id: user._id, role: user.role , email:user.email});
+
+  return res.status(201).json({message:"check your email to reset password", userToken});
+   
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({message:"failed to reset password"});
+  }
+
+};
+
+export const resetPassword = (req, res) => {
+  try {
+    const{newPassword, confirmPassword} = req.body;
+
+  } catch (error) {
+    return res.status(500).jsnon({"message":"failed to user password"});
+  }
+}

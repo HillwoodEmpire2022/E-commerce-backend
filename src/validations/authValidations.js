@@ -12,3 +12,7 @@ export const loginValidationSchema = Joi.object({
     email: Joi.string().required().lowercase().email(),
     password: Joi.string().required(),    
 })
+
+export const emailValidation = Joi.object({
+    email: Joi.string().required().lowercase().email(),    
+})

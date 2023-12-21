@@ -3,6 +3,7 @@ import {
   userRegister,
   userLogin,
   returnedUserInfo,
+  resetUserPassword,
 } from "../controllers/auth.js";
 import passport from "passport"
 
@@ -116,5 +117,7 @@ router.get("/auth/google/failure", (req, res) => {
       message: "Unable to sign in using Google, please try again later",
   });
 });
+
+router.post("/user/reset-password", resetUserPassword);
 
 export default router;
