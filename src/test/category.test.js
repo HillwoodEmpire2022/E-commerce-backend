@@ -1,6 +1,3 @@
-import request from "supertest";
-import app from "../../routes";
-
 describe("Test Configuration", () => {
   test("If it returns null", () => {
     const n = null;
