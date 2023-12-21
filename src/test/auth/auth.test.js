@@ -1,10 +1,13 @@
-// import app
+import request from "supertest";
+import app from "../../routes";
 
-// describe("Name of the group", () => {
-//   it("responds with status 200 and expected response body", async () => {
-//     const response = await request(app).get("/");
-
-//     expect(response.status).toBe(200);
-//     expect(response.body).toEqual("Hello World!");
-//   });
-// });
+describe("Test Configuration", () => {
+  test("If it returns null", () => {
+    const n = null;
+    expect(n).toBeNull();
+    expect(n).toBeDefined();
+    expect(n).not.toBeUndefined();
+    expect(n).not.toBeTruthy();
+    expect(n).toBeFalsy();
+  });
+});
