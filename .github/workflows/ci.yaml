@@ -11,11 +11,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js 14
+      - name: Use Node.js 20
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
           cache: "npm"
 
       - run: npm ci
+      # Set the DB connection string
+      - name: Set DB connection string
+        run: |
+          echo "TEST_DB=${{ secrets.TEST_DB }}" >> $GITHUB_ENV
+          echo "SESSION_SECRET=${{ secrets.SESSION_SECRET }}" >> $GITHUB_ENV
       - run: npm test
