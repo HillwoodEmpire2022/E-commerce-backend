@@ -3,9 +3,7 @@ import mongoose from "mongoose";
 // Codes to run before all of our tests
 beforeAll(async () => {
   try {
-    console.log(process.env.SESSION_SECRET);
     await mongoose.connect(process.env.TEST_DB);
-    console.log("DB Connected for testing");
   } catch (error) {
     console.log("Error ***** ", error);
   }

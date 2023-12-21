@@ -23,4 +23,13 @@ jobs:
         run: |
           echo "TEST_DB=${{ secrets.TEST_DB }}" >> $GITHUB_ENV
           echo "SESSION_SECRET=${{ secrets.SESSION_SECRET }}" >> $GITHUB_ENV
+          echo "BACKEND_LIVE_URL=${{ secrets.BACKEND_LIVE_URL }}" >> $GITHUB_ENV
+          echo "CLIENT_URL=${{ secrets.CLIENT_URL }}" >> $GITHUB_ENV
+          echo "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}" >> $GITHUB_ENV
+          echo "CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}" >> $GITHUB_ENV
+          echo "CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}" >> $GITHUB_ENV
+          echo "GOOGLE_CLIENT_CALLBACK=${{ secrets.GOOGLE_CLIENT_CALLBACK }}" >> $GITHUB_ENV
+          echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> $GITHUB_ENV
+          echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> $GITHUB_ENV
       - run: npm test
