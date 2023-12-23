@@ -1,90 +1,67 @@
 import mongoose from "mongoose";
+import bcrypt from "bcrypt";
 
-const UserSchema = new mongoose.Schema(
+const userSchema = new mongoose.Schema(
   {
-    googleId: {
-      type: String,
-    },
-    firstname: {
-      type: String,
-      required: true,
-      min: 2,
-      max: 255,
-      trim: true,
-    },
-
-    role: ["admin", "seller", "retailer", "customer", "user"],
-    lastname: {
-      type: String,
-      required: true,
-      min: 2,
-      max: 255,
-      trim: true,
-    },
-    username: {
-      type: String,
-      min: 2,
-      max: 255,
-      unique: true,
-    },
     email: {
       type: String,
-      required: true,
-      trim: true,
+      required: [true, "Please provide your email."],
+      unique: [true, "Email already in use"],
+      lowercase: true,
     },
-    phoneNumber: {
+
+    firstName: {
       type: String,
-      default: null,
-      trim: true,
     },
-    hashedPassword: {
+
+    lastName: {
       type: String,
-      required: false,
     },
+
+    photo: { type: String, default: "default.jpg" },
+
     role: {
       type: String,
-      default: "user",
+      enum: ["admin", "seller", "customer"],
+      default: "customer",
     },
-    profileImageUrl: {
+
+    password: {
       type: String,
-      default:
-        "https://res.cloudinary.com/hervebu/image/upload/v1692276423/hill_ecommerce/user_default_img_wrxrou.png",
+      required: [true, "Please provide a password"],
+      minlength: 8,
+      select: false,
     },
-    dateOfBirth: {
-      type: Date,
-      default: null,
-    },
-    gender: {
-      type: String,
-      default: null,
-    },
-    shippingAddress: {
-      country: {
-        type: String,
-        default: null,
-      },
-      city: {
-        type: String,
-        default: null,
-      },
-      streetAddress: {
-        type: String,
-        default: null,
-      },
-    },
-    userActivated: {
+
+    active: {
       type: Boolean,
       default: false,
     },
   },
   {
+    toJSON: {
+      virtuals: true,
+      transform(doc, ret) {
+        delete ret._id;
+      },
+    },
     timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
     versionKey: false,
-    id: true,
   }
 );
 
-const User = mongoose.model("User", UserSchema);
+// Hash Password
+userSchema.pre("save", async function (next) {
+  // CHECK IF PASSWORD WAS MODIFIED
+  // IF NO, Return AND GO OVER
+  if (!this.isModified("password")) return next();
+
+  // IF YES HASH THE PASSWORD
+  this.password = await bcrypt.hash(this.password, 12);
+
+  next();
+});
+
+const User = mongoose.model("User", userSchema);
+
 export default User;
