@@ -135,7 +135,16 @@ export const addSubCategory = async (req, res) => {
       });
     }
 
-    const category = await SubCategory.create({
+    // Check if Category Exist
+    const category = await Category.findById(req.body.category);
+    if (!category) {
+      return res.status(400).json({
+        status: "fail",
+        message: "No category found for subcategory you are creating.",
+      });
+    }
+
+    const subCategory = await SubCategory.create({
       name: req.body.name,
       category: req.body.category,
     });
@@ -143,7 +152,7 @@ export const addSubCategory = async (req, res) => {
     res.status(201).json({
       status: "success",
       data: {
-        category,
+        subCategory,
       },
     });
   } catch (error) {
@@ -203,7 +212,7 @@ export const updateSubCategory = async (req, res) => {
     const updatedSubCategory = await SubCategory.findByIdAndUpdate(
       id,
       updatedData,
-      { new: true } // Return the updated document
+      { new: true }
     );
 
     if (!updatedSubCategory) {
@@ -214,7 +223,7 @@ export const updateSubCategory = async (req, res) => {
 
     res.status(200).json({
       status: "success",
-      data: updateSubCategory,
+      data: updatedSubCategory,
     });
   } catch (error) {
     console.error(error);

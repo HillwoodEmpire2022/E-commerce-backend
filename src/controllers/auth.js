@@ -22,22 +22,22 @@ export const userRegister = async (req, res, next) => {
       return res.status(400).json({ status: "fail", message: error.message });
     }
     // Generate verification token
-    const activationToken = jwt.sign(
+    const verificationToken = jwt.sign(
       { email: email },
       process.env.JWT_SECRET_KEY
     );
 
     // 2) Create user
-    const newUser = await User.create({ ...req.body, activationToken });
+    const newUser = await User.create({ ...req.body, verificationToken });
 
     // 3) Send Verification Email
     // Frontend Url
-    const url = `${process.env.CLIENT_LOCALHOST_URL}/user/verify-email/${activationToken}`;
+    const url = `${process.env.CLIENT_LOCALHOST_URL}/user/verify-account/${verificationToken}`;
 
     // Email Obtions
     const emailOptions = {
       to: newUser.email,
-      subject: "Email Verification Link",
+      subject: "Email activation Link",
       text: `Hello ${newUser.firstName}, Welcome! to hill group!`,
       url,
     };
@@ -56,7 +56,7 @@ export const userRegister = async (req, res, next) => {
     // 4) Send Successful response
     res.status(201).json({
       status: "success",
-      data: "Email to activate account was sent to your email.",
+      data: "Email to activate your account was sent to your email.",
     });
   } catch (error) {
     if (error.code === 11000) {
@@ -69,6 +69,35 @@ export const userRegister = async (req, res, next) => {
       status: "fail",
       message: error.message,
     });
+  }
+};
+
+// ********* Verify Account **********
+export const activateAccount = async (req, res) => {
+  const { activationToken } = req.params;
+  console.log("TOKES", activationToken);
+  try {
+    const decodeToken = jwt.verify(activationToken, process.env.JWT_SECRET_KEY);
+    const { email } = decodeToken;
+
+    console.log(decodeToken);
+
+    const user = await User.findOne({ email });
+
+    console.log(user);
+
+    // if (!user) {
+    //   return res.status(404).json({ message: "User not found." });
+    // }
+    // if (user.verified) {
+    //   return res.status(400).json({ message: "Email already verified." });
+    // }
+    // user.verified = true;
+    // await user.save();
+    return res.status(200).json({ message: "Account verified successfully." });
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({ message: "Invalid token." });
   }
 };
 
@@ -118,6 +147,7 @@ export const userLogin = async (req, res) => {
       }
     }
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: error.message });
   }
 };

@@ -3,12 +3,14 @@ import {
   userRegister,
   userLogin,
   returnedUserInfo,
+  activateAccount,
 } from "../controllers/auth.js";
-import passport from "passport"
+import passport from "passport";
 
 const router = express.Router();
 const clientUrl = process.env.CLIENT_URL;
-const webUrl = process.env.CLIENT_LOCALHOST_URL || `http://localhost:${process.env.PORT}`
+const webUrl =
+  process.env.CLIENT_LOCALHOST_URL || `http://localhost:${process.env.PORT}`;
 
 /**
  * @swagger
@@ -31,7 +33,7 @@ const webUrl = process.env.CLIENT_LOCALHOST_URL || `http://localhost:${process.e
  *           schema:
  *              type: object
  *              properties:
- *                  firstname: 
+ *                  firstname:
  *                     type: string
  *                  lastname:
  *                     type: string
@@ -42,16 +44,17 @@ const webUrl = process.env.CLIENT_LOCALHOST_URL || `http://localhost:${process.e
  *      responses:
  *        201:
  *          description: User successfully registered and a response of user object and token.
- *          content: 
+ *          content:
  *            application/json:
  *              schema:
  *                type: object
  *        422:
  *          description: Failing validations error.
  *        409:
- *          description: Existing user with the provided email error.                  
- */ 
+ *          description: Existing user with the provided email error.
+ */
 router.post("/user/register", userRegister);
+router.get("/user/activate-account/:activationToken", activateAccount);
 
 /**
  * @swagger
@@ -74,46 +77,49 @@ router.post("/user/register", userRegister);
  *      responses:
  *        200:
  *          description: User successfully logged in and a response of user object and token.
- *          content: 
+ *          content:
  *            application/json:
  *              schema:
  *                type: object
  *        422:
  *          description: Failing validations error.
  *        401:
- *          description: Wrong email or password error.                  
- */ 
+ *          description: Wrong email or password error.
+ */
 router.post("/user/login", userLogin);
 
-router.get("/auth/google/success", (req, res) => {   
-  try { 
-    const response = returnedUserInfo(req.user)
-    res.status(200).json(response)     
+router.get("/auth/google/success", (req, res) => {
+  try {
+    const response = returnedUserInfo(req.user);
+    res.status(200).json(response);
   } catch (err) {
-    res.status(500).json({ err: err.message})
+    res.status(500).json({ err: err.message });
   }
-})
+});
 
 // Routes for Google OAuth
-router.get("/auth/google", passport.authenticate("google", {
-  scope: ["email", "profile"]
-}));
+router.get(
+  "/auth/google",
+  passport.authenticate("google", {
+    scope: ["email", "profile"],
+  })
+);
 
 router.get(
   `/google/callback`,
   passport.authenticate("google", {
-      successRedirect: clientUrl,
-      failureRedirect: "/auth/google/failure",
-      failureMessage: "Cannot login to google, please try again later",
+    successRedirect: clientUrl,
+    failureRedirect: "/auth/google/failure",
+    failureMessage: "Cannot login to google, please try again later",
   }),
-  ((req, res) => {     
-      res.send("Signed in successfully!")
-  })
+  (req, res) => {
+    res.send("Signed in successfully!");
+  }
 );
 
 router.get("/auth/google/failure", (req, res) => {
   res.status(401).json({
-      message: "Unable to sign in using Google, please try again later",
+    message: "Unable to sign in using Google, please try again later",
   });
 });
 

@@ -17,7 +17,7 @@ import { restrictTo } from "../middlewares/authorization.js";
 
 const Router = express.Router();
 
-Router.use(isLoggedIn, restrictTo("admin"));
+// Router.use(isLoggedIn, restrictTo("admin"));
 
 // Categories
 /**
