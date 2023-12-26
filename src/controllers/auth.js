@@ -22,17 +22,17 @@ export const userRegister = async (req, res, next) => {
       return res.status(400).json({ status: "fail", message: error.message });
     }
     // Generate verification token
-    const verificationToken = jwt.sign(
+    const activationToken = jwt.sign(
       { email: email },
       process.env.JWT_SECRET_KEY
     );
 
     // 2) Create user
-    const newUser = await User.create({ ...req.body, verificationToken });
+    const newUser = await User.create({ ...req.body, activationToken });
 
     // 3) Send Verification Email
     // Frontend Url
-    const url = `${process.env.CLIENT_LOCALHOST_URL}/user/verify-account/${verificationToken}`;
+    const url = `${process.env.CLIENT_LOCALHOST_URL}/user/verify-account/${activationToken}`;
 
     // Email Obtions
     const emailOptions = {
@@ -43,7 +43,7 @@ export const userRegister = async (req, res, next) => {
     };
 
     try {
-      await sendEmail(emailOptions);
+      await sendActivationEmail(emailOptions);
     } catch (error) {
       console.log(error);
       // TODO: Delete user or use transaction.
@@ -75,16 +75,11 @@ export const userRegister = async (req, res, next) => {
 // ********* Verify Account **********
 export const activateAccount = async (req, res) => {
   const { activationToken } = req.params;
-  console.log("TOKES", activationToken);
   try {
     const decodeToken = jwt.verify(activationToken, process.env.JWT_SECRET_KEY);
     const { email } = decodeToken;
 
-    console.log(decodeToken);
-
     const user = await User.findOne({ email });
-
-    console.log(user);
 
     if (!user) {
       return res
@@ -99,6 +94,7 @@ export const activateAccount = async (req, res) => {
     }
 
     user.verified = true;
+    user.activationToken = undefined;
 
     await user.save({
       validateBeforeSave: false,

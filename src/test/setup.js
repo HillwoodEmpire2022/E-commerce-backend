@@ -9,15 +9,6 @@ beforeAll(async () => {
   }
 });
 
-// // Before each and every test
-beforeEach(async () => {
-  const collections = await mongoose.connection.db?.collections();
-
-  for (let collection of collections) {
-    await collection.deleteMany({});
-  }
-});
-
 // Hook that runs after all tests have run
 afterAll(async () => {
   await mongoose.disconnect();
