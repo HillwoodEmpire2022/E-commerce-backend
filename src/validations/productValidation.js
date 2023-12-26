@@ -20,6 +20,7 @@ export const addCategoryValidation = Joi.object({
 
 export const SubCategoryValidation = Joi.object({
   name: Joi.string().required().min(2),
+  // Validate valid mongodb id
   category: Joi.string()
     .required()
     .regex(/^[0-9a-fA-F]{24}$/),
