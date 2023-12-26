@@ -1,10 +1,13 @@
-import User from "../models/user.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+
+import User from "../models/user.js";
 import {
   signupValidationSchema,
   loginValidationSchema,
 } from "../validations/authValidations.js";
 import { generateJWToken } from "../utils/jsonWebToken.js";
+import { sendEmail } from "../utils/email.js";
 
 // ********* Register ************
 export const userRegister = async (req, res, next) => {
@@ -18,23 +21,37 @@ export const userRegister = async (req, res, next) => {
     if (error) {
       return res.status(400).json({ status: "fail", message: error.message });
     }
+    // Generate verification token
+    const activationToken = jwt.sign(
+      { email: email },
+      process.env.JWT_SECRET_KEY
+    );
 
     // 2) Create user
-    const newUser = await User.create(req.body);
+    const newUser = await User.create({ ...req.body, activationToken });
 
-    // 3) TODO: Send Verification Email
-    // Generate verification token
-
+    // 3) Send Verification Email
     // Frontend Url
-    const url = `${process.env.CLIENT_LOCALHOST_URL}/user/verify-email/`;
+    const url = `${process.env.CLIENT_LOCALHOST_URL}/user/verify-email/${activationToken}`;
 
     // Email Obtions
     const emailOptions = {
-      from: "Natours <noreply@hillgroup.com>",
       to: newUser.email,
       subject: "Email Verification Link",
-      text: `Welcome! Click here ${url} to activate your account.`,
+      text: `Hello ${newUser.firstName}, Welcome! to hill group!`,
+      url,
     };
+
+    try {
+      await sendEmail(emailOptions);
+    } catch (error) {
+      console.log(error);
+      // TODO: Delete user or use transaction.
+      return res.status(500).json({
+        status: "fail",
+        message: "there was an error sending email! Please try again.",
+      });
+    }
 
     // 4) Send Successful response
     res.status(201).json({

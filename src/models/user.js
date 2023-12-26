@@ -37,6 +37,7 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    activationToken: String,
   },
   {
     toJSON: {
