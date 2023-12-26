@@ -22,13 +22,13 @@ export const userRegister = async (req, res, next) => {
       return res.status(400).json({ status: "fail", message: error.message });
     }
     // Generate verification token
-    const activationToken = jwt.sign(
+    const verificationToken = jwt.sign(
       { email: email },
       process.env.JWT_SECRET_KEY
     );
 
     // 2) Create user
-    const newUser = await User.create({ ...req.body, activationToken });
+    const newUser = await User.create({ ...req.body, verificationToken });
 
     // 3) Send Verification Email
     // Frontend Url
