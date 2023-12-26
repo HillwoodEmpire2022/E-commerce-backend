@@ -35,6 +35,11 @@ const userSchema = new mongoose.Schema(
 
     active: {
       type: Boolean,
+      default: true,
+    },
+
+    verified: {
+      type: Boolean,
       default: false,
     },
     activationToken: String,

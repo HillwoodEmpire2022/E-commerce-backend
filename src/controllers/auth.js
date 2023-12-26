@@ -7,7 +7,7 @@ import {
   loginValidationSchema,
 } from "../validations/authValidations.js";
 import { generateJWToken } from "../utils/jsonWebToken.js";
-import { sendEmail } from "../utils/email.js";
+import { sendActivationEmail } from "../utils/activationEmail.js";
 
 // ********* Register ************
 export const userRegister = async (req, res, next) => {
@@ -86,15 +86,27 @@ export const activateAccount = async (req, res) => {
 
     console.log(user);
 
-    // if (!user) {
-    //   return res.status(404).json({ message: "User not found." });
-    // }
-    // if (user.verified) {
-    //   return res.status(400).json({ message: "Email already verified." });
-    // }
-    // user.verified = true;
-    // await user.save();
-    return res.status(200).json({ message: "Account verified successfully." });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ status: "fail", message: "User not found." });
+    }
+
+    if (user.verified) {
+      return res
+        .status(400)
+        .json({ status: "fail", message: "Email already verified." });
+    }
+
+    user.verified = true;
+
+    await user.save({
+      validateBeforeSave: false,
+    });
+
+    return res
+      .status(200)
+      .json({ status: "success", message: "Account Activated successfully." });
   } catch (err) {
     console.log(err);
     return res.status(400).json({ message: "Invalid token." });

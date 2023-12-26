@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-export const sendEmail = async (options) => {
+export const sendActivationEmail = async (options) => {
   // 1) Create a transporter. A service thatsend an email
   const transporter = nodemailer.createTransport({
     host: process.env.DEV_HOST,
