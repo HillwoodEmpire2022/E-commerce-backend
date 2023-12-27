@@ -21,7 +21,12 @@ app.use(express.json({}));
 
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
-app.use(morgan("dev"));
+if (
+  process.env.NODE_ENV === "development" ||
+  process.env.NODE_ENV === "production"
+) {
+  app.use(morgan("dev"));
+}
 
 app.use(
   cors({
@@ -80,7 +85,7 @@ app.get("/logout", (req, res) => {
 });
 
 app.use("*", (req, res, next) => {
-  res.status(400).json({
+  res.status(404).json({
     status: "fail",
     message: `Root (${req.originalUrl}) does not exist.`,
   });

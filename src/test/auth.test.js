@@ -163,7 +163,7 @@ describe("userLogin", () => {
 
   it("should return a 400 status code for invalid input", async () => {
     const response = await request(app)
-      .post("/login")
+      .post("/user/login")
       .send({ email: "invalid_email" });
 
     expect(response.status).toBe(400);

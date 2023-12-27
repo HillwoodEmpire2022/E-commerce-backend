@@ -130,11 +130,11 @@ export const createProduct = async (req, res) => {
 
 export const getAllProducts = async (req, res) => {
   try {
-    const categories = await Product.find()
+    const products = await Product.find()
       .populate("subcategory", "name")
       .exec();
 
-    if (categories.length === 0) {
+    if (products.length === 0) {
       return res
         .status(404)
         .send({ message: "There are no products available." });
@@ -142,7 +142,7 @@ export const getAllProducts = async (req, res) => {
     res.status(200).json({
       status: "success",
       data: {
-        categories,
+        products,
       },
     });
   } catch (error) {

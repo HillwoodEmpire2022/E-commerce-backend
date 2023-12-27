@@ -104,7 +104,6 @@ export const activateAccount = async (req, res) => {
       .status(200)
       .json({ status: "success", message: "Account Activated successfully." });
   } catch (err) {
-    console.log(err);
     return res.status(400).json({ message: "Invalid token." });
   }
 };
