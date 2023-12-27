@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
 
 // Codes to run before all of our tests
 beforeAll(async () => {
@@ -15,18 +16,6 @@ afterAll(async () => {
   await mongoose.connection.close();
 });
 
-// export const signin = async () => {
-//   const email = "test@test.com";
-//   const password = "test";
-
-//   const response = await request(app)
-//     .post("/api/users/signup")
-//     .send({
-//       email,
-//       password,
-//     })
-//     .expect(201);
-
-//   const cookie = response.get("set-Cookie");
-//   return cookie;
-// };
+export const signin = ({ id, role }) => {
+  return jwt.sign({ userInfo: { id, role } }, process.env.JWT_SECRET_KEY);
+};
