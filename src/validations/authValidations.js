@@ -9,6 +9,7 @@ export const signupValidationSchema = Joi.object({
     .required()
     .valid(Joi.ref("password"))
     .error(new Error("Passwords do not match")),
+  role: Joi.string().valid("seller", "customer").required(),
 });
 
 export const loginValidationSchema = Joi.object({

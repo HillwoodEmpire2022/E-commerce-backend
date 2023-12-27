@@ -111,11 +111,11 @@ export const activateAccount = async (req, res) => {
 
 export const returnedUserInfo = (user) => {
   const displayedUserInfo = {
-    _id: user._id,
-    firstname: user.firstname,
-    lastname: user.lastname,
-    username: user.username,
+    id: user._id,
+    firstName: user.firstName,
+    lastName: user.lastName,
     role: user.role,
+    email: user.email,
     profileImageUrl: user.profileImageUrl,
   };
 
@@ -130,32 +130,47 @@ export const userLogin = async (req, res) => {
   try {
     let { email, password } = req.body;
 
+    // Validate user information with joi.
     const { error } = loginValidationSchema.validate(req.body, {
       errors: { label: "key", wrap: { label: false } },
     });
     if (error) {
-      res.status(422).send({ message: error.message });
-      return;
+      return res.status(400).json({ status: "fail", message: error.message });
     }
 
-    const account = await User.findOne({ email: email });
-    if (!account) {
-      res.status(401).send({ message: "Invalid credentials." });
-    } else {
-      const passwordCheck = await bcrypt.compare(
-        password,
-        account.hashedPassword
-      );
+    const user = await User.findOne({ email: email });
 
-      if (passwordCheck === false) {
-        res.status(401).json({ message: "Invalid credentials." });
-      } else if (passwordCheck === true) {
-        const response = returnedUserInfo(account);
-        res.status(200).json(response);
-      }
+    // Check if use does not exist
+    if (!user) {
+      return res
+        .status(401)
+        .json({ status: "fail", message: "Invalid credentials." });
     }
+
+    // Check if account in verified
+    if (!user.verified)
+      return res.status(401).json({
+        status: "fail",
+        message:
+          "Account not activated! Check your email to activate your account.",
+      });
+
+    // Check password
+    if (!(await bcrypt.compare(password, user.password))) {
+      return res
+        .status(401)
+        .json({ status: "fail", message: "Invalid credentials." });
+    }
+    const response = returnedUserInfo(user);
+
+    res.status(200).json({
+      status: "success",
+      token: response.token,
+      data: {
+        user: response.user,
+      },
+    });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ error: error.message });
   }
 };

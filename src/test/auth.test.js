@@ -2,7 +2,6 @@ import request from "supertest";
 import jwt from "jsonwebtoken";
 import app from "../app";
 import User from "../models/user";
-import { createProduct } from "../controllers/product";
 
 describe("User Registration", () => {
   beforeAll(async () => {
@@ -16,6 +15,7 @@ describe("User Registration", () => {
       lastName: "Doe",
       password: "test1234",
       confirmPassword: "test1234",
+      role: "customer",
     };
 
     const response = await request(app).post("/user/register").send(userData);
@@ -51,6 +51,7 @@ describe("User Registration", () => {
       lastName: "Doe",
       password: "test1234",
       confirmPassword: "test1234",
+      role: "customer",
     };
 
     await request(app).post("/user/register").send(user1data);
@@ -61,6 +62,7 @@ describe("User Registration", () => {
       lastName: "Doe",
       password: "test1234",
       confirmPassword: "test1234",
+      role: "customer",
     };
 
     const response2 = await request(app).post("/user/register").send(user2data);
@@ -84,6 +86,7 @@ describe("Account Activation", () => {
       lastName: "Doe",
       password: "test1234",
       confirmPassword: "test1234",
+      role: "customer",
     };
 
     const res = await request(app).post("/user/register").send(userData);
@@ -128,6 +131,7 @@ describe("Account Activation", () => {
       lastName: "Doe",
       password: "test1234",
       confirmPassword: "test1234",
+      role: "customer",
     };
 
     await request(app).post("/user/register").send(userData);
@@ -149,5 +153,87 @@ describe("Account Activation", () => {
       status: "fail",
       message: "Email already verified.",
     });
+  });
+});
+
+describe("userLogin", () => {
+  beforeAll(async () => {
+    await User.deleteMany({});
+  });
+
+  it("should return a 400 status code for invalid input", async () => {
+    const response = await request(app)
+      .post("/login")
+      .send({ email: "invalid_email" });
+
+    expect(response.status).toBe(400);
+  });
+
+  it("should return a 401 status code for invalid credentials", async () => {
+    const user = {
+      email: "user@example.com",
+      password: "password",
+    };
+
+    const response = await request(app)
+      .post("/user/login")
+      .send({ email: user.email, password: "wrong_password" });
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({
+      status: "fail",
+      message: "Invalid credentials.",
+    });
+  });
+
+  it("should return a 401 status code for unverified account", async () => {
+    const userData = {
+      email: "test@example.com",
+      firstName: "John",
+      lastName: "Doe",
+      password: "test1234",
+      confirmPassword: "test1234",
+      role: "customer",
+    };
+
+    await request(app).post("/user/register").send(userData);
+
+    const response = await request(app)
+      .post("/user/login")
+      .send({ email: userData.email, password: userData.password });
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({
+      status: "fail",
+      message:
+        "Account not activated! Check your email to activate your account.",
+    });
+  });
+
+  it("should return a 200 status code and user data for successful login", async () => {
+    const userData = {
+      email: "test@example.com",
+      firstName: "John",
+      lastName: "Doe",
+      password: "test1234",
+      confirmPassword: "test1234",
+      role: "customer",
+    };
+
+    await request(app).post("/user/register").send(userData);
+
+    const createUser = await User.findOne({ email: userData.email });
+
+    await request(app).get(
+      `/user/activate-account/${createUser.activationToken}`
+    );
+
+    const response = await request(app)
+      .post("/user/login")
+      .send({ email: userData.email, password: userData.password });
+
+    expect(response.status).toBe(200);
+    expect(response.body.token).toBeDefined();
+    expect(response.body.data.user.email).toEqual("test@example.com");
   });
 });
