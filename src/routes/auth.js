@@ -4,6 +4,8 @@ import {
   userLogin,
   returnedUserInfo,
   activateAccount,
+  sendEmailToResetPassword,
+  resetUserPassword,
 } from "../controllers/auth.js";
 import passport from "passport";
 
@@ -55,6 +57,8 @@ const webUrl =
  */
 router.post("/user/register", userRegister);
 router.get("/user/activate-account/:activationToken", activateAccount);
+router.post("/user/reset-password",sendEmailToResetPassword);
+router.patch("/user/reset-password/:resetUserToken",resetUserPassword)
 
 /**
  * @swagger
