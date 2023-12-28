@@ -9,7 +9,6 @@ const SellerProfileSchema = new mongoose.Schema(
 
     phoneNumber: {
       type: String,
-      required: true,
     },
 
     companyEmail: {
@@ -18,7 +17,6 @@ const SellerProfileSchema = new mongoose.Schema(
 
     companyName: {
       type: String,
-      required: true,
     },
 
     website: String,
@@ -33,16 +31,18 @@ const SellerProfileSchema = new mongoose.Schema(
 
     cardNumber: Number,
 
-    location: {
-      type: {
-        address: String,
-        coordinates: {
-          type: [Number],
-          index: "2dsphere",
+    locations: [
+      {
+        type: {
+          address: String,
+          coordinates: {
+            type: [Number],
+            index: "2dsphere",
+          },
         },
+        geojson: true,
       },
-      geojson: true,
-    },
+    ],
   },
   {
     toJSON: {
@@ -56,5 +56,5 @@ const SellerProfileSchema = new mongoose.Schema(
   }
 );
 
-const SellerProfile = mongoose.model("Seller", SellerProfileSchema);
+const SellerProfile = mongoose.model("SellerProfile", SellerProfileSchema);
 export default SellerProfile;
