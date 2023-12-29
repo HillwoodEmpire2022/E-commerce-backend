@@ -1,5 +1,6 @@
 import request from "supertest";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 import app from "../app";
 import User from "../models/user";
 
@@ -243,3 +244,134 @@ describe("userLogin", () => {
     expect(response.body.data.user.email).toEqual("test@example.com");
   });
 });
+
+describe('sendEmailToResetPassword', () => {
+  beforeEach(async () => {
+    await User.deleteMany({});
+  });
+
+  it('should return a 404 status if the email does not exist', async () => {
+        const invalidEmail = 'nonexistent@example.com';
+        const resetPasswordResponse = await request(app).post('/api/v1/auth/reset-password').send({
+          email: invalidEmail,
+        });
+    
+        expect(resetPasswordResponse.status).toBe(404);
+        expect(resetPasswordResponse.body.message).toBe('email does not exist');
+      });
+    
+  it('should return a 422 status if email validation fails', async () => {
+        const invalidEmail = 'emailgmail.com';
+    
+        const resetPasswordResponse = await request(app).post('/api/v1/auth/reset-password').send({
+          email: invalidEmail,
+        });
+    
+        expect(resetPasswordResponse.status).toBe(422);
+        expect(resetPasswordResponse.body.message).toBeDefined(); 
+      });
+    });
+        
+describe('resetUserPassword', () => {
+          beforeEach(async () => {
+            await User.deleteMany({});
+          });
+        
+          it('should reset user password with valid token and matching passwords', async () => {
+            const user = {
+              email: 'test@example.com',
+              password: 'oldPassword',
+            };
+        
+            const resetToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET_KEY);
+            await User.create(user);
+        
+            const newPassword = 'newPassword';
+        
+            const response = await request(app)
+              .patch(`/api/v1/auth/reset-password/${resetToken}`)
+              .send({ newPassword, confirmPassword: newPassword });
+        
+            expect(response.status).toBe(201);    
+            const updatedUser = await User.findOne({ email: user.email });
+            const isPasswordValid = await bcrypt.compare(newPassword, updatedUser.password);
+            expect(isPasswordValid).toBe(true);
+          });
+        
+          it('should return a 400 status for password mismatch', async () => {
+            const user = {
+              email: 'test@example.com',
+              password: 'oldPassword',
+            };
+        
+            const resetToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET_KEY);
+            await User.create(user);
+        
+            const newPassword = 'newPassword';
+            const confirmPassword = 'mismatchedPassword';
+        
+            const response = await request(app)
+              .patch(`/api/v1/auth/reset-password/${resetToken}`)
+              .send({ newPassword, confirmPassword });
+        
+            expect(response.status).toBe(400);
+          });
+        
+          it('should return a 404 status if user not found', async () => {
+            const nonExistentEmail = 'nonexistent@example.com';
+            const resetToken = jwt.sign({ email: nonExistentEmail }, process.env.JWT_SECRET_KEY);
+        
+            const response = await request(app)
+              .patch(`/api/v1/auth/reset-password/${resetToken}`)
+              .send({ newPassword: 'newPassword', confirmPassword: 'newPassword' });
+        
+            expect(response.status).toBe(404);
+          });
+        
+          it('should return a 500 status for invalid token', async () => {
+            const invalidToken = 'invalidToken';
+        
+            const response = await request(app)
+              .patch(`/api/v1/auth/reset-password/${invalidToken}`)
+              .send({ newPassword: 'newPassword', confirmPassword: 'newPassword' });
+        
+            expect(response.status).toBe(500);
+            expect(response.body.message).toBe('failed to reset user password');
+          });
+        });
+    
+describe('Testing update user password after login', () => {
+          let token = '',
+            userId = '';
+          beforeAll(async () => {
+            // Register user
+            const response = await request(app).post('/api/v1/auth/register').send({
+              firstName: 'myfirstname',
+              lastName: 'mysecondname',
+              email: "testemail1234@gmail.com",
+              password: 'testpass2345',
+            });
+            token = await response.body.token;
+          });
+        
+          beforeEach(async () => {
+            // Login user
+            const response = await request(app).post('/api/v1/auth/login').send({
+              email: 'testemail1234@gmail.com',
+              password: 'testpass2345',
+            });
+            token = response.body.token;
+            userId = response.body.user ? response.body.user._id : null; 
+          });
+          
+          it('It should return 401 if user is not logged in', async () => {
+            const response = await request(app)
+              .patch("/api/v1/auth/update-password")
+              .send({
+                currentPassword: 'testpass2345',
+                newPassword: 'newtestpass2345',
+                confirmPassword: 'newtestpass2345',
+              });
+            expect(response.statusCode).toBe(401);
+          });
+    });    
