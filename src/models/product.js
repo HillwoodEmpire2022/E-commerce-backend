@@ -5,6 +5,7 @@ const ProductSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
+      trim: true,
     },
 
     seller: {
@@ -24,6 +25,7 @@ const ProductSchema = new mongoose.Schema(
     },
     description: {
       type: String,
+      trim: true,
     },
     stockQuantity: {
       type: Number,

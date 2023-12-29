@@ -1,9 +1,7 @@
 import Category from "../models/category.js";
-import SubCategory from "../models/subcategory.js";
-import {
-  SubCategoryValidation,
-  addCategoryValidation,
-} from "../validations/productValidation.js";
+
+import { addCategoryValidation } from "../validations/productValidation.js";
+import removeEmptySpaces from "../utils/removeEmptySpaces.js";
 
 // ******** Categories ***********
 // Create Categories
@@ -15,13 +13,20 @@ export const addCategory = async (req, res) => {
     if (error) {
       return res.status(422).send({ message: error.message });
     }
-    const existingCategory = await Category.findOne({ name: req.body.name });
+
+    const categoryData = {
+      ...req.body,
+      name: removeEmptySpaces(req.body.name),
+    };
+    const existingCategory = await Category.findOne({
+      name: categoryData.name,
+    });
     if (existingCategory) {
       return res
         .status(400)
         .send({ message: `Category ${req.body.name} already exists.` });
     }
-    const category = await Category.create({ name: req.body.name });
+    const category = await Category.create({ name: categoryData.name });
 
     res.status(201).json({
       status: "success",

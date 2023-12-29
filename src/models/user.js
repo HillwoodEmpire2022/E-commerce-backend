@@ -8,14 +8,17 @@ const userSchema = new mongoose.Schema(
       required: [true, "Please provide your email."],
       unique: [true, "Email already in use"],
       lowercase: true,
+      trim: true,
     },
 
     firstName: {
       type: String,
+      trim: true,
     },
 
     lastName: {
       type: String,
+      trim: true,
     },
 
     photo: { type: String, default: "default.jpg" },

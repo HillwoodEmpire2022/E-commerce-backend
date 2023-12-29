@@ -103,6 +103,7 @@ describe("Profile Tests", () => {
           bank: "BK Bank",
           accountName: "BK Bank",
           accountNumber: 83498343,
+          accountHolderName: "Eric",
         },
         cardNumber: 743879839823,
 
