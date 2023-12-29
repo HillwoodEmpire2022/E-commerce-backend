@@ -5,9 +5,10 @@ import { isLoggedIn } from "../middlewares/authentication.js";
 const router = express.Router();
 
 // Get profile by profile id
-router.get("/profiles/:id", isLoggedIn, getProfile);
+router.get("/:id", isLoggedIn, getProfile);
+
 // Get Current Logged in user profile
-router.get("/profiles", isLoggedIn, getProfile);
-router.patch("/profiles", isLoggedIn, updateProfile);
+router.get("/", isLoggedIn, getProfile);
+router.patch("/", isLoggedIn, updateProfile);
 
 export default router;

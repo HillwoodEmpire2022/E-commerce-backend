@@ -6,7 +6,7 @@ import { uploadProductValidation } from "../validations/productValidation.js";
 
 export const createProduct = async (req, res) => {
   try {
-    const { error } = await uploadProductValidation.validate(req.body, {
+    const { error } = uploadProductValidation.validate(req.body, {
       errors: { label: "key", wrap: { label: false } },
       allowUnknown: true,
     });

@@ -36,7 +36,7 @@ export const userRegister = async (req, res, next) => {
 
     // If user is seller create seller profile
     if (req.body.role === "seller") {
-      await SellerProfile.create({ seller: newUser._id });
+      await SellerProfile.create({ user: newUser._id });
     }
 
     // 3) Send Verification Email
@@ -52,7 +52,8 @@ export const userRegister = async (req, res, next) => {
     };
 
     try {
-      await sendActivationEmail(emailOptions);
+      if (process.env.NODE_ENV !== "test")
+        await sendActivationEmail(emailOptions);
     } catch (error) {
       console.log(error);
       // TODO: Delete user or use transaction.
@@ -65,6 +66,8 @@ export const userRegister = async (req, res, next) => {
     // 4) Send Successful response
     res.status(201).json({
       status: "success",
+      activationToken:
+        process.env.NODE_ENV === "test" ? activationToken : undefined,
       data: "Email to activate your account was sent to your email.",
     });
   } catch (error) {

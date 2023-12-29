@@ -15,6 +15,7 @@ import categoryRouter from "./routes/category.routes.js";
 import productRouter from "./routes/product.routes.js";
 import cartRouter from "./routes/cart.routes.js";
 import subCategoryRouter from "./routes/subcategories.routes.js";
+import sprofileRouter from "./routes/profile.routes.js";
 
 const app = express();
 dotenv.config();
@@ -41,6 +42,8 @@ app.use(
       clientLocalhostUrl,
       adminClientUrl,
       "https://feliglobalmarkets.netlify.app/",
+      "https://admin-feliglobalmakert.vercel.app",
+      "https://admin-phi-gules.vercel.app",
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
@@ -85,6 +88,7 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/products", productRouter);
 app.use("/api/v1/categories", categoryRouter);
 app.use("/api/v1/subcategories", subCategoryRouter);
+app.use("/api/v1/profiles", sprofileRouter);
 app.use("/api/v1/carts", cartRouter);
 app.get("/logout", (req, res) => {
   for (const key in req.session) {

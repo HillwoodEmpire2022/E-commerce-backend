@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const SellerProfileSchema = new mongoose.Schema(
   {
-    seller: {
+    user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
