@@ -55,11 +55,7 @@ const webUrl =
  *        409:
  *          description: Existing user with the provided email error.
  */
-router.post("/user/register", userRegister);
-router.get("/user/activate-account/:activationToken", activateAccount);
-router.post("/user/reset-password",sendEmailToResetPassword);
-router.patch("/user/reset-password/:resetUserToken",resetUserPassword)
-
+router.post("/register", userRegister);
 /**
  * @swagger
  * /user/login:
@@ -90,9 +86,12 @@ router.patch("/user/reset-password/:resetUserToken",resetUserPassword)
  *        401:
  *          description: Wrong email or password error.
  */
-router.post("/user/login", userLogin);
+router.post("/login", userLogin);
+router.get("/activate-account/:activationToken", activateAccount);
+router.post("/reset-password", sendEmailToResetPassword);
+router.patch("/reset-password/:resetUserToken", resetUserPassword);
 
-router.get("/auth/google/success", (req, res) => {
+router.get("/google/success", (req, res) => {
   try {
     const response = returnedUserInfo(req.user);
     res.status(200).json(response);
@@ -103,7 +102,7 @@ router.get("/auth/google/success", (req, res) => {
 
 // Routes for Google OAuth
 router.get(
-  "/auth/google",
+  "/google",
   passport.authenticate("google", {
     scope: ["email", "profile"],
   })
@@ -121,7 +120,7 @@ router.get(
   }
 );
 
-router.get("/auth/google/failure", (req, res) => {
+router.get("/google/failure", (req, res) => {
   res.status(401).json({
     message: "Unable to sign in using Google, please try again later",
   });

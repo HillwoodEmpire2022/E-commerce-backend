@@ -4,11 +4,17 @@ import cors from "cors";
 import helmet from "helmet";
 import dotenv from "dotenv";
 import passport from "passport";
+
 import { passportConfig } from "./utils/passportConfig.js";
 import cookieSession from "cookie-session";
-import apiRoutes from "./routes/index.js";
 import cookieParser from "cookie-parser";
-import exp from "constants";
+
+// Routes
+import authRouter from "./routes/auth.routes.js";
+import categoryRouter from "./routes/category.routes.js";
+import productRouter from "./routes/product.routes.js";
+import cartRouter from "./routes/cart.routes.js";
+import subCategoryRouter from "./routes/subcategories.routes.js";
 
 const app = express();
 dotenv.config();
@@ -30,7 +36,12 @@ if (
 
 app.use(
   cors({
-    origin: [clientUrl, clientLocalhostUrl, adminClientUrl],
+    origin: [
+      clientUrl,
+      clientLocalhostUrl,
+      adminClientUrl,
+      "https://feliglobalmarkets.netlify.app/",
+    ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   })
@@ -69,8 +80,12 @@ app.use(passport.session());
 
 passportConfig();
 
-app.use(apiRoutes);
-
+// Routing
+app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/products", productRouter);
+app.use("/api/v1/categories", categoryRouter);
+app.use("/api/v1/subcategories", subCategoryRouter);
+app.use("/api/v1/carts", cartRouter);
 app.get("/logout", (req, res) => {
   for (const key in req.session) {
     if (req.session.hasOwnProperty(key)) {
@@ -83,7 +98,6 @@ app.get("/logout", (req, res) => {
 
   res.redirect(302, clientUrl);
 });
-
 app.use("*", (req, res, next) => {
   res.status(404).json({
     status: "fail",

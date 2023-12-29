@@ -21,7 +21,7 @@ const Router = express.Router();
  */
 
 Router.post(
-  "/product/upload",
+  "/",
   isLoggedIn,
   restrictTo("admin", "seller"),
   upload.fields([
@@ -47,7 +47,7 @@ Router.post(
  *                type: array
  *
  */
-Router.get("/products", getAllProducts);
+Router.get("/", getAllProducts);
 
 /**
  * @swagger
