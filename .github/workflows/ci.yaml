@@ -33,8 +33,7 @@ jobs:
           echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> $GITHUB_ENV
           echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> $GITHUB_ENV
           echo "CLIENT_LOCALHOST_URL=${{ secrets.CLIENT_LOCALHOST_URL }}" >> $GITHUB_ENV
-          echo "DEV_HOST=${{ secrets.DEV_HOST }}" >> $GITHUB_ENV
-          echo "DEV_PASS=${{ secrets.DEV_PASS }}" >> $GITHUB_ENV
-          echo "DEV_PORT=${{ secrets.DEV_PORT }}" >> $GITHUB_ENV
-          echo "DEV_USER=${{ secrets.DEV_USER }}" >> $GITHUB_ENV
+          echo "CLIENT_LOCALHOST_URL=${{ secrets.CLIENT_LOCALHOST_URL }}" >> $GITHUB_ENV
+          echo "GMAIL_USER=${{ secrets.GMAIL_USER }}" >> $GITHUB_ENV
+          echo "GMAIL_APP_PASSWORD=${{ secrets.GMAIL_APP_PASSWORD }}" >> $GITHUB_ENV
       - run: npm test

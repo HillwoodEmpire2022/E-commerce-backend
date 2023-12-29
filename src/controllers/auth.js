@@ -52,8 +52,7 @@ export const userRegister = async (req, res, next) => {
     };
 
     try {
-      if (process.env.NODE_ENV !== "test")
-        await sendActivationEmail(emailOptions);
+      await sendActivationEmail(emailOptions);
     } catch (error) {
       console.log(error);
       // TODO: Delete user or use transaction.
