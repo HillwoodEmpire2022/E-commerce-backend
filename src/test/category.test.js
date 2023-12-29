@@ -45,7 +45,7 @@ describe("Category Tests", () => {
 
   it("should create a new category with valid data and by admin user", async () => {
     const response = await request(app)
-      .post("/category/create")
+      .post("/api/v1/categories")
       .set("Authorization", `Bearer ${token}`)
       .send({ name: "New Category" });
 
@@ -59,7 +59,7 @@ describe("Category Tests", () => {
 
   it("should return a 400 error if category already exists", async () => {
     const response = await request(app)
-      .post("/category/create")
+      .post("/api/v1/categories")
       .set("Authorization", `Bearer ${token}`)
       .send({ name: "New Category" });
 
@@ -69,7 +69,7 @@ describe("Category Tests", () => {
 
   it("should return a 403 error if user is not admin", async () => {
     const response = await request(app)
-      .post("/category/create")
+      .post("/api/v1/categories")
       .set("Authorization", `Bearer ${nonAdminToken}`)
       .send({ name: "New Category" });
 
@@ -82,13 +82,13 @@ describe("Category Tests", () => {
 
   it("should return a list of categories with populated subCategories for admin user", async () => {
     const res = await request(app)
-      .get("/categories")
+      .get("/api/v1/categories")
       .set("Authorization", `Bearer ${token}`);
     expect(res.status).toBe(200);
   });
 
   it("should not return a list of categories if no user logged in", async () => {
-    const res = await request(app).get("/categories");
+    const res = await request(app).get("/api/v1/categories");
 
     expect(res.body).toMatchObject({
       status: "fail",
@@ -98,7 +98,7 @@ describe("Category Tests", () => {
 
   it("should not return a list of categories user is not admin", async () => {
     const res = await request(app)
-      .get("/categories")
+      .get("/api/v1/categories")
       .set("Authorization", `Bearer ${nonAdminToken}`);
 
     expect(res.body).toMatchObject({
@@ -109,7 +109,7 @@ describe("Category Tests", () => {
 
   test("Should create a subcategory with valid data", async () => {
     const response = await request(app)
-      .post("/subcategory/create")
+      .post("/api/v1/subcategories")
       .set("Authorization", `Bearer ${token}`)
       .send({ name: "Test Subcategory", category: category.id });
 
@@ -129,7 +129,7 @@ describe("Category Tests", () => {
   test("Should not create a subcategory if category is not present.", async () => {
     const randomId = new mongoose.Types.ObjectId();
     const response = await request(app)
-      .post("/subcategory/create")
+      .post("/api/v1/subcategories")
       .set("Authorization", `Bearer ${token}`)
       .send({ name: "Test Subcategory", category: randomId.toString() });
 
@@ -143,7 +143,7 @@ describe("Category Tests", () => {
 
   test("Should not create a subcategory if user is not admin.", async () => {
     const response = await request(app)
-      .post("/subcategory/create")
+      .post("/api/v1/subcategories")
       .set("Authorization", `Bearer ${nonAdminToken}`)
       .send({ name: "Test Subcategory", category: category.id });
 
