@@ -8,31 +8,31 @@ describe("User Registration", () => {
     await User.deleteMany({});
   });
 
-  // it("should register a new user with valid data and email for activation sent", async () => {
-  //   const userData = {
-  //     email: "test@example.com",
-  //     firstName: "John",
-  //     lastName: "Doe",
-  //     password: "test1234",
-  //     confirmPassword: "test1234",
-  //     role: "customer",
-  //   };
+  it("should register a new user with valid data and email for activation sent", async () => {
+    const userData = {
+      email: "test@example.com",
+      firstName: "John",
+      lastName: "Doe",
+      password: "test1234",
+      confirmPassword: "test1234",
+      role: "customer",
+    };
 
-  //   const response = await request(app)
-  //     .post("/api/v1/auth/register")
-  //     .send(userData);
+    const response = await request(app)
+      .post("/api/v1/auth/register")
+      .send(userData);
 
-  //   expect(response.body).toMatchObject({
-  //     status: "success",
-  //     data: "Email to activate your account was sent to your email.",
-  //   });
-  //   expect(response.status).toBe(201);
+    expect(response.body).toMatchObject({
+      status: "success",
+      data: "Email to activate your account was sent to your email.",
+    });
+    expect(response.status).toBe(201);
 
-  //   const createdUser = await User.findOne({ email: userData.email });
+    const createdUser = await User.findOne({ email: userData.email });
 
-  //   expect(createdUser).toBeDefined();
-  //   expect(createdUser.activationToken).toBeDefined();
-  // });
+    expect(createdUser).toBeDefined();
+    expect(createdUser.activationToken).toBeDefined();
+  });
 
   it("should return a 400 error for invalid data", async () => {
     const invalidUserData = {
@@ -128,38 +128,38 @@ describe("Account Activation", () => {
     });
   });
 
-  // it("should return a 400 error if the account is already verified", async () => {
-  //   const userData = {
-  //     email: "test@example.com",
-  //     firstName: "John",
-  //     lastName: "Doe",
-  //     password: "test1234",
-  //     confirmPassword: "test1234",
-  //     role: "customer",
-  //   };
+  it("should return a 400 error if the account is already verified", async () => {
+    const userData = {
+      email: "test@example.com",
+      firstName: "John",
+      lastName: "Doe",
+      password: "test1234",
+      confirmPassword: "test1234",
+      role: "customer",
+    };
 
-  //   await request(app).post("/api/v1/auth/register").send(userData);
+    await request(app).post("/api/v1/auth/register").send(userData);
 
-  //   const createUser = await User.findOne({ email: userData.email });
+    const createUser = await User.findOne({ email: userData.email });
 
-  //   await request(app).get(
-  //     `/api/v1/auth/activate-account/${createUser.activationToken}`
-  //   );
+    await request(app).get(
+      `/api/v1/auth/activate-account/${createUser.activationToken}`
+    );
 
-  //   const token = jwt.sign(
-  //     { email: "test@example.com" },
-  //     process.env.JWT_SECRET_KEY
-  //   );
+    const token = jwt.sign(
+      { email: "test@example.com" },
+      process.env.JWT_SECRET_KEY
+    );
 
-  //   const response = await request(app).get(
-  //     `/api/v1/auth/activate-account/${token}`
-  //   );
+    const response = await request(app).get(
+      `/api/v1/auth/activate-account/${token}`
+    );
 
-  //   expect(response.body).toEqual({
-  //     status: "fail",
-  //     message: "Email already verified.",
-  //   });
-  // });
+    expect(response.body).toEqual({
+      status: "fail",
+      message: "Email already verified.",
+    });
+  });
 });
 
 describe("userLogin", () => {
