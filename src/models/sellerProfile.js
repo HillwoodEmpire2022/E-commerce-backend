@@ -27,6 +27,7 @@ const SellerProfileSchema = new mongoose.Schema(
       bank: String,
       accountName: String,
       accountNumber: Number,
+      accountHolderName: String,
     },
 
     cardNumber: Number,

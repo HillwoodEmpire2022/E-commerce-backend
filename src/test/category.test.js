@@ -113,13 +113,15 @@ describe("Category Tests", () => {
       .set("Authorization", `Bearer ${token}`)
       .send({ name: "Test Subcategory", category: category.id });
 
+    console.log(response.body);
+
     expect(response.status).toBe(201);
 
     expect(response.body).toMatchObject({
       status: "success",
       data: {
         subCategory: {
-          name: "Test Subcategory",
+          name: "test subcategory",
           category: category.id,
         },
       },

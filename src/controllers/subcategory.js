@@ -1,6 +1,7 @@
 import Category from "../models/category.js";
 import SubCategory from "../models/subcategory.js";
 import { SubCategoryValidation } from "../validations/productValidation.js";
+import removeEmptySpaces from "../utils/removeEmptySpaces.js";
 
 // ******** Subcategories ***********
 // Create Sub-categories
@@ -17,6 +18,11 @@ export const addSubCategory = async (req, res) => {
       });
     }
 
+    const subcategoryData = {
+      ...req.body,
+      name: removeEmptySpaces(req.body.name),
+    };
+
     // Check if Category Exist
     const category = await Category.findById(req.body.category);
     if (!category) {
@@ -26,9 +32,19 @@ export const addSubCategory = async (req, res) => {
       });
     }
 
+    const subcategory = await SubCategory.findOne({
+      name: subcategoryData.name,
+    });
+    if (subcategory) {
+      return res.status(400).json({
+        status: "fail",
+        message: "Subcategory already exists.",
+      });
+    }
+
     const subCategory = await SubCategory.create({
-      name: req.body.name,
-      category: req.body.category,
+      name: subcategoryData.name,
+      category: category._id,
     });
 
     res.status(201).json({
