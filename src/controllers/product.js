@@ -2,6 +2,7 @@ import Product from "../models/product.js";
 import User from "../models/user.js";
 import { base64FileStringGenerator } from "../utils/base64Converter.js";
 import { uploadToCloudinary } from "../utils/cloudinary.js";
+import { MongoIDValidator } from "../validations/mongoidValidator.js";
 import { uploadProductValidation } from "../validations/productValidation.js";
 
 export const createProduct = async (req, res) => {
@@ -131,7 +132,7 @@ export const createProduct = async (req, res) => {
 export const getAllProducts = async (req, res) => {
   try {
     const products = await Product.find()
-      .populate("subcategory", "name")
+      .populate("seller category subcategory")
       .exec();
 
     if (products.length === 0) {
@@ -152,12 +153,22 @@ export const getAllProducts = async (req, res) => {
 
 export const getSingleProduct = async (req, res) => {
   try {
+    // 1) Validate user data
+    const { error } = MongoIDValidator.validate(req.params, {
+      errors: { label: "key", wrap: { label: false } },
+    });
+
+    if (error) {
+      return res.status(400).json({ status: "fail", message: error.message });
+    }
     const product = await Product.findOne({ _id: req.params.productId })
-      .populate("seller", "companyName")
+      .populate("seller category subcategory")
       .exec();
 
     if (!product) {
-      return res.status(404).send({ message: "Product not found." });
+      return res
+        .status(404)
+        .json({ status: "fail", message: "Product not found." });
     }
     res.status(200).json(product);
   } catch (error) {
