@@ -1,3 +1,4 @@
+import path from "path";
 import Product from "../models/product.js";
 import User from "../models/user.js";
 import { base64FileStringGenerator } from "../utils/base64Converter.js";
@@ -162,7 +163,26 @@ export const getSingleProduct = async (req, res) => {
       return res.status(400).json({ status: "fail", message: error.message });
     }
     const product = await Product.findOne({ _id: req.params.productId })
-      .populate("seller category subcategory")
+      .select(
+        "name seller category subcategory availableSizes productImages stockQuantity price"
+      )
+      .populate({
+        path: "seller",
+        select: "email",
+        populate: {
+          path: "profile",
+          select: "locations companyName logo website",
+          strictPopulate: false,
+        },
+      })
+      .populate({
+        path: "category",
+        select: "name",
+      })
+      .populate({
+        path: "subcategory",
+        select: "name",
+      })
       .exec();
 
     if (!product) {

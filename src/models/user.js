@@ -70,6 +70,12 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
+userSchema.virtual("profile", {
+  ref: "SellerProfile", // Model to populate from
+  localField: "_id", // Field in this schema
+  foreignField: "user", // Field in the referenced model
+});
+
 const User = mongoose.model("User", userSchema);
 
 export default User;
