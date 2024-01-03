@@ -70,7 +70,7 @@ Router.get("/", getAllProducts);
  *              schema:
  *                type: object
  */
-Router.get("/product/:productId", getSingleProduct);
+Router.get("/:productId", getSingleProduct);
 
 /**
  * @swagger
