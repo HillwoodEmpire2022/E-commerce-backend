@@ -6,6 +6,9 @@ import User from "../models/user";
 import mongoose from "mongoose";
 
 let product;
+let adminUser;
+let nonAdminUSer;
+let token, nonAdminToken;
 
 describe("GET /products/:productId", () => {
   beforeAll(async () => {
@@ -174,3 +177,67 @@ describe("updateProductData route", () => {
     expect(res.body.status).toEqual("success");
   });
 });
+
+describe("delete product",() => {
+
+  beforeAll(async () => {
+  
+  
+    await User.deleteMany({});
+    await Product.deleteMany({});
+
+    // Create user with admin role
+    adminUser = await User.create({
+      email: "admin@example.com",
+      firstName: "John",
+      lastName: "Doe",
+      password: "test1234",
+      confirmPassword: "test1234",
+      role: "admin",
+      verified: true,
+    });
+
+    nonAdminUSer = await User.create({
+      email: "nonadmin@example.com",
+      firstName: "John",
+      lastName: "Doe",
+      password: "test1234",
+      confirmPassword: "test1234",
+      role: "customer",
+      verified: true,
+    });
+    product = await Product.create({
+      name: "shoes",
+      price: 23,
+      productImages: { productThumbnail: { url: "url" } },
+      seller: "659462a0ba007e2776643dcd",
+      category: "659462a0ba007e2776643dcd",
+      subcategory: "659462a0ba007e2776643dcd",
+    });
+
+    token = signin({ id: adminUser.id, role: adminUser.role });
+    nonAdminToken = signin({ id: nonAdminUSer.id, role: nonAdminUSer.role });
+  });
+  
+  it("it should return 404 if product is not found",async() =>{
+    const response = await request(app)
+    .delete('/api/v1/products/659462a0ba007e2776643dcd').set("Authorization", `Bearer ${token}`)
+    expect(response.statusCode).toBe(404);
+  })
+  it("it should return 403 if user is not admin",async() =>{
+    const response = await request(app)
+    .delete('/api/v1/products/659462a0ba007e2776643dcd').set("Authorization", `Bearer ${nonAdminToken}`)
+    expect(response.statusCode).toBe(403);
+  })
+  it("it should return 401 if user is not loged in",async() =>{
+    const response = await request(app)
+    .delete('/api/v1/products/659462a0ba007e2776643dcd')
+    expect(response.statusCode).toBe(401);
+  })
+  it("it should return 201 if product deleted",async() =>{
+    const response = await request(app)
+    .delete(`/api/v1/products/${product._id}`).set("Authorization", `Bearer ${token}`)
+    expect(response.statusCode).toBe(201);
+  })
+  
+})
