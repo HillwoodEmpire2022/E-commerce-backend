@@ -6,8 +6,10 @@ import {
   activateAccount,
   sendEmailToResetPassword,
   resetUserPassword,
+  getMe,
 } from "../controllers/auth.js";
 import passport from "passport";
+import { isLoggedIn } from "../middlewares/authentication.js";
 
 const router = express.Router();
 const clientUrl = process.env.CLIENT_URL;
@@ -88,6 +90,7 @@ router.post("/register", userRegister);
  */
 router.post("/login", userLogin);
 router.get("/activate-account/:activationToken", activateAccount);
+router.get("/get-me", isLoggedIn, getMe);
 router.post("/reset-password", sendEmailToResetPassword);
 router.patch("/reset-password/:resetUserToken", resetUserPassword);
 
