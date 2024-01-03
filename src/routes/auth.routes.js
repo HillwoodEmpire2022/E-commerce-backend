@@ -7,6 +7,7 @@ import {
   sendEmailToResetPassword,
   resetUserPassword,
   getMe,
+  updatePassword
 } from "../controllers/auth.js";
 import passport from "passport";
 import { isLoggedIn } from "../middlewares/authentication.js";
@@ -93,6 +94,7 @@ router.get("/activate-account/:activationToken", activateAccount);
 router.get("/get-me", isLoggedIn, getMe);
 router.post("/reset-password", sendEmailToResetPassword);
 router.patch("/reset-password/:resetUserToken", resetUserPassword);
+router.patch("/update-password" ,isLoggedIn, updatePassword);
 
 router.get("/google/success", (req, res) => {
   try {

@@ -303,3 +303,71 @@ export const resetUserPassword = async (req, res) => {
     return res.status(500).json({ message: "failed to reset user password" });
   }
 };
+
+
+export const updatePassword = async (req, res) => {
+
+  try {
+    //  find user by Id
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+   
+  if(!user){
+    return res.status(404).json({
+      message:"user not found"});
+  }
+    const{currentPassword,
+       newPassword, 
+       confirmPassword
+      }
+     = req.body;
+
+     // validate password
+    try {
+      await passwordValidation.validateAsync({ 
+        password: newPassword, 
+        confirmPassword 
+      });
+
+    } catch (validationError) {
+      return res.status(400).json({
+         message: validationError.message 
+        });
+    }
+    
+    // compare currentPassword and password
+    const comparePassword = await bcrypt.compare(
+      currentPassword, user.password
+      )
+
+    if(!comparePassword){
+     return res.status(404).json({
+      message:"current password does not mutch"
+    })
+    }
+
+    if(newPassword!=confirmPassword){
+      return res.status(400).json({
+        message:"password doesn not match"})
+    }
+
+  //  update password with newPassword
+    const hashPassword = await bcrypt.hash(newPassword,12) ;
+    await User.findOneAndUpdate(
+      { _id: userId },
+      { $set: { password: hashPassword } },
+      { new: true}
+
+      );
+
+    return res.status(201).json({
+      message:"password updated succesfully"
+    })
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      massage:"failed to update password"
+    })
+  }
+};
