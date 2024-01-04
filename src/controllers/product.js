@@ -1,10 +1,12 @@
-import path from "path";
 import Product from "../models/product.js";
 import User from "../models/user.js";
 import { base64FileStringGenerator } from "../utils/base64Converter.js";
 import { uploadToCloudinary } from "../utils/cloudinary.js";
 import { MongoIDValidator } from "../validations/mongoidValidator.js";
-import { uploadProductValidation } from "../validations/productValidation.js";
+import {
+  updateProductsValidation,
+  uploadProductValidation,
+} from "../validations/productValidation.js";
 
 export const createProduct = async (req, res) => {
   try {
@@ -225,5 +227,57 @@ export const getProductsBySubCategory = async (req, res) => {
     res.status(200).json(products);
   } catch (error) {
     res.status(500).send({ error: error.message });
+  }
+};
+
+export const updateProductData = async (req, res) => {
+  try {
+    const { error } = updateProductsValidation.validate(req.body, {
+      errors: { label: "key", wrap: { label: false } },
+      allowUnknown: true,
+    });
+
+    if (error) {
+      return res.status(422).json({ status: "fail", message: error.message });
+    }
+    const isUserAdmin = req.user.role === "admin";
+
+    // If Update include seller, require admin to perform operation
+    if (req.body.seller && req.user.role !== "admin") {
+      return res.status(403).json({
+        status: "fail",
+        message: "Acces denied! You are not allowed to perform this operation.",
+      });
+    }
+
+    const product = await Product.findById(req.params.productId);
+
+    if (!product)
+      return res
+        .status(404)
+        .json({ status: "fail", message: "Product not found." });
+
+    // Check if product belongs to the user, if user updating the product is not an admin
+    if (!isUserAdmin && product.seller.toHexString() !== req.user.id)
+      return res
+        .status(404)
+        .json({ status: "fail", message: "Product not found." });
+
+    await Product.findByIdAndUpdate(req.params.productId, req.body);
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        product: {
+          id: product.id,
+          name: product.name,
+        },
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ status: "fail", message: "Unexpected error has occured!" });
   }
 };

@@ -6,6 +6,7 @@ import {
   getProductsBySubCategory,
   getSingleProduct,
   createProduct,
+  updateProductData,
 } from "../controllers/product.js";
 import { upload } from "../utils/multer.js";
 import { isLoggedIn } from "../middlewares/authentication.js";
@@ -71,6 +72,8 @@ Router.get("/", getAllProducts);
  *                type: object
  */
 Router.get("/:productId", getSingleProduct);
+
+Router.patch("/:productId", isLoggedIn, updateProductData);
 
 /**
  * @swagger

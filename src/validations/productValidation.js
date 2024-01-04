@@ -25,3 +25,17 @@ export const SubCategoryValidation = Joi.object({
     .required()
     .regex(/^[0-9a-fA-F]{24}$/),
 });
+
+export const updateProductsValidation = Joi.object({
+  name: Joi.string().min(2),
+  description: Joi.string().min(6),
+  category: Joi.string(),
+  subcategory: Joi.string(),
+  seller: Joi.string(),
+  price: Joi.number().greater(0),
+  discountPercentage: Joi.number().integer(),
+  stockQuantity: Joi.number().greater(0).integer(),
+  quantityParameter: Joi.string(),
+  brandName: Joi.string(),
+  availableSizes: Joi.array().items(Joi.string()),
+});
