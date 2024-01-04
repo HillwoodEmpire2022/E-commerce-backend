@@ -56,7 +56,7 @@ app.use(
     resave: true,
     saveUninitialized: true,
     cookie: {
-      secure: true,
+      secure: false,
       name: "session_cookie",
       sameSite: "None",
     },
