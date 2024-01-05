@@ -1,17 +1,17 @@
-import Product from "../models/product.js";
-import User from "../models/user.js";
-import { base64FileStringGenerator } from "../utils/base64Converter.js";
-import { uploadToCloudinary } from "../utils/cloudinary.js";
-import { MongoIDValidator } from "../validations/mongoidValidator.js";
+import Product from '../models/product.js';
+import User from '../models/user.js';
+import { base64FileStringGenerator } from '../utils/base64Converter.js';
+import { uploadToCloudinary } from '../utils/cloudinary.js';
+import { MongoIDValidator } from '../validations/mongoidValidator.js';
 import {
   updateProductsValidation,
   uploadProductValidation,
-} from "../validations/productValidation.js";
+} from '../validations/productValidation.js';
 
 export const createProduct = async (req, res) => {
   try {
     const { error } = uploadProductValidation.validate(req.body, {
-      errors: { label: "key", wrap: { label: false } },
+      errors: { label: 'key', wrap: { label: false } },
       allowUnknown: true,
     });
 
@@ -23,7 +23,8 @@ export const createProduct = async (req, res) => {
     const seller = await User.findById(req.body.seller);
     if (!seller) {
       return res.status(400).send({
-        message: "There is no seller that matches the provided seller Id.",
+        message:
+          'There is no seller that matches the provided seller Id.',
       });
     }
     const existingProduct = await Product.find({
@@ -34,7 +35,7 @@ export const createProduct = async (req, res) => {
     if (existingProduct.length !== 0) {
       return res
         .status(409)
-        .send({ message: "You have already uploaded this product." });
+        .send({ message: 'You have already uploaded this product.' });
     }
 
     let productThumbnailString = base64FileStringGenerator(
@@ -44,14 +45,14 @@ export const createProduct = async (req, res) => {
     if (!productThumbnailString) {
       return res
         .status(400)
-        .send({ message: "There is no thumbnail image attached." });
+        .send({ message: 'There is no thumbnail image attached.' });
     }
 
     const uploadedThumbnail = await uploadToCloudinary(
       productThumbnailString,
       seller.companyName,
       req.body.name,
-      "productThumbnail"
+      'productThumbnail'
     );
 
     let otherImages = req.files.otherImages;
@@ -59,17 +60,19 @@ export const createProduct = async (req, res) => {
     if (!otherImages || otherImages.length === 0) {
       return res
         .status(400)
-        .send({ message: "There is no any image for otherImages" });
+        .send({ message: 'There is no any image for otherImages' });
     }
 
     let uploadedOtherImages = [];
     for (let i = 0; i < otherImages.length; i++) {
-      let imageString = base64FileStringGenerator(otherImages[i]).content;
+      let imageString = base64FileStringGenerator(
+        otherImages[i]
+      ).content;
       let uploadedImage = await uploadToCloudinary(
         imageString,
         seller.companyName,
         req.body.name,
-        "otherImages"
+        'otherImages'
       );
       uploadedOtherImages[i] = {
         public_id: uploadedImage.public_id,
@@ -82,17 +85,19 @@ export const createProduct = async (req, res) => {
     if (!colorImages || colorImages.length === 0) {
       return res
         .status(400)
-        .send({ message: "There is no any image for colorImages" });
+        .send({ message: 'There is no any image for colorImages' });
     }
 
     let uploadedColorImages = [];
     for (let i = 0; i < colorImages.length; i++) {
-      let imageString = base64FileStringGenerator(colorImages[i]).content;
+      let imageString = base64FileStringGenerator(
+        colorImages[i]
+      ).content;
       let uploadedImage = await uploadToCloudinary(
         imageString,
         seller.companyName,
         req.body.name,
-        "colorImages"
+        'colorImages'
       );
       uploadedColorImages[i] = {
         public_id: uploadedImage.public_id,
@@ -122,7 +127,7 @@ export const createProduct = async (req, res) => {
 
     const product = await productObject.save();
     res.status(201).json({
-      status: "success",
+      status: 'success',
       data: {
         product,
       },
@@ -135,16 +140,32 @@ export const createProduct = async (req, res) => {
 export const getAllProducts = async (req, res) => {
   try {
     const products = await Product.find()
-      .populate("seller category subcategory")
+      .populate({
+        path: 'seller',
+        select: 'email',
+        populate: {
+          path: 'profile',
+          select: 'locations companyName logo website',
+          strictPopulate: false,
+        },
+      })
+      .populate({
+        path: 'category',
+        select: 'name',
+      })
+      .populate({
+        path: 'subcategory',
+        select: 'name',
+      })
       .exec();
 
     if (products.length === 0) {
       return res
         .status(404)
-        .send({ message: "There are no products available." });
+        .send({ message: 'There are no products available.' });
     }
     res.status(200).json({
-      status: "success",
+      status: 'success',
       data: {
         products,
       },
@@ -158,39 +179,40 @@ export const getSingleProduct = async (req, res) => {
   try {
     // 1) Validate user data
     const { error } = MongoIDValidator.validate(req.params, {
-      errors: { label: "key", wrap: { label: false } },
+      errors: { label: 'key', wrap: { label: false } },
     });
 
     if (error) {
-      return res.status(400).json({ status: "fail", message: error.message });
+      return res
+        .status(400)
+        .json({ status: 'fail', message: error.message });
     }
-    const product = await Product.findOne({ _id: req.params.productId })
-      .select(
-        "name seller category subcategory availableSizes productImages stockQuantity price"
-      )
+    const product = await Product.findOne({
+      _id: req.params.productId,
+    })
       .populate({
-        path: "seller",
-        select: "email",
+        path: 'seller',
+        select: 'email',
         populate: {
-          path: "profile",
-          select: "locations companyName logo website",
+          path: 'profile',
+          select: 'locations companyName logo website',
           strictPopulate: false,
         },
       })
       .populate({
-        path: "category",
-        select: "name",
+        path: 'category',
+        select: 'name',
       })
       .populate({
-        path: "subcategory",
-        select: "name",
+        path: 'subcategory',
+        select: 'name',
       })
       .exec();
 
     if (!product) {
       return res
         .status(404)
-        .json({ status: "fail", message: "Product not found." });
+        .json({ status: 'fail', message: 'Product not found.' });
     }
     res.status(200).json(product);
   } catch (error) {
@@ -200,12 +222,14 @@ export const getSingleProduct = async (req, res) => {
 
 export const getProductsByCategory = async (req, res) => {
   try {
-    const products = await Product.find({ category: req.params.categoryId });
+    const products = await Product.find({
+      category: req.params.categoryId,
+    });
 
     if (products.length === 0) {
       return res
         .status(404)
-        .send({ message: "No products belonging in this category." });
+        .send({ message: 'No products belonging in this category.' });
     }
     res.status(200).json(products);
   } catch (error) {
@@ -220,9 +244,9 @@ export const getProductsBySubCategory = async (req, res) => {
     });
 
     if (products.length === 0) {
-      return res
-        .status(404)
-        .send({ message: "No products belonging in this sub category." });
+      return res.status(404).send({
+        message: 'No products belonging in this sub category.',
+      });
     }
     res.status(200).json(products);
   } catch (error) {
@@ -233,20 +257,23 @@ export const getProductsBySubCategory = async (req, res) => {
 export const updateProductData = async (req, res) => {
   try {
     const { error } = updateProductsValidation.validate(req.body, {
-      errors: { label: "key", wrap: { label: false } },
+      errors: { label: 'key', wrap: { label: false } },
       allowUnknown: true,
     });
 
     if (error) {
-      return res.status(422).json({ status: "fail", message: error.message });
+      return res
+        .status(422)
+        .json({ status: 'fail', message: error.message });
     }
-    const isUserAdmin = req.user.role === "admin";
+    const isUserAdmin = req.user.role === 'admin';
 
     // If Update include seller, require admin to perform operation
-    if (req.body.seller && req.user.role !== "admin") {
+    if (req.body.seller && req.user.role !== 'admin') {
       return res.status(403).json({
-        status: "fail",
-        message: "Acces denied! You are not allowed to perform this operation.",
+        status: 'fail',
+        message:
+          'Acces denied! You are not allowed to perform this operation.',
       });
     }
 
@@ -255,18 +282,18 @@ export const updateProductData = async (req, res) => {
     if (!product)
       return res
         .status(404)
-        .json({ status: "fail", message: "Product not found." });
+        .json({ status: 'fail', message: 'Product not found.' });
 
     // Check if product belongs to the user, if user updating the product is not an admin
     if (!isUserAdmin && product.seller.toHexString() !== req.user.id)
       return res
         .status(404)
-        .json({ status: "fail", message: "Product not found." });
+        .json({ status: 'fail', message: 'Product not found.' });
 
     await Product.findByIdAndUpdate(req.params.productId, req.body);
 
     res.status(200).json({
-      status: "success",
+      status: 'success',
       data: {
         product: {
           id: product.id,
@@ -276,8 +303,9 @@ export const updateProductData = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    return res
-      .status(500)
-      .json({ status: "fail", message: "Unexpected error has occured!" });
+    return res.status(500).json({
+      status: 'fail',
+      message: 'Unexpected error has occured!',
+    });
   }
 };
