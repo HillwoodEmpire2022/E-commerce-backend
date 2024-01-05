@@ -1,4 +1,4 @@
-import express from "express";
+import express from 'express';
 
 import {
   addCategory,
@@ -6,13 +6,15 @@ import {
   getCategories,
   getCategory,
   updateCategory,
-} from "../controllers/category.js";
-import { isLoggedIn } from "../middlewares/authentication.js";
-import { restrictTo } from "../middlewares/authorization.js";
+} from '../controllers/category.js';
+import { isLoggedIn } from '../middlewares/authentication.js';
+import { restrictTo } from '../middlewares/authorization.js';
 
 const Router = express.Router();
 
-Router.use(isLoggedIn, restrictTo("admin"));
+Router.get('/', getCategories);
+
+Router.use(isLoggedIn, restrictTo('admin'));
 
 // Categories
 /**
@@ -52,7 +54,7 @@ Router.use(isLoggedIn, restrictTo("admin"));
  *        422:
  *          description: Request body validation errors
  */
-Router.post("/", addCategory);
+Router.post('/', addCategory);
 /**
  * @swagger
  * /categories:
@@ -69,9 +71,9 @@ Router.post("/", addCategory);
  *        404:
  *          description: There is no any category.
  */
-Router.get("/", getCategories);
-Router.get("/:id", getCategory);
-Router.patch("/:id", updateCategory);
-Router.delete("/:id", deleteCategory);
+
+Router.get('/:id', getCategory);
+Router.patch('/:id', updateCategory);
+Router.delete('/:id', deleteCategory);
 
 export default Router;
