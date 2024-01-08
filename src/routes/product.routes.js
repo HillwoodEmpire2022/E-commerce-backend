@@ -6,6 +6,7 @@ import {
   getProductsBySubCategory,
   getSingleProduct,
   createProduct,
+  deleteProduct,
   updateProductData,
 } from "../controllers/product.js";
 import { upload } from "../utils/multer.js";
@@ -120,5 +121,6 @@ Router.get("/products/category/:categoryId", getProductsByCategory);
  *                type: array
  */
 Router.get("/products/subcategory/:subcategoryId", getProductsBySubCategory);
+Router.delete("/:productId", isLoggedIn, restrictTo("admin","seller"), deleteProduct )
 
 export default Router;
