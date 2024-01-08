@@ -122,3 +122,54 @@ describe("Profile Tests", () => {
     });
   });
 });
+
+
+describe("admin list all sellers", () =>{
+  beforeAll(async () => {
+    await User.deleteMany({});
+
+    await SellerProfile.deleteMany({});
+    // Create user with admin role
+    adminUser = await User.create({
+      email: "admin@example.com",
+      firstName: "John",
+      lastName: "Doe",
+      password: "test1234",
+      confirmPassword: "test1234",
+      role: "admin",
+      verified: true,
+    });
+
+    token = signin({ id: adminUser.id, role: adminUser.role });
+  });
+
+  it("it should return 401 if user is not logeged in", async() => {
+    const res = await request(app)
+    .get("/api/v1/sellers")
+    expect(res.statusCode).toBe(401);
+  });
+
+  it("it should return 404 if no sellers",async() =>{
+    const response = await request(app)
+    .get("/api/v1/sellers").set('Authorization',`Bearer ${token}`);
+    expect(response.statusCode).toBe(404);
+  })
+
+  it("it should return 201 if admi get all sellers",async() =>{
+    const sellerUser = await User.create({
+      email: "seller@example.com",
+      firstName: "Seller",
+      lastName: "One",
+      password: "test1234",
+      confirmPassword: "test1234",
+      role: "seller",
+      verified: true,
+    });
+  
+    await SellerProfile.create({ user: sellerUser._id })
+    const response = await request(app)
+    .get("/api/v1/sellers").set('Authorization',`Bearer ${token}`);
+    expect(response.statusCode).toBe(201);
+    expect(response.body.data.sellers).toHaveLength(1);
+  });
+});

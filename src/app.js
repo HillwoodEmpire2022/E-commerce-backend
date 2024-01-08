@@ -16,6 +16,7 @@ import productRouter from "./routes/product.routes.js";
 import cartRouter from "./routes/cart.routes.js";
 import subCategoryRouter from "./routes/subcategories.routes.js";
 import sprofileRouter from "./routes/profile.routes.js";
+import sellerRoute from "./routes/seller.routes.js";
 
 const app = express();
 dotenv.config();
@@ -90,6 +91,7 @@ app.use("/api/v1/categories", categoryRouter);
 app.use("/api/v1/subcategories", subCategoryRouter);
 app.use("/api/v1/profiles", sprofileRouter);
 app.use("/api/v1/carts", cartRouter);
+app.use("/api/v1/sellers",sellerRoute)
 app.get("/logout", (req, res) => {
   for (const key in req.session) {
     if (req.session.hasOwnProperty(key)) {
