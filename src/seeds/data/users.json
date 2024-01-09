@@ -1,0 +1,74 @@
+[
+  {
+    "_id": "659cd3d89de13a0bb927fed4",
+    "firstName": "Tillman",
+    "lastName": "Cannon",
+    "email": "customer1@example.com",
+    "role": "customer",
+    "password": "test12345",
+    "verified": true
+  },
+  {
+    "_id": "659cd3d85875c3805dd9d3a1",
+    "firstName": "Hines",
+    "lastName": "Bowman",
+    "email": "customer2@example.com",
+    "role": "customer",
+    "password": "test12345",
+    "verified": true
+  },
+  {
+    "_id": "659cd3d8cd7ce5fa3495426b",
+    "firstName": "Bradford",
+    "lastName": "Walsh",
+    "email": "seller1@example.com",
+    "role": "seller",
+    "password": "test12345",
+    "verified": true
+  },
+  {
+    "_id": "659cd3d86d3fdaa13c4c7ab6",
+    "firstName": "Jones",
+    "lastName": "Price",
+    "email": "customer3@example.com",
+    "role": "customer",
+    "password": "test12345",
+    "verified": true
+  },
+  {
+    "_id": "659cd3d86dc49ac1ea8f473a",
+    "firstName": "Hogan",
+    "lastName": "Oconnor",
+    "email": "customer4@example.com",
+    "role": "customer",
+    "password": "test12345",
+    "verified": true
+  },
+  {
+    "_id": "659cd3d8671babd5ec016e7d",
+    "firstName": "Odonnell",
+    "lastName": "French",
+    "email": "olivierseller@yopmail.com",
+    "role": "seller",
+    "password": "test12345",
+    "verified": true
+  },
+  {
+    "_id": "659cd3d8a86abf7da712a759",
+    "firstName": "Berry",
+    "lastName": "Cruz",
+    "email": "customer5@example.com",
+    "role": "customer",
+    "password": "test12345",
+    "verified": true
+  },
+  {
+    "_id": "659cd3d80f9c2d066adde1e2",
+    "firstName": "Klein",
+    "lastName": "Jones",
+    "email": "seller2@example.com",
+    "role": "seller",
+    "password": "test12345",
+    "verified": true
+  }
+]
