@@ -7,11 +7,13 @@ import {
   sendEmailToResetPassword,
   resetUserPassword,
   getMe,
-  updatePassword
+  updatePassword,
+  userUpdatePhoto
 } from "../controllers/auth.js";
 import passport from "passport";
 import { isLoggedIn } from "../middlewares/authentication.js";
-
+import { restrictTo } from "../middlewares/authorization.js";
+import { uploadProfilePicture } from "../utils/multer.js";
 const router = express.Router();
 const clientUrl = process.env.CLIENT_URL;
 const webUrl =
@@ -95,6 +97,7 @@ router.get("/get-me", isLoggedIn, getMe);
 router.post("/reset-password", sendEmailToResetPassword);
 router.patch("/reset-password/:resetUserToken", resetUserPassword);
 router.patch("/update-password" ,isLoggedIn, updatePassword);
+router.patch("/update-photo",isLoggedIn, uploadProfilePicture, userUpdatePhoto);
 
 router.get("/google/success", (req, res) => {
   try {

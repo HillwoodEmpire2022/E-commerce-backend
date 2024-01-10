@@ -283,7 +283,6 @@ export const deleteProduct = async(req, res) =>{
     })
 
   } catch (error) {
-    console.log(error)
     return res.status(500).json({message:"failed to delete product"})
   }
 

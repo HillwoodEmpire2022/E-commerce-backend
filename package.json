@@ -22,7 +22,7 @@
   "homepage": "https://github.com/HillwoodEmpire2022/E-commerce-backend#readme",
   "dependencies": {
     "bcrypt": "^5.1.1",
-    "cloudinary": "^1.40.0",
+    "cloudinary": "^1.41.2",
     "cookie-parser": "^1.4.6",
     "cookie-session": "^2.0.0",
     "cors": "^2.8.5",

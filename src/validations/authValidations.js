@@ -27,4 +27,8 @@ export const passwordValidation = Joi.object({
     .required()
     .valid(Joi.ref("password"))
     .error(new Error("Passwords do not match")),
-})
+});
+
+export const uploadProfileValidation = Joi.object({
+  profilePicture: Joi.object().required(),
+});
