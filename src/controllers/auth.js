@@ -1,5 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { base64FileStringGenerator } from '../utils/base64Converter.js';
+
 
 import User from "../models/user.js";
 import SellerProfile from "../models/sellerProfile.js";
@@ -8,10 +10,12 @@ import {
   loginValidationSchema,
   emailValidation,
   passwordValidation,
+  uploadProfileValidation
 } from "../validations/authValidations.js";
 import { generateJWToken } from "../utils/jsonWebToken.js";
 import { sendActivationEmail } from "../utils/activationEmail.js";
 import { sendEmail } from "../utils/sendEmail.js";
+import { uploadProfileImageToCloudinary } from "../utils/cloudinary.js";
 
 // ********* Register ************
 export const userRegister = async (req, res, next) => {
@@ -250,7 +254,6 @@ export const sendEmailToResetPassword = async (req, res, user) => {
       .status(201)
       .json({ message: "check your email to reset password" });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ message: "failed to  reset password" });
   }
 };
@@ -299,7 +302,6 @@ export const resetUserPassword = async (req, res) => {
 
     return res.status(201).json({ message: "password  reset successfully" });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ message: "failed to reset user password" });
   }
 };
@@ -365,9 +367,58 @@ export const updatePassword = async (req, res) => {
     })
 
   } catch (error) {
-    console.log(error);
     return res.status(500).json({
       massage:"failed to update password"
     })
+  }
+};
+
+export const userUpdatePhoto = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // const { error } = uploadProfileValidation.validate(req.body, {
+    //   errors: { label: 'key', wrap: { label: false } },
+    //   allowUnknown: true,
+    // });
+
+    // if (error) {
+    //   return res.status(422).json({ message: error.message });
+    // }
+
+    const allowedImageTypes = ["image/jpeg", "image/png", "image/jpg"];
+
+    if (!req.file || !allowedImageTypes.includes(req.file.mimetype)) {
+      return res.status(400).json({ message: 'Invalid image format. Allowed formats: JPEG, PNG, JPG' });
+    }
+
+    let profileImageString = base64FileStringGenerator(req.file).content;
+
+    if (!profileImageString) {
+      return res.status(400).json({ message: 'There is no profile image attached.' });
+    }
+
+    const uploadedProfileImage = await uploadProfileImageToCloudinary(
+      profileImageString,
+      user.useName
+    );
+
+    user.photo = uploadedProfileImage.url;
+    await user.save();
+
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        user,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Failed to update profile picture" });
   }
 };
