@@ -405,7 +405,7 @@ export const userUpdatePhoto = async (req, res) => {
 
     const uploadedProfileImage = await uploadProfileImageToCloudinary(
       profileImageString,
-      user.useName
+      user.userName
     );
 
     user.photo = uploadedProfileImage.url;
@@ -418,7 +418,35 @@ export const userUpdatePhoto = async (req, res) => {
       },
     });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ message: "Failed to update profile picture" });
   }
+};
+
+
+// user update personal information
+export const userUpdateProfile = async(req, res) => {
+try {
+
+const userId = req.user._id;
+const user = await User.findById({_id:userId});
+
+if(!user){
+  return res.status(400).json({message:"user not found"});
+
+}
+const{ firstName, lastName } = req.body;
+
+const newUser = await User.findOneAndUpdate(
+  {_id:userId},
+  {firstName,lastName},
+  {new:true});
+
+  return res.status(201).json({
+    message:"successfull to update profile",
+    newUser
+  });
+  
+} catch (error) {
+  return res.status(500).json({message:"failed to update profile"});
+}
 };

@@ -422,3 +422,47 @@ describe('Testing update user password after login', () => {
     expect(response.statusCode).toBe(401);
   });
 });
+
+describe("user update profile data",()=>{
+  let token = '',
+  userId = '';
+beforeAll(async () => {
+  // Register user
+  const response = await request(app)
+    .post('/api/v1/auth/register')
+    .send({
+      firstName: 'myfirstname1',
+      lastName: 'mysecondname2',
+      email: 'testemail1234@gmail.com',
+      password: 'testpass2345',
+    });
+  token = await response.body.token;
+});
+
+beforeEach(async () => {
+  // Login user
+  const response = await request(app)
+    .post('/api/v1/auth/login')
+    .send({
+      email: 'testemail1234@gmail.com',
+      password: 'testpass2345',
+    });
+  token = signin({ id: response.id });
+  userId = response.body.user ? response.body.user._id : null;
+});
+
+it("it should return 401 if user is not loged in",async()=>{
+const response = await request(app).patch("/api/v1/auth/profile-data");
+expect(response.status).toBe(401);
+});
+
+it("it should return 401 if user is not found",async()=>{
+const res = await request(app).patch("/api/v1/auth/profile-data")
+.set('Authorization',`Bearer ${token}`)
+.send({
+    firstName:"ben",
+    lastName:"big"
+});
+expect(res.statusCode).toBe(401);
+});
+});
