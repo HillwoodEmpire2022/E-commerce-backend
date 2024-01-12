@@ -8,7 +8,8 @@ import {
   resetUserPassword,
   getMe,
   updatePassword,
-  userUpdatePhoto
+  userUpdatePhoto,
+  userUpdateProfile
 } from "../controllers/auth.js";
 import passport from "passport";
 import { isLoggedIn } from "../middlewares/authentication.js";
@@ -98,6 +99,7 @@ router.post("/reset-password", sendEmailToResetPassword);
 router.patch("/reset-password/:resetUserToken", resetUserPassword);
 router.patch("/update-password" ,isLoggedIn, updatePassword);
 router.patch("/update-photo",isLoggedIn, uploadProfilePicture, userUpdatePhoto);
+router.patch("/profile-data",isLoggedIn, userUpdateProfile);
 
 router.get("/google/success", (req, res) => {
   try {

@@ -97,7 +97,7 @@ Router.patch("/:productId", isLoggedIn, updateProductData);
  *              schema:
  *                type: array
  */
-Router.get("/products/category/:categoryId", getProductsByCategory);
+Router.get("/category/:categoryId", getProductsByCategory);
 
 /**
  * @swagger
@@ -120,7 +120,7 @@ Router.get("/products/category/:categoryId", getProductsByCategory);
  *              schema:
  *                type: array
  */
-Router.get("/products/subcategory/:subcategoryId", getProductsBySubCategory);
+Router.get("/subcategory/:subcategoryId", getProductsBySubCategory);
 Router.delete("/:productId", isLoggedIn, restrictTo("admin","seller"), deleteProduct )
 
 export default Router;
