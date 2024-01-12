@@ -51,8 +51,8 @@ export const checkout = async (req, res, next) => {
   // A frontend URL
   const redirect_url =
     process.env.NODE_ENV === 'development'
-      ? 'https://feliglobalmarkets.netlify.app'
-      : 'https://feliglobalmarkets.netlify.app';
+      ? 'https://hillglobalmarket.netlify.app'
+      : 'https://hillglobalmarket.netlify.app';
 
   try {
     const session = await mongoose.startSession();
