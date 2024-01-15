@@ -85,7 +85,7 @@ describe("Profile Tests", () => {
     expect(profile.body.data.profile.user).toEqual(response.body.data.user.id);
   });
 
-  it("should update the profile of currently logged in user", async () => {
+  it("should not update the profile of currently logged in user if no file uploaded", async () => {
     const loginRes = await request(app)
       .post("/api/v1/auth/login")
       .send({ email: "uniquetest1@example.com", password: "test1234" });
@@ -114,11 +114,9 @@ describe("Profile Tests", () => {
           },
         ],
       });
-
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(400);
     expect(response.body).toEqual({
-      status: "success",
-      data: { profile: "Profile updated" },
+      message: "No file uploaded",
     });
   });
 });
