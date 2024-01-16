@@ -52,8 +52,8 @@ export const checkout = async (req, res, next) => {
   // A frontend URL
   const redirect_url =
     process.env.NODE_ENV === 'development'
-      ? 'https://webhook.site/7bbde6f8-30f5-4d1a-83ec-f993b10c3887'
-      : 'https://webhook.site/7bbde6f8-30f5-4d1a-83ec-f993b10c3887';
+      ? 'https://hillglobalmarket.netlify.app'
+      : 'https://hillglobalmarket.netlify.app';
 
   try {
     const session = await mongoose.startSession();
