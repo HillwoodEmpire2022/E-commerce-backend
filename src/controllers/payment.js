@@ -3,6 +3,7 @@ import Flutterwave from 'flutterwave-node-v3';
 import axios from 'axios';
 import mongoose from 'mongoose';
 import Order from '../models/order.js';
+import Product from '../models/product.js';
 
 async function flutterwaveChackout(
   customerId,
@@ -51,8 +52,8 @@ export const checkout = async (req, res, next) => {
   // A frontend URL
   const redirect_url =
     process.env.NODE_ENV === 'development'
-      ? 'https://hillglobalmarket.netlify.app'
-      : 'https://hillglobalmarket.netlify.app';
+      ? 'https://webhook.site/7bbde6f8-30f5-4d1a-83ec-f993b10c3887'
+      : 'https://webhook.site/7bbde6f8-30f5-4d1a-83ec-f993b10c3887';
 
   try {
     const session = await mongoose.startSession();
@@ -60,6 +61,7 @@ export const checkout = async (req, res, next) => {
 
     await session.withTransaction(async () => {
       // Create Order
+      // TODO: Check Quantity Avalability OR Do Not Display Products
       await Order.create([order], { session });
       // Checkout to flutterwave
       checkoutResponse = await flutterwaveChackout(
@@ -78,6 +80,7 @@ export const checkout = async (req, res, next) => {
 
     res.status(200).json(checkoutResponse);
   } catch (error) {
+    console.log(error);
     res.status(500).json({
       status: 'fail',
       message: error.message,
@@ -85,45 +88,52 @@ export const checkout = async (req, res, next) => {
   }
 };
 
-// TODO Update Order, products, and verify transaction
-// export const verifyTransaction = async (req, res) => {
-//   // Verify Transaction
-//   const respose = await verifyTrans(String(req.body.data.id));
+// Verify Transaction, Create order, and update product quantities
+export const verifyTransaction = async (req, res) => {
+  // Verify Transaction
+  const respose = await verifyTrans(String(req.body.data.id));
 
-//   // Update Products Quantities
-//   if (respose.data.status !== 'successful')
-//     return res.status(500).json({
-//       status: 'error',
-//       message:
-//         'There was an error processing payment! Please try again later.',
-//     });
+  // Update Products Quantities
+  if (respose.data.status !== 'successful')
+    return res.status(500).json({
+      status: 'error',
+      message: 'There was an error processing payment! Please try again later.',
+    });
 
-//   const order = await Order.findOne({
-//     tx_ref: respose.data.tx_ref,
-//   });
+  const order = await Order.findOne({
+    tx_ref: respose.data.tx_ref,
+  });
 
-//   order.status = 'pending';
-//   order.transId = respose.data.id;
+  order.status = 'pending';
+  order.transId = respose.data.id;
 
-//   await order.save({
-//     validateBeforeSave: false,
-//   });
+  await order.save({
+    validateBeforeSave: false,
+  });
 
-//   res.status(200).json({
-//     status: 'success',
-//     message: 'Payment was successfull',
-//   });
-// };
+  // Update Order Products quantities
+  const orderProducts = order.items;
+  orderProducts.forEach(async ({ product, quantity }) => {
+    const orderProduct = await Product.findById(product, ['stockQuantity']);
+    orderProduct.stockQuantity -= quantity;
+    await orderProduct.save();
+  });
 
-// async function verifyTrans(transactionId) {
-//   const flw = new Flutterwave(
-//     process.env.FLW_PUBLIC_KEY,
-//     process.env.FLW_SECRET_KEY
-//   );
+  res.status(200).json({
+    status: 'success',
+    message: 'Payment was successfull',
+  });
+};
 
-//   const response = await flw.Transaction.verify({
-//     id: `${transactionId}`,
-//   });
+async function verifyTrans(transactionId) {
+  const flw = new Flutterwave(
+    process.env.FLW_PUBLIC_KEY,
+    process.env.FLW_SECRET_KEY
+  );
 
-//   return response;
-// }
+  const response = await flw.Transaction.verify({
+    id: `${transactionId}`,
+  });
+
+  return response;
+}
