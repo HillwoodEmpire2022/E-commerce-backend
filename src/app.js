@@ -18,6 +18,7 @@ import subCategoryRouter from './routes/subcategories.routes.js';
 import sprofileRouter from './routes/profile.routes.js';
 import sellerRoute from './routes/seller.routes.js';
 import paymentRouter from './routes/payment.routes.js';
+import orderRouter from './routes/order.routes.js';
 
 const app = express();
 dotenv.config();
@@ -46,6 +47,7 @@ app.use(
       'https://feliglobalmarkets.netlify.app',
       'https://admin-feliglobalmakert.vercel.app',
       'https://admin-phi-gules.vercel.app',
+      'https://webhook.site/7bbde6f8-30f5-4d1a-83ec-f993b10c3887',
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
@@ -94,6 +96,7 @@ app.use('/api/v1/profiles', sprofileRouter);
 app.use('/api/v1/carts', cartRouter);
 app.use('/api/v1/sellers', sellerRoute);
 app.use('/api/v1/payments', paymentRouter);
+app.use('/api/v1/orders', orderRouter);
 app.get('/logout', (req, res) => {
   for (const key in req.session) {
     if (req.session.hasOwnProperty(key)) {
