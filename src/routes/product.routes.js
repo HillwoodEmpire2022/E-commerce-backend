@@ -1,4 +1,4 @@
-import express from "express";
+import express from 'express';
 
 import {
   getAllProducts,
@@ -8,10 +8,11 @@ import {
   createProduct,
   deleteProduct,
   updateProductData,
-} from "../controllers/product.js";
-import { upload } from "../utils/multer.js";
-import { isLoggedIn } from "../middlewares/authentication.js";
-import { restrictTo } from "../middlewares/authorization.js";
+} from '../controllers/product.js';
+import { upload } from '../utils/multer.js';
+import { isLoggedIn } from '../middlewares/authentication.js';
+import { restrictTo } from '../middlewares/authorization.js';
+import { checkUser } from '../middlewares/checkUser.js';
 
 const Router = express.Router();
 
@@ -23,13 +24,13 @@ const Router = express.Router();
  */
 
 Router.post(
-  "/",
+  '/',
   isLoggedIn,
-  restrictTo("admin", "seller"),
+  restrictTo('admin', 'seller'),
   upload.fields([
-    { name: "productThumbnail", maxCount: 1 },
-    { name: "otherImages", maxCount: 6 },
-    { name: "colorImages", maxCount: 6 },
+    { name: 'productThumbnail', maxCount: 1 },
+    { name: 'otherImages', maxCount: 6 },
+    { name: 'colorImages', maxCount: 6 },
   ]),
   createProduct
 );
@@ -49,7 +50,7 @@ Router.post(
  *                type: array
  *
  */
-Router.get("/", getAllProducts);
+Router.get('/', checkUser, getAllProducts);
 
 /**
  * @swagger
@@ -72,9 +73,9 @@ Router.get("/", getAllProducts);
  *              schema:
  *                type: object
  */
-Router.get("/:productId", getSingleProduct);
+Router.get('/:productId', getSingleProduct);
 
-Router.patch("/:productId", isLoggedIn, updateProductData);
+Router.patch('/:productId', isLoggedIn, updateProductData);
 
 /**
  * @swagger
@@ -97,7 +98,7 @@ Router.patch("/:productId", isLoggedIn, updateProductData);
  *              schema:
  *                type: array
  */
-Router.get("/category/:categoryId", getProductsByCategory);
+Router.get('/category/:categoryId', getProductsByCategory);
 
 /**
  * @swagger
@@ -120,7 +121,12 @@ Router.get("/category/:categoryId", getProductsByCategory);
  *              schema:
  *                type: array
  */
-Router.get("/subcategory/:subcategoryId", getProductsBySubCategory);
-Router.delete("/:productId", isLoggedIn, restrictTo("admin","seller"), deleteProduct )
+Router.get('/subcategory/:subcategoryId', getProductsBySubCategory);
+Router.delete(
+  '/:productId',
+  isLoggedIn,
+  restrictTo('admin', 'seller'),
+  deleteProduct
+);
 
 export default Router;

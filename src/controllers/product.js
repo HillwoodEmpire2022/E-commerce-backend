@@ -139,7 +139,9 @@ export const createProduct = async (req, res) => {
 
 export const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find()
+    const queryObj = {};
+    if (req?.user?.role === 'seller') queryObj.seller = req.user._id;
+    const products = await Product.find(queryObj)
       .populate({
         path: 'seller',
         select: 'email',
@@ -166,6 +168,7 @@ export const getAllProducts = async (req, res) => {
     }
     res.status(200).json({
       status: 'success',
+      count: products.length,
       data: {
         products,
       },
@@ -255,37 +258,38 @@ export const getProductsBySubCategory = async (req, res) => {
 };
 
 // delete product
-export const deleteProduct = async(req, res) =>{
+export const deleteProduct = async (req, res) => {
   try {
-   
-    const {productId}=req.params;
+    const { productId } = req.params;
 
-     // find product by id
-    const product = await Product.findById({_id:productId});
+    // find product by id
+    const product = await Product.findById({ _id: productId });
 
     // check if the product exists
-    if(!product){
-    return res.status(404).json({
-      message:"product not found"})
+    if (!product) {
+      return res.status(404).json({
+        message: 'product not found',
+      });
     }
     // check if the user is admin and the product is the owner of product
-    if (product.seller.toString()
-     !== req.user._id.toString() &&
-     req.user.role != "admin") {
+    if (
+      product.seller.toString() !== req.user._id.toString() &&
+      req.user.role != 'admin'
+    ) {
       return res.status(403).json({
-         message: " You are not the owner of this product"
-         });
+        message: ' You are not the owner of this product',
+      });
     }
     // delete product if it is exist
-    await Product.deleteOne({_id:productId});
+    await Product.deleteOne({ _id: productId });
     return res.status(201).json({
-      message:"product deleted succesfully"
-    })
-
+      message: 'product deleted succesfully',
+    });
   } catch (error) {
-    return res.status(500).json({message:"failed to delete product"})
+    return res
+      .status(500)
+      .json({ message: 'failed to delete product' });
   }
-
 };
 export const updateProductData = async (req, res) => {
   try {
