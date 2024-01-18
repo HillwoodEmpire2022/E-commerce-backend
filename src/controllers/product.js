@@ -7,6 +7,8 @@ import {
   updateProductsValidation,
   uploadProductValidation,
 } from '../validations/productValidation.js';
+import Category from '../models/category.js';
+import SubCategory from '../models/subcategory.js';
 
 export const createProduct = async (req, res) => {
   try {
@@ -346,3 +348,65 @@ export const updateProductData = async (req, res) => {
     });
   }
 };
+
+// user search product
+export const searchProduct = async (req, res) => {
+  try {
+    const searchItem = req.body.searchItem;
+
+    const searchConditions = [
+      { "name": { $regex: "^" + searchItem + "$", $options: 'i' } }
+    ];
+
+    if (searchItem) {
+      const category = await Category.findOne({
+        name: { $regex: "^" + searchItem + "$", $options: 'i' },
+      });
+
+      const subcategory = await SubCategory.findOne({
+        name: { $regex: "^" + searchItem + "$", $options: 'i' }
+      });
+
+      if (category) {
+        searchConditions.push({ "category": category._id });
+      }
+
+      if (subcategory) {
+        searchConditions.push({ "subcategory": subcategory._id });
+      }
+    }
+
+    if (!isNaN(searchItem)) {
+      searchConditions.push({ "price": parseFloat(searchItem) });
+    }
+
+    const products = await Product.find({ $or: searchConditions })
+      .populate({
+        path: 'category',
+        select: 'name',
+      })
+      .populate({
+        path: 'subcategory',
+        select: 'name',
+      })
+      .exec();
+
+    if (products.length === 0) {
+      return res.status(404).json({
+        status: "fail",
+        message: "No items found"
+      });
+    }
+
+    return res.status(200).json({
+      status: "success",
+      data: { products }
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: "error",
+      message: "Failed to search products"
+    });
+  }
+};
+

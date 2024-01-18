@@ -8,10 +8,11 @@ import {
   createProduct,
   deleteProduct,
   updateProductData,
-} from '../controllers/product.js';
-import { upload } from '../utils/multer.js';
-import { isLoggedIn } from '../middlewares/authentication.js';
-import { restrictTo } from '../middlewares/authorization.js';
+  searchProduct,
+} from "../controllers/product.js";
+import { upload } from "../utils/multer.js";
+import { isLoggedIn } from "../middlewares/authentication.js";
+import { restrictTo } from "../middlewares/authorization.js";
 import { checkUser } from '../middlewares/checkUser.js';
 
 const Router = express.Router();
@@ -121,12 +122,8 @@ Router.get('/category/:categoryId', getProductsByCategory);
  *              schema:
  *                type: array
  */
-Router.get('/subcategory/:subcategoryId', getProductsBySubCategory);
-Router.delete(
-  '/:productId',
-  isLoggedIn,
-  restrictTo('admin', 'seller'),
-  deleteProduct
-);
+Router.get("/subcategory/:subcategoryId", getProductsBySubCategory);
+Router.delete("/:productId", isLoggedIn, restrictTo("admin","seller"), deleteProduct )
+Router.post("/search", searchProduct);
 
 export default Router;
