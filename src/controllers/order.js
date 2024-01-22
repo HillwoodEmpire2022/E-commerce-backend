@@ -1,4 +1,5 @@
 import Order from '../models/order.js';
+import orderSchemaJoi from '../validations/orderValidation.js';
 
 export const getOrders = async (req, res, next) => {
   try {
@@ -38,6 +39,40 @@ export const getOrders = async (req, res, next) => {
     res.status(500).json({
       status: 'error',
       message: 'internal server error! Please try again.',
+    });
+  }
+};
+
+export const updateOrder = async (req, res) => {
+  try {
+    const { error } = orderSchemaJoi.validate(req.body, {
+      errors: { label: 'key', wrap: { label: false } },
+    });
+    if (error) {
+      return res.status(400).json({ status: 'fail', message: error.message });
+    }
+
+    if (req.body?.items)
+      return res
+        .status(400)
+        .json({ status: 'fail', message: 'you cannot update order items' });
+
+    const order = await Order.findByIdAndUpdate(req.params.id, req.body);
+
+    if (!order)
+      return res.status(404).json({
+        status: 'fail',
+        message: 'order not found.',
+      });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'order updated successfully!',
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: 'internal server error',
     });
   }
 };
@@ -82,8 +117,7 @@ async function getOrdersBySeller(sellerId) {
                     description: '$$detail.description',
                     price: '$$detail.price',
                     seller: '$$detail.seller',
-                    thumbnail:
-                      '$$detail.productImages.productThumbnail.url',
+                    thumbnail: '$$detail.productImages.productThumbnail.url',
                   },
                 },
               },
