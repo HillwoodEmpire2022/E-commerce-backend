@@ -1,5 +1,8 @@
 import Order from '../models/order.js';
+import APIFeatures from '../utils/APIFeatures.js';
 import orderSchemaJoi from '../validations/orderValidation.js';
+
+// export getOrdersBySeller
 
 export const getOrders = async (req, res, next) => {
   try {
@@ -7,25 +10,23 @@ export const getOrders = async (req, res, next) => {
     const { role, _id } = req.user;
 
     // Create Query Object
-
-    const queryObj = {};
-    let orders;
-
-    // For Customers
-    if (role === 'customer') {
-      queryObj.customer = _id;
-      orders = await Order.find(queryObj);
-    }
+    let filter, orders;
 
     // For Seller
     if (role === 'seller') {
       orders = await getOrdersBySeller(_id);
-    }
+    } else {
+      if (role === 'customer') filter = { customer: _id };
+      if (role === 'admin') filter = {};
 
-    // For admin
-    // Query all orders
-    if (role === 'admin') {
-      orders = await Order.find();
+      // EXECUTE QUERY
+      const features = new APIFeatures(Order.find(filter), req.query)
+        .filter()
+        .sort()
+        .limitFields()
+        .paginate();
+
+      orders = await features.query;
     }
 
     res.status(200).json({
@@ -36,6 +37,7 @@ export const getOrders = async (req, res, next) => {
       },
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({
       status: 'error',
       message: 'internal server error! Please try again.',
