@@ -47,7 +47,7 @@ app.use(
       'https://feliglobalmarkets.netlify.app',
       'https://admin-feliglobalmakert.vercel.app',
       'https://admin-phi-gules.vercel.app',
-      'https://e-commerce-frontend-pi-seven.vercel.app/',
+      'https://e-commerce-frontend-pi-seven.vercel.app',
       'https://webhook.site/7bbde6f8-30f5-4d1a-83ec-f993b10c3887',
     ],
     credentials: true,
