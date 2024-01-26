@@ -1,8 +1,7 @@
 import Order from '../models/order.js';
 import APIFeatures from '../utils/APIFeatures.js';
+import { mongoIdValidator } from '../validations/mongoidValidator.js';
 import orderSchemaJoi from '../validations/orderValidation.js';
-
-// export getOrdersBySeller
 
 export const getOrders = async (req, res, next) => {
   try {
@@ -41,6 +40,48 @@ export const getOrders = async (req, res, next) => {
     res.status(500).json({
       status: 'error',
       message: 'internal server error! Please try again.',
+    });
+  }
+};
+
+export const getOrder = async (req, res) => {
+  try {
+    const filter = {
+      _id: req.params.id,
+    };
+
+    let order;
+    const { role, _id } = req.user;
+
+    const { error } = mongoIdValidator.validate(req.params, {
+      errors: { label: 'key', wrap: { label: false } },
+    });
+
+    if (error) {
+      return res.status(400).json({ status: 'fail', message: error.message });
+    }
+
+    if (role === 'customer') filter.customer = _id;
+
+    order = await Order.findOne(filter);
+
+    if (!order)
+      return res.status(404).json({
+        status: 'fail',
+        message: 'order not found.',
+      });
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        order,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      status: 'error',
+      message: 'internal server error',
     });
   }
 };
