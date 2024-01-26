@@ -16,7 +16,7 @@ async function flutterwaveChackout(
   email
 ) {
   const response = await axios.post(
-    'https://api.flutterwave.com/v3/payments',
+    process.env.FW_PAYMENT_URL,
     {
       tx_ref,
       amount,
@@ -50,11 +50,7 @@ export const checkout = async (req, res, next) => {
   const { email, firstName, lastName } = req.user;
 
   // A frontend URL
-  const redirect_url =
-    process.env.NODE_ENV === 'development'
-      ? 'https://webhook.site/7bbde6f8-30f5-4d1a-83ec-f993b10c3887'
-      : 'https://webhook.site/7bbde6f8-30f5-4d1a-83ec-f993b10c3887';
-
+  const redirect_url = process.env.FN_URL;
   try {
     const session = await mongoose.startSession();
     let checkoutResponse;
