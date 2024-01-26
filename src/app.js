@@ -48,7 +48,7 @@ app.use(
       'https://admin-feliglobalmakert.vercel.app',
       'https://admin-phi-gules.vercel.app',
       'https://e-commerce-frontend-pi-seven.vercel.app',
-      'https://webhook.site/7bbde6f8-30f5-4d1a-83ec-f993b10c3887',
+      'https://api.flutterwave.com',
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
