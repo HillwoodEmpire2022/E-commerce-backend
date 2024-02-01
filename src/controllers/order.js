@@ -121,10 +121,17 @@ export const updateOrder = async (req, res) => {
 };
 
 async function getOrdersBySeller(sellerId, query = {}) {
+  // Pagination
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 20;
+  const skip = (page - 1) * limit;
+
+  //  Filtering by status
   const filter = {
     ...(query.status && { status: query.status }),
   };
 
+  // Selecting certain fields (projection)
   const projection = query.fields
     ? query.fields.split(',').reduce((acc, field) => {
         return { ...acc, [field]: 1 };
@@ -143,11 +150,11 @@ async function getOrdersBySeller(sellerId, query = {}) {
   try {
     const stats = await Order.aggregate([
       {
-        $match: filter,
+        $unwind: '$items',
       },
 
       {
-        $unwind: '$items',
+        $match: filter,
       },
 
       {
@@ -206,12 +213,24 @@ async function getOrdersBySeller(sellerId, query = {}) {
           },
           amount: { $first: '$amount' },
           phoneNumber: { $first: '$phoneNumber' },
-          OrderDate: { $first: '$createdAt' },
+          orderDate: { $first: '$createdAt' },
           shippingAddress: { $first: '$shippingAddress' },
           transactionId: { $first: '$transId' },
           status: { $first: '$status' },
           customer: { $first: '$customer' },
         },
+      },
+
+      {
+        $sort: { ['orderDate']: -1 },
+      },
+
+      {
+        $skip: skip,
+      },
+
+      {
+        $limit: limit,
       },
 
       {
