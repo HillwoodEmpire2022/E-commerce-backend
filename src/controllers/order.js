@@ -13,7 +13,7 @@ export const getOrders = async (req, res, next) => {
 
     // For Seller
     if (role === 'seller') {
-      orders = await getOrdersBySeller(_id);
+      orders = await getOrdersBySeller(_id, req.query);
     } else {
       if (role === 'customer') filter = { customer: _id };
       if (role === 'admin') filter = {};
@@ -120,11 +120,41 @@ export const updateOrder = async (req, res) => {
   }
 };
 
-async function getOrdersBySeller(sellerId) {
+async function getOrdersBySeller(sellerId, query = {}) {
+  // Pagination
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 20;
+  const skip = (page - 1) * limit;
+
+  //  Filtering by status
+  const filter = {
+    ...(query.status && { status: query.status }),
+  };
+
+  // Selecting certain fields (projection)
+  const projection = query.fields
+    ? query.fields.split(',').reduce((acc, field) => {
+        return { ...acc, [field]: 1 };
+      }, {})
+    : {
+        customer: 1,
+        tx_ref: 1,
+        transId: 1,
+        items: 1,
+        phoneNumber: 1,
+        amount: 1,
+        status: 1,
+        shippingAddress: 1,
+      };
+
   try {
     const stats = await Order.aggregate([
       {
         $unwind: '$items',
+      },
+
+      {
+        $match: filter,
       },
 
       {
@@ -183,11 +213,29 @@ async function getOrdersBySeller(sellerId) {
           },
           amount: { $first: '$amount' },
           phoneNumber: { $first: '$phoneNumber' },
-          OrderDate: { $first: '$createdAt' },
+          orderDate: { $first: '$createdAt' },
           shippingAddress: { $first: '$shippingAddress' },
           transactionId: { $first: '$transId' },
           status: { $first: '$status' },
           customer: { $first: '$customer' },
+        },
+      },
+
+      {
+        $sort: { ['orderDate']: -1 },
+      },
+
+      {
+        $skip: skip,
+      },
+
+      {
+        $limit: limit,
+      },
+
+      {
+        $project: {
+          ...projection,
         },
       },
     ]);
