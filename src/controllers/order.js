@@ -125,6 +125,21 @@ async function getOrdersBySeller(sellerId, query = {}) {
     ...(query.status && { status: query.status }),
   };
 
+  const projection = query.fields
+    ? query.fields.split(',').reduce((acc, field) => {
+        return { ...acc, [field]: 1 };
+      }, {})
+    : {
+        customer: 1,
+        tx_ref: 1,
+        transId: 1,
+        items: 1,
+        phoneNumber: 1,
+        amount: 1,
+        status: 1,
+        shippingAddress: 1,
+      };
+
   try {
     const stats = await Order.aggregate([
       {
@@ -196,6 +211,12 @@ async function getOrdersBySeller(sellerId, query = {}) {
           transactionId: { $first: '$transId' },
           status: { $first: '$status' },
           customer: { $first: '$customer' },
+        },
+      },
+
+      {
+        $project: {
+          ...projection,
         },
       },
     ]);
