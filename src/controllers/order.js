@@ -13,7 +13,7 @@ export const getOrders = async (req, res, next) => {
 
     // For Seller
     if (role === 'seller') {
-      orders = await getOrdersBySeller(_id);
+      orders = await getOrdersBySeller(_id, req.query);
     } else {
       if (role === 'customer') filter = { customer: _id };
       if (role === 'admin') filter = {};
@@ -120,9 +120,17 @@ export const updateOrder = async (req, res) => {
   }
 };
 
-async function getOrdersBySeller(sellerId) {
+async function getOrdersBySeller(sellerId, query = {}) {
+  const filter = {
+    ...(query.status && { status: query.status }),
+  };
+
   try {
     const stats = await Order.aggregate([
+      {
+        $match: filter,
+      },
+
       {
         $unwind: '$items',
       },
