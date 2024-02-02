@@ -3,11 +3,6 @@ import morgan from 'morgan';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
-import passport from 'passport';
-
-import { passportConfig } from './utils/passportConfig.js';
-import cookieSession from 'cookie-session';
-import cookieParser from 'cookie-parser';
 
 // Routes
 import authRouter from './routes/auth.routes.js';
@@ -38,6 +33,7 @@ if (
   app.use(morgan('dev'));
 }
 
+// Cors
 app.use(
   cors({
     origin: [
@@ -55,39 +51,6 @@ app.use(
   })
 );
 
-app.use(
-  cookieSession({
-    secret: process.env.SESSION_SECRET,
-    resave: true,
-    saveUninitialized: true,
-    cookie: {
-      secure: false,
-      name: 'session_cookie',
-      sameSite: 'None',
-    },
-  })
-);
-
-app.use(function (request, response, next) {
-  if (request.session && !request.session.regenerate) {
-    request.session.regenerate = (cb) => {
-      cb();
-    };
-  }
-  if (request.session && !request.session.save) {
-    request.session.save = (cb) => {
-      cb();
-    };
-  }
-  next();
-});
-
-app.use(cookieParser());
-app.use(passport.initialize());
-app.use(passport.session());
-
-passportConfig();
-
 // Routing
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/products', productRouter);
@@ -98,18 +61,7 @@ app.use('/api/v1/carts', cartRouter);
 app.use('/api/v1/sellers', sellerRoute);
 app.use('/api/v1/payments', paymentRouter);
 app.use('/api/v1/orders', orderRouter);
-app.get('/logout', (req, res) => {
-  for (const key in req.session) {
-    if (req.session.hasOwnProperty(key)) {
-      delete req.session[key];
-    }
-  }
 
-  req.session = null;
-  res.clearCookie('session_cookie');
-
-  res.redirect(302, clientUrl);
-});
 app.use('*', (req, res, next) => {
   res.status(404).json({
     status: 'fail',

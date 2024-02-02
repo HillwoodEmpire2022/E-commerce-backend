@@ -213,7 +213,7 @@ async function getOrdersBySeller(sellerId, query = {}) {
           },
           amount: { $first: '$amount' },
           phoneNumber: { $first: '$phoneNumber' },
-          orderDate: { $first: '$createdAt' },
+          createdAt: { $first: '$createdAt' },
           shippingAddress: { $first: '$shippingAddress' },
           transactionId: { $first: '$transId' },
           status: { $first: '$status' },
@@ -222,7 +222,7 @@ async function getOrdersBySeller(sellerId, query = {}) {
       },
 
       {
-        $sort: { ['orderDate']: -1 },
+        $sort: { ['createdAt']: -1 },
       },
 
       {
