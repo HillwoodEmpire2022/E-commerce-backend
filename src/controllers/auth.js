@@ -1,21 +1,20 @@
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import { base64FileStringGenerator } from '../utils/base64Converter.js';
 
-
-import User from "../models/user.js";
-import SellerProfile from "../models/sellerProfile.js";
+import User from '../models/user.js';
+import SellerProfile from '../models/sellerProfile.js';
 import {
   signupValidationSchema,
   loginValidationSchema,
   emailValidation,
   passwordValidation,
-  uploadProfileValidation
-} from "../validations/authValidations.js";
-import { generateJWToken } from "../utils/jsonWebToken.js";
-import { sendActivationEmail } from "../utils/activationEmail.js";
-import { sendEmail } from "../utils/sendEmail.js";
-import { uploadProfileImageToCloudinary } from "../utils/cloudinary.js";
+  uploadProfileValidation,
+} from '../validations/authValidations.js';
+import { generateJWToken } from '../utils/jsonWebToken.js';
+import { sendActivationEmail } from '../utils/activationEmail.js';
+import { sendEmail } from '../utils/sendEmail.js';
+import { uploadProfileImageToCloudinary } from '../utils/cloudinary.js';
 
 // ********* Register ************
 export const userRegister = async (req, res, next) => {
@@ -23,11 +22,11 @@ export const userRegister = async (req, res, next) => {
   try {
     // 1) Validate user data
     const { error } = signupValidationSchema.validate(req.body, {
-      errors: { label: "key", wrap: { label: false } },
+      errors: { label: 'key', wrap: { label: false } },
     });
 
     if (error) {
-      return res.status(400).json({ status: "fail", message: error.message });
+      return res.status(400).json({ status: 'fail', message: error.message });
     }
     // Generate verification token
     const activationToken = jwt.sign(
@@ -39,7 +38,7 @@ export const userRegister = async (req, res, next) => {
     const newUser = await User.create({ ...req.body, activationToken });
 
     // If user is seller create seller profile
-    if (req.body.role === "seller") {
+    if (req.body.role === 'seller') {
       await SellerProfile.create({ user: newUser._id });
     }
 
@@ -50,7 +49,7 @@ export const userRegister = async (req, res, next) => {
     // Email Obtions
     const emailOptions = {
       to: newUser.email,
-      subject: "Email activation Link",
+      subject: 'Email activation Link',
       text: `Hello ${newUser.firstName}, Welcome! to hill group!`,
       url,
     };
@@ -61,27 +60,27 @@ export const userRegister = async (req, res, next) => {
       console.log(error);
       // TODO: Delete user or use transaction.
       return res.status(500).json({
-        status: "fail",
-        message: "there was an error sending email! Please try again.",
+        status: 'fail',
+        message: 'there was an error sending email! Please try again.',
       });
     }
 
     // 4) Send Successful response
     res.status(201).json({
-      status: "success",
+      status: 'success',
       activationToken:
-        process.env.NODE_ENV === "test" ? activationToken : undefined,
-      data: "Email to activate your account was sent to your email.",
+        process.env.NODE_ENV === 'test' ? activationToken : undefined,
+      data: 'Email to activate your account was sent to your email.',
     });
   } catch (error) {
     if (error.code === 11000) {
       return res.status(400).json({
-        status: "fail",
+        status: 'fail',
         message: `Email (${email}) already in use.`,
       });
     }
     res.status(500).json({
-      status: "fail",
+      status: 'fail',
       message: error.message,
     });
   }
@@ -99,13 +98,13 @@ export const activateAccount = async (req, res) => {
     if (!user) {
       return res
         .status(404)
-        .json({ status: "fail", message: "User not found." });
+        .json({ status: 'fail', message: 'User not found.' });
     }
 
     if (user.verified) {
       return res
         .status(400)
-        .json({ status: "fail", message: "Email already verified." });
+        .json({ status: 'fail', message: 'Email already verified.' });
     }
 
     user.verified = true;
@@ -117,9 +116,9 @@ export const activateAccount = async (req, res) => {
 
     return res
       .status(200)
-      .json({ status: "success", message: "Account Activated successfully." });
+      .json({ status: 'success', message: 'Account Activated successfully.' });
   } catch (err) {
-    return res.status(400).json({ message: "Invalid token." });
+    return res.status(400).json({ message: 'Invalid token.' });
   }
 };
 
@@ -130,7 +129,7 @@ export const returnedUserInfo = (user) => {
     lastName: user.lastName,
     role: user.role,
     email: user.email,
-    profileImageUrl: user.profileImageUrl,
+    profileImageUrl: user.photo,
   };
 
   const userToken = generateJWToken({ id: user._id, role: user.role });
@@ -146,10 +145,10 @@ export const userLogin = async (req, res) => {
 
     // Validate user information with joi.
     const { error } = loginValidationSchema.validate(req.body, {
-      errors: { label: "key", wrap: { label: false } },
+      errors: { label: 'key', wrap: { label: false } },
     });
     if (error) {
-      return res.status(400).json({ status: "fail", message: error.message });
+      return res.status(400).json({ status: 'fail', message: error.message });
     }
 
     const user = await User.findOne({ email: email });
@@ -158,27 +157,27 @@ export const userLogin = async (req, res) => {
     if (!user) {
       return res
         .status(401)
-        .json({ status: "fail", message: "Invalid credentials." });
+        .json({ status: 'fail', message: 'Invalid credentials.' });
     }
 
     // Check if account in verified
     if (!user.verified)
       return res.status(401).json({
-        status: "fail",
+        status: 'fail',
         message:
-          "Account not activated! Check your email to activate your account.",
+          'Account not activated! Check your email to activate your account.',
       });
 
     // Check password
     if (!(await bcrypt.compare(password, user.password))) {
       return res
         .status(401)
-        .json({ status: "fail", message: "Invalid credentials." });
+        .json({ status: 'fail', message: 'Invalid credentials.' });
     }
     const response = returnedUserInfo(user);
 
     res.status(200).json({
-      status: "success",
+      status: 'success',
       token: response.token,
       data: {
         user: response.user,
@@ -194,7 +193,7 @@ export const getMe = async (req, res) => {
   const { email, role, id, firstName, lastName, photo } = req.user;
 
   res.status(200).json({
-    status: "success",
+    status: 'success',
     data: {
       user: {
         id,
@@ -222,7 +221,7 @@ export const sendEmailToResetPassword = async (req, res, user) => {
     const { email } = req.body;
 
     const { error } = emailValidation.validate(req.body, {
-      errors: { label: "key", wrap: { label: false } },
+      errors: { label: 'key', wrap: { label: false } },
     });
     if (error) {
       res.status(422).send({ message: error.message });
@@ -232,12 +231,12 @@ export const sendEmailToResetPassword = async (req, res, user) => {
     const checkUserEmail = await User.findOne({ email: email });
 
     if (!checkUserEmail) {
-      return res.status(404).json({ message: "email does not exist" });
+      return res.status(404).json({ message: 'email does not exist' });
     }
 
     const resetUserToken = encodeURIComponent(
       jwt.sign({ email: email }, process.env.JWT_SECRET_KEY, {
-        expiresIn: "1h",
+        expiresIn: '1h',
       })
     );
 
@@ -245,16 +244,16 @@ export const sendEmailToResetPassword = async (req, res, user) => {
 
     const emailOptions = {
       to: email,
-      subject: "Email reset password Link",
+      subject: 'Email reset password Link',
       text: `Hello ${email}, Welcome! to hill group! request has been recieved to reset password.`,
       url,
     };
     await sendEmail(emailOptions);
     return res
       .status(201)
-      .json({ message: "check your email to reset password" });
+      .json({ message: 'check your email to reset password' });
   } catch (error) {
-    return res.status(500).json({ message: "failed to  reset password" });
+    return res.status(500).json({ message: 'failed to  reset password' });
   }
 };
 
@@ -268,7 +267,7 @@ export const resetUserPassword = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ message: "user  not found" });
+      return res.status(404).json({ message: 'user  not found' });
     }
 
     const { newPassword, confirmPassword } = req.body;
@@ -283,7 +282,7 @@ export const resetUserPassword = async (req, res) => {
     }
 
     if (newPassword != confirmPassword) {
-      return res.status(400).json({ message: "password doesn not match" });
+      return res.status(400).json({ message: 'password doesn not match' });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 12);
@@ -297,79 +296,73 @@ export const resetUserPassword = async (req, res) => {
     );
 
     if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    return res.status(201).json({ message: "password  reset successfully" });
+    return res.status(201).json({ message: 'password  reset successfully' });
   } catch (error) {
-    return res.status(500).json({ message: "failed to reset user password" });
+    return res.status(500).json({ message: 'failed to reset user password' });
   }
 };
 
-
 export const updatePassword = async (req, res) => {
-
   try {
     //  find user by Id
     const userId = req.user._id;
     const user = await User.findById(userId);
-   
-  if(!user){
-    return res.status(404).json({
-      message:"user not found"});
-  }
-    const{currentPassword,
-       newPassword, 
-       confirmPassword
-      }
-     = req.body;
 
-     // validate password
-    try {
-      await passwordValidation.validateAsync({ 
-        password: newPassword, 
-        confirmPassword 
+    if (!user) {
+      return res.status(404).json({
+        message: 'user not found',
       });
+    }
+    const { currentPassword, newPassword, confirmPassword } = req.body;
 
+    // validate password
+    try {
+      await passwordValidation.validateAsync({
+        password: newPassword,
+        confirmPassword,
+      });
     } catch (validationError) {
       return res.status(400).json({
-         message: validationError.message 
-        });
+        message: validationError.message,
+      });
     }
-    
+
     // compare currentPassword and password
     const comparePassword = await bcrypt.compare(
-      currentPassword, user.password
-      )
+      currentPassword,
+      user.password
+    );
 
-    if(!comparePassword){
-     return res.status(404).json({
-      message:"current password does not mutch"
-    })
+    if (!comparePassword) {
+      return res.status(404).json({
+        message: 'current password does not mutch',
+      });
     }
 
-    if(newPassword!=confirmPassword){
+    if (newPassword != confirmPassword) {
       return res.status(400).json({
-        message:"password doesn not match"})
+        message: 'password doesn not match',
+      });
     }
 
-  //  update password with newPassword
-    const hashPassword = await bcrypt.hash(newPassword,12) ;
+    //  update password with newPassword
+    const hashPassword = await bcrypt.hash(newPassword, 12);
     await User.findOneAndUpdate(
       { _id: userId },
       { $set: { password: hashPassword } },
-      { new: true}
-
-      );
+      { new: true }
+    );
 
     return res.status(201).json({
-      message:"password updated succesfully"
-    })
-
+      message: 'password updated succesfully',
+    });
   } catch (error) {
     return res.status(500).json({
-      massage:"failed to update password"
-    })
+      massage: 'failed to update password',
+    });
   }
 };
 
@@ -379,7 +372,7 @@ export const userUpdatePhoto = async (req, res) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: 'User not found' });
     }
 
     // const { error } = uploadProfileValidation.validate(req.body, {
@@ -391,16 +384,20 @@ export const userUpdatePhoto = async (req, res) => {
     //   return res.status(422).json({ message: error.message });
     // }
 
-    const allowedImageTypes = ["image/jpeg", "image/png", "image/jpg"];
+    const allowedImageTypes = ['image/jpeg', 'image/png', 'image/jpg'];
 
     if (!req.file || !allowedImageTypes.includes(req.file.mimetype)) {
-      return res.status(400).json({ message: 'Invalid image format. Allowed formats: JPEG, PNG, JPG' });
+      return res.status(400).json({
+        message: 'Invalid image format. Allowed formats: JPEG, PNG, JPG',
+      });
     }
 
     let profileImageString = base64FileStringGenerator(req.file).content;
 
     if (!profileImageString) {
-      return res.status(400).json({ message: 'There is no profile image attached.' });
+      return res
+        .status(400)
+        .json({ message: 'There is no profile image attached.' });
     }
 
     const uploadedProfileImage = await uploadProfileImageToCloudinary(
@@ -418,35 +415,34 @@ export const userUpdatePhoto = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({ message: "Failed to update profile picture" });
+    return res
+      .status(500)
+      .json({ message: 'Failed to update profile picture' });
   }
 };
 
-
 // user update personal information
-export const userUpdateProfile = async(req, res) => {
-try {
+export const userUpdateProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById({ _id: userId });
 
-const userId = req.user._id;
-const user = await User.findById({_id:userId});
+    if (!user) {
+      return res.status(400).json({ message: 'user not found' });
+    }
+    const { firstName, lastName } = req.body;
 
-if(!user){
-  return res.status(400).json({message:"user not found"});
+    const newUser = await User.findOneAndUpdate(
+      { _id: userId },
+      { firstName, lastName },
+      { new: true }
+    );
 
-}
-const{ firstName, lastName } = req.body;
-
-const newUser = await User.findOneAndUpdate(
-  {_id:userId},
-  {firstName,lastName},
-  {new:true});
-
-  return res.status(201).json({
-    message:"successfull to update profile",
-    newUser
-  });
-  
-} catch (error) {
-  return res.status(500).json({message:"failed to update profile"});
-}
+    return res.status(201).json({
+      message: 'successfull to update profile',
+      newUser,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: 'failed to update profile' });
+  }
 };
