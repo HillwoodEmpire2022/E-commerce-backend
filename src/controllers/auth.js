@@ -44,7 +44,10 @@ export const userRegister = async (req, res, next) => {
 
     // 3) Send Verification Email
     // Frontend Url
-    const url = `${process.env.CLIENT_LOCALHOST_URL}/user/verify-account/${activationToken}`;
+    const url = `${
+      process.env.CLIENT_URL ||
+      'https://e-commerce-frontend-pi-seven.vercel.app'
+    }/activate-account/${activationToken}`;
 
     // Email Obtions
     const emailOptions = {
@@ -374,15 +377,6 @@ export const userUpdatePhoto = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-
-    // const { error } = uploadProfileValidation.validate(req.body, {
-    //   errors: { label: 'key', wrap: { label: false } },
-    //   allowUnknown: true,
-    // });
-
-    // if (error) {
-    //   return res.status(422).json({ message: error.message });
-    // }
 
     const allowedImageTypes = ['image/jpeg', 'image/png', 'image/jpg'];
 
