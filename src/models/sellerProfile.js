@@ -31,6 +31,10 @@ const SellerProfileSchema = new mongoose.Schema(
     },
 
     cardNumber: Number,
+    active: {
+      type: Boolean,
+      default: false,
+    },
 
     locations: [
       {
