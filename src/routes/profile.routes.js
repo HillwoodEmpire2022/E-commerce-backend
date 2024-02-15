@@ -9,6 +9,6 @@ router.get("/:id", isLoggedIn, getProfile);
 
 // Get Current Logged in user profile
 router.get("/", isLoggedIn, getProfile);
-router.patch("/", isLoggedIn,uploadBusinessLogo, updateProfile);
+router.patch("/", isLoggedIn, uploadBusinessLogo, updateProfile);
 
 export default router;

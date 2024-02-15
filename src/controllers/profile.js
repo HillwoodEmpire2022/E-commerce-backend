@@ -1,8 +1,9 @@
 import SellerProfile from "../models/sellerProfile.js";
-import { base64FileStringGenerator } from '../utils/base64Converter.js';
-import { uploadbusinessLogoToCloudinary } from '../utils/cloudinary.js'
+import { base64FileStringGenerator } from "../utils/base64Converter.js";
+import { uploadbusinessLogoToCloudinary } from "../utils/cloudinary.js";
 // By Seller Himself
 export const updateProfile = async (req, res, next) => {
+  console.log(req.body, req.file);
   try {
     const profile = await SellerProfile.findOneAndUpdate(
       { user: req.user._id },
@@ -15,28 +16,28 @@ export const updateProfile = async (req, res, next) => {
         status: "fail",
         message: "Profile not found",
       });
-      if (!req.file) {
-        return res.status(400).json({ message: 'No file uploaded' });
+
+    if (req.file) {
+      let logoString = base64FileStringGenerator(req.file).content;
+      if (!logoString) {
+        return res.status(404).json({ message: "No uploaded logo" });
       }
-    let logoString = base64FileStringGenerator(req.file).content;
-      if(!logoString){
-        return res.status(404).json({message:"No uploaded logo"});
-      }
-    const companyLogo = await uploadbusinessLogoToCloudinary(
-      logoString,
-      profile.businessLogo
-    );
-    profile.logo = companyLogo.url;
+      const companyLogo = await uploadbusinessLogoToCloudinary(
+        logoString,
+        profile.businessLogo
+      );
+      profile.logo = companyLogo.url;
+    }
     await profile.save();
 
     res.status(200).json({
       status: "success",
-      data: { profile, },
+      data: { profile },
     });
   } catch (error) {
     res.status(500).json({
       status: "fail",
-      message: "Internal server error",
+      message: error.message,
     });
   }
 };
