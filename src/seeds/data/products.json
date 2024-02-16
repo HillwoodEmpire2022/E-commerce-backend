@@ -5,35 +5,11 @@
         "public_id": "Feli Technology Inv. Group/Inyange design 0/productThumbnail/ibs8exu3d0m3ohficfjl",
         "url": "http://res.cloudinary.com/hervebu/image/upload/v1694446990/Feli%20Technology%20Inv.%20Group/Inyange%20design%200/productThumbnail/ibs8exu3d0m3ohficfjl.jpg"
       },
-      "otherImages": [
-        {
-          "public_id": "Feli Technology Inv. Group/Inyange design 0/otherImages/i11wckaaaga17i6ggc61",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1694446991/Feli%20Technology%20Inv.%20Group/Inyange%20design%200/otherImages/i11wckaaaga17i6ggc61.jpg",
-          "_id": "64ff27d5d22c0c62da1a0f7e"
-        },
-        {
-          "public_id": "Feli Technology Inv. Group/Inyange design 0/otherImages/lgwc5qrr9h0wudi5sgjd",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1694446993/Feli%20Technology%20Inv.%20Group/Inyange%20design%200/otherImages/lgwc5qrr9h0wudi5sgjd.jpg",
-          "_id": "64ff27d5d22c0c62da1a0f7f"
-        }
-      ],
-      "colorImages": [
-        {
-          "public_id": "Feli Technology Inv. Group/Inyange design 0/colorImages/yjydw3bigkx3ix4souap",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1694446994/Feli%20Technology%20Inv.%20Group/Inyange%20design%200/colorImages/yjydw3bigkx3ix4souap.jpg",
-          "colorName": "mango",
-          "_id": "64ff27d5d22c0c62da1a0f80"
-        },
-        {
-          "public_id": "Feli Technology Inv. Group/Inyange design 0/colorImages/sw5xhhdgfk9jgbnensab",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1694446996/Feli%20Technology%20Inv.%20Group/Inyange%20design%200/colorImages/sw5xhhdgfk9jgbnensab.jpg",
-          "colorName": "apple",
-          "_id": "64ff27d5d22c0c62da1a0f81"
-        }
-      ]
+      "otherImages": [],
+      "colorImages": []
     },
-    "name": "Inyange design 0",
-    "description": "This is a mango juice ",
+    "name": "Apple Juice",
+    "description": "  Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatem totam magnam dolor minima minus culpa beatae nulla. Voluptatem blanditiis quidem tempora, delectus eos minima quo ad tenetur ipsam, quia perferendis?",
     "category": "64fe0f8084b2f00754e6992c",
     "subcategory": "64fe100184b2f00754e69931",
     "price": 1000,
@@ -41,94 +17,22 @@
     "quantityParameter": "bottles",
     "seller": "64fb3d689851a4c86d6182de",
     "discountPercentage": 2,
-    "availableSizes": ["300 ml bottle", "500 ml bottle"],
     "brandName": "Inyange",
     "createdAt": "2023-09-11T14:44:37.252Z",
     "updatedAt": "2023-09-11T14:44:37.252Z",
     "_id": "64ff27d5d22c0c62da1a0f7d"
   },
-  {
-    "productImages": {
-      "productThumbnail": {
-        "public_id": "Feli Technology Inv. Group/Inyange product 6/productThumbnail/vmte1s1uj6kmxgydk4yv",
-        "url": "http://res.cloudinary.com/hervebu/image/upload/v1694534194/Feli%20Technology%20Inv.%20Group/Inyange%20product%206/productThumbnail/vmte1s1uj6kmxgydk4yv.jpg"
-      },
-      "otherImages": [
-        {
-          "public_id": "Feli Technology Inv. Group/Inyange product 6/otherImages/cznehzpg8joo5i7gfkw7",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1694534196/Feli%20Technology%20Inv.%20Group/Inyange%20product%206/otherImages/cznehzpg8joo5i7gfkw7.jpg",
-          "_id": "65007c7a03d8f7c7a7ed4dd6"
-        },
-        {
-          "public_id": "Feli Technology Inv. Group/Inyange product 6/otherImages/qdetzg3ouc68e3tfiryj",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1694534197/Feli%20Technology%20Inv.%20Group/Inyange%20product%206/otherImages/qdetzg3ouc68e3tfiryj.jpg",
-          "_id": "65007c7a03d8f7c7a7ed4dd7"
-        }
-      ],
-      "colorImages": [
-        {
-          "public_id": "Feli Technology Inv. Group/Inyange product 6/colorImages/bc1gnnqnoc4oqms6jecd",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1694534199/Feli%20Technology%20Inv.%20Group/Inyange%20product%206/colorImages/bc1gnnqnoc4oqms6jecd.jpg",
-          "colorName": "mango",
-          "_id": "65007c7a03d8f7c7a7ed4dd8"
-        },
-        {
-          "public_id": "Feli Technology Inv. Group/Inyange product 6/colorImages/rr3dfgh9ukqxizz8cm8e",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1694534201/Feli%20Technology%20Inv.%20Group/Inyange%20product%206/colorImages/rr3dfgh9ukqxizz8cm8e.jpg",
-          "colorName": "apple",
-          "_id": "65007c7a03d8f7c7a7ed4dd9"
-        }
-      ]
-    },
-    "name": "Inyange product 6",
-    "description": "This is a mango juice ",
-    "category": "64fe0f8084b2f00754e6992c",
-    "subcategory": "64fe100184b2f00754e69931",
-    "price": 1000,
-    "stockQuantity": 100,
-    "quantityParameter": "bottles",
-    "seller": "64fb3d689851a4c86d6182de",
-    "discountPercentage": 2,
-    "availableSizes": ["300 ml bottle", "500 ml bottle"],
-    "brandName": "Inyange",
-    "createdAt": "2023-09-12T14:58:02.709Z",
-    "updatedAt": "2023-09-12T14:58:02.709Z",
-    "_id": "65007c7a03d8f7c7a7ed4dd5"
-  },
+
   {
     "productImages": {
       "productThumbnail": {
         "public_id": "Feli Technology Inv. Group/Inyange product 8/productThumbnail/a6kid9nezwxtv02sy9wc",
         "url": "http://res.cloudinary.com/hervebu/image/upload/v1694534344/Feli%20Technology%20Inv.%20Group/Inyange%20product%208/productThumbnail/a6kid9nezwxtv02sy9wc.jpg"
       },
-      "otherImages": [
-        {
-          "public_id": "Feli Technology Inv. Group/Inyange product 8/otherImages/io8wacnbrk5tavbpmor7",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1694534346/Feli%20Technology%20Inv.%20Group/Inyange%20product%208/otherImages/io8wacnbrk5tavbpmor7.jpg",
-          "_id": "65007d10b40220f78428c9e9"
-        },
-        {
-          "public_id": "Feli Technology Inv. Group/Inyange product 8/otherImages/xjke4ucy6peoi3pajtpy",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1694534348/Feli%20Technology%20Inv.%20Group/Inyange%20product%208/otherImages/xjke4ucy6peoi3pajtpy.jpg",
-          "_id": "65007d10b40220f78428c9ea"
-        }
-      ],
-      "colorImages": [
-        {
-          "public_id": "Feli Technology Inv. Group/Inyange product 8/colorImages/zwol2uogvjhdjka2fx7k",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1694534349/Feli%20Technology%20Inv.%20Group/Inyange%20product%208/colorImages/zwol2uogvjhdjka2fx7k.jpg",
-          "colorName": "mango",
-          "_id": "65007d10b40220f78428c9eb"
-        },
-        {
-          "public_id": "Feli Technology Inv. Group/Inyange product 8/colorImages/zgk3jp7xekl8nkv2mrbb",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1694534351/Feli%20Technology%20Inv.%20Group/Inyange%20product%208/colorImages/zgk3jp7xekl8nkv2mrbb.jpg",
-          "colorName": "apple",
-          "_id": "65007d10b40220f78428c9ec"
-        }
-      ]
+      "otherImages": [],
+      "colorImages": []
     },
-    "name": "Inyange product 8",
+    "name": "Mango Juice",
     "description": "This is a mango juice ",
     "category": "64fe0f8084b2f00754e6992c",
     "subcategory": "64fe100184b2f00754e69931",
@@ -137,84 +41,22 @@
     "quantityParameter": "bottles",
     "seller": "64fb3d689851a4c86d6182de",
     "discountPercentage": 2,
-    "availableSizes": ["300 ml bottle", "500 ml bottle"],
     "brandName": "Inyange",
     "createdAt": "2023-09-12T15:00:32.448Z",
     "updatedAt": "2023-09-12T15:00:32.448Z",
     "_id": "65007d10b40220f78428c9e8"
   },
-  {
-    "productImages": {
-      "productThumbnail": {
-        "public_id": "Feli Technology Inv. Group/Shoes/productThumbnail/joqgnkzdeggfazkfg9zj",
-        "url": "http://res.cloudinary.com/hervebu/image/upload/v1700820157/Feli%20Technology%20Inv.%20Group/Shoes/productThumbnail/joqgnkzdeggfazkfg9zj.png"
-      },
-      "otherImages": [
-        {
-          "public_id": "Feli Technology Inv. Group/Shoes/otherImages/cbxcx9i0qhgr5rviejek",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1700820158/Feli%20Technology%20Inv.%20Group/Shoes/otherImages/cbxcx9i0qhgr5rviejek.png",
-          "_id": "656074c0ad55af5281126228"
-        }
-      ],
-      "colorImages": [
-        {
-          "public_id": "Feli Technology Inv. Group/Shoes/colorImages/n3igvveunjke11ju6ig1",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1700820159/Feli%20Technology%20Inv.%20Group/Shoes/colorImages/n3igvveunjke11ju6ig1.png",
-          "colorName": "Orange",
-          "_id": "656074c0ad55af5281126229"
-        },
-        {
-          "public_id": "Feli Technology Inv. Group/Shoes/colorImages/dhowxnoafirxf6gvj225",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1700820160/Feli%20Technology%20Inv.%20Group/Shoes/colorImages/dhowxnoafirxf6gvj225.png",
-          "colorName": "Green",
-          "_id": "656074c0ad55af528112622a"
-        }
-      ]
-    },
-    "name": "Shoes",
-    "description": "Yeezy 7000",
-    "category": "65606f1b709ab3c30d0f8bfd",
-    "subcategory": "6560705e709ab3c30d0f8c01",
-    "price": 20000,
-    "stockQuantity": 100,
-    "quantityParameter": "1 cartoon",
-    "seller": "64fb3d689851a4c86d6182de",
-    "discountPercentage": 2,
-    "availableSizes": ["38"],
-    "brandName": "adidas",
-    "createdAt": "2023-11-24T10:02:40.774Z",
-    "updatedAt": "2023-11-24T10:02:40.774Z",
-    "_id": "656074c0ad55af5281126227"
-  },
+
   {
     "productImages": {
       "productThumbnail": {
         "public_id": "Feli Technology Inv. Group/Gucci Bag/productThumbnail/zwpuw7ddd4fefhplxd0n",
         "url": "http://res.cloudinary.com/hervebu/image/upload/v1700828757/Feli%20Technology%20Inv.%20Group/Gucci%20Bag/productThumbnail/zwpuw7ddd4fefhplxd0n.png"
       },
-      "otherImages": [
-        {
-          "public_id": "Feli Technology Inv. Group/Gucci Bag/otherImages/vextqct5oshaey4rgmoo",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1700828759/Feli%20Technology%20Inv.%20Group/Gucci%20Bag/otherImages/vextqct5oshaey4rgmoo.png",
-          "_id": "6560965ade051c8547074ce8"
-        }
-      ],
-      "colorImages": [
-        {
-          "public_id": "Feli Technology Inv. Group/Gucci Bag/colorImages/sjytwvbtk6d2usgkxbpa",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1700828760/Feli%20Technology%20Inv.%20Group/Gucci%20Bag/colorImages/sjytwvbtk6d2usgkxbpa.png",
-          "colorName": "blue",
-          "_id": "6560965ade051c8547074ce9"
-        },
-        {
-          "public_id": "Feli Technology Inv. Group/Gucci Bag/colorImages/y2bsvqru4rzdwoxx60ey",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1700828761/Feli%20Technology%20Inv.%20Group/Gucci%20Bag/colorImages/y2bsvqru4rzdwoxx60ey.png",
-          "colorName": "Gray",
-          "_id": "6560965ade051c8547074cea"
-        }
-      ]
+      "otherImages": [],
+      "colorImages": []
     },
-    "name": "Gucci Bag",
+    "name": "Luis Vuitton",
     "description": "Yeezy 7000",
     "category": "65606f1b709ab3c30d0f8bfd",
     "subcategory": "656070f1709ab3c30d0f8c05",
@@ -272,107 +114,7 @@
     "updatedAt": "2023-11-24T14:02:37.857Z",
     "_id": "6560acfd94e4ace3462d7b27"
   },
-  {
-    "productImages": {
-      "productThumbnail": {
-        "public_id": "Feli Technology Inv. Group/Trousers/productThumbnail/lfk4astn3oyx87ufpmu7",
-        "url": "http://res.cloudinary.com/hervebu/image/upload/v1700838249/Feli%20Technology%20Inv.%20Group/Trousers/productThumbnail/lfk4astn3oyx87ufpmu7.png"
-      },
-      "otherImages": [
-        {
-          "public_id": "Feli Technology Inv. Group/Trousers/otherImages/tefphcusgwfjtqiudzsg",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1700838250/Feli%20Technology%20Inv.%20Group/Trousers/otherImages/tefphcusgwfjtqiudzsg.png",
-          "_id": "6560bb6fdbaf5be08e6f6ff8"
-        },
-        {
-          "public_id": "Feli Technology Inv. Group/Trousers/otherImages/elgboqdb6t4jsvertbd8",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1700838252/Feli%20Technology%20Inv.%20Group/Trousers/otherImages/elgboqdb6t4jsvertbd8.png",
-          "_id": "6560bb6fdbaf5be08e6f6ff9"
-        }
-      ],
-      "colorImages": [
-        {
-          "public_id": "Feli Technology Inv. Group/Trousers/colorImages/rlnkcorzddvaq6gylpw4",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1700838253/Feli%20Technology%20Inv.%20Group/Trousers/colorImages/rlnkcorzddvaq6gylpw4.png",
-          "colorName": "Orange",
-          "_id": "6560bb6fdbaf5be08e6f6ffa"
-        },
-        {
-          "public_id": "Feli Technology Inv. Group/Trousers/colorImages/seubdepb8xdkibzwjvak",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1700838254/Feli%20Technology%20Inv.%20Group/Trousers/colorImages/seubdepb8xdkibzwjvak.png",
-          "colorName": "Green",
-          "_id": "6560bb6fdbaf5be08e6f6ffb"
-        }
-      ]
-    },
-    "name": "Trousers",
-    "description": "Yeezy 7000",
-    "category": "65606f1b709ab3c30d0f8bfd",
-    "subcategory": "656070f1709ab3c30d0f8c05",
-    "price": 15000,
-    "stockQuantity": 80,
-    "quantityParameter": "pair",
-    "seller": "64fb3d689851a4c86d6182de",
-    "discountPercentage": 2,
-    "availableSizes": [],
-    "brandName": "Denim",
-    "createdAt": "2023-11-24T15:04:15.716Z",
-    "updatedAt": "2023-11-24T15:04:15.716Z",
-    "_id": "6560bb6fdbaf5be08e6f6ff7"
-  },
-  {
-    "productImages": {
-      "productThumbnail": {
-        "public_id": "Feli Technology Inv. Group/Soft drink/productThumbnail/ifwpva8zkvrvnx7ljr6z",
-        "url": "http://res.cloudinary.com/hervebu/image/upload/v1702370025/Feli%20Technology%20Inv.%20Group/Soft%20drink/productThumbnail/ifwpva8zkvrvnx7ljr6z.jpg"
-      },
-      "otherImages": [
-        {
-          "public_id": "Feli Technology Inv. Group/Soft drink/otherImages/quwkfrqaxcv8skux54ec",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1702370030/Feli%20Technology%20Inv.%20Group/Soft%20drink/otherImages/quwkfrqaxcv8skux54ec.jpg",
-          "_id": "65781b03001ef7781eab6417"
-        },
-        {
-          "public_id": "Feli Technology Inv. Group/Soft drink/otherImages/avvl09ky38dfhshroppm",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1702370033/Feli%20Technology%20Inv.%20Group/Soft%20drink/otherImages/avvl09ky38dfhshroppm.jpg",
-          "_id": "65781b03001ef7781eab6418"
-        },
-        {
-          "public_id": "Feli Technology Inv. Group/Soft drink/otherImages/v3ly60qnyuw10hgpysq0",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1702370037/Feli%20Technology%20Inv.%20Group/Soft%20drink/otherImages/v3ly60qnyuw10hgpysq0.png",
-          "_id": "65781b03001ef7781eab6419"
-        }
-      ],
-      "colorImages": [
-        {
-          "public_id": "Feli Technology Inv. Group/Soft drink/colorImages/cj6mzvtxieki84bggah3",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1702370047/Feli%20Technology%20Inv.%20Group/Soft%20drink/colorImages/cj6mzvtxieki84bggah3.jpg",
-          "colorName": "mango",
-          "_id": "65781b03001ef7781eab641a"
-        },
-        {
-          "public_id": "Feli Technology Inv. Group/Soft drink/colorImages/bazhsonrv8qzqxnkabzg",
-          "url": "http://res.cloudinary.com/hervebu/image/upload/v1702370049/Feli%20Technology%20Inv.%20Group/Soft%20drink/colorImages/bazhsonrv8qzqxnkabzg.jpg",
-          "colorName": "apple",
-          "_id": "65781b03001ef7781eab641b"
-        }
-      ]
-    },
-    "name": "Soft drink",
-    "description": "This is a mango juice ",
-    "category": "64fe0f8084b2f00754e6992c",
-    "subcategory": "64fe100184b2f00754e69931",
-    "price": 1000,
-    "stockQuantity": 100,
-    "quantityParameter": "bottles",
-    "seller": "64fb3d689851a4c86d6182de",
-    "discountPercentage": 2,
-    "availableSizes": ["300 ml bottle", "500 ml bottle"],
-    "brandName": "Inyange",
-    "createdAt": "2023-12-12T08:34:11.920Z",
-    "updatedAt": "2023-12-12T08:34:11.920Z",
-    "_id": "65781b03001ef7781eab6416"
-  },
+
   {
     "productImages": {
       "productThumbnail": {
@@ -420,75 +162,5 @@
     "createdAt": "2023-12-14T13:01:10.200Z",
     "updatedAt": "2023-12-14T13:01:10.200Z",
     "_id": "657afc9635c27eadb5c1a113"
-  },
-  {
-    "productImages": {
-      "productThumbnail": {
-        "public_id": "undefined/Inyange design 1/productThumbnail/i54otwt9sciw1hhw93lb",
-        "url": "http://res.cloudinary.com/dccszmlim/image/upload/v1704277135/undefined/Inyange%20design%201/productThumbnail/i54otwt9sciw1hhw93lb.png"
-      },
-      "otherImages": [
-        {
-          "public_id": "undefined/Inyange design 1/otherImages/vpjzeiwsn57dankked60",
-          "url": "http://res.cloudinary.com/dccszmlim/image/upload/v1704277136/undefined/Inyange%20design%201/otherImages/vpjzeiwsn57dankked60.png",
-          "_id": "65953491a25303ea088272af"
-        }
-      ],
-      "colorImages": [
-        {
-          "public_id": "undefined/Inyange design 1/colorImages/glu1r6awjcqg6f4hkx9j",
-          "url": "http://res.cloudinary.com/dccszmlim/image/upload/v1704277136/undefined/Inyange%20design%201/colorImages/glu1r6awjcqg6f4hkx9j.png",
-          "colorName": "mango",
-          "_id": "65953491a25303ea088272b0"
-        }
-      ]
-    },
-    "name": "Inyange design 1",
-    "seller": "65953440a25303ea088272a4",
-    "category": "6581a6422109c18251af7e7f",
-    "subcategory": "6581a6732109c18251af7e80",
-    "description": "This is a mango juice",
-    "stockQuantity": 100,
-    "price": 1000,
-    "discountPercentage": 2,
-    "availableSizes": ["300 ml bottle", "500 ml bottle"],
-    "createdAt": "2024-01-03T10:18:57.155Z",
-    "updatedAt": "2024-01-03T10:18:57.155Z",
-    "_id": "65953491a25303ea088272ae"
-  },
-  {
-    "productImages": {
-      "productThumbnail": {
-        "public_id": "undefined/Inyange design 1/productThumbnail/wi2gppeo9zppmui7wxk3",
-        "url": "http://res.cloudinary.com/dccszmlim/image/upload/v1704440375/undefined/Inyange%20design%201/productThumbnail/wi2gppeo9zppmui7wxk3.png"
-      },
-      "otherImages": [
-        {
-          "public_id": "undefined/Inyange design 1/otherImages/w7bhbvjtvqch3vxhqo79",
-          "url": "http://res.cloudinary.com/dccszmlim/image/upload/v1704440376/undefined/Inyange%20design%201/otherImages/w7bhbvjtvqch3vxhqo79.png",
-          "_id": "6597b23abe1c457222581053"
-        }
-      ],
-      "colorImages": [
-        {
-          "public_id": "undefined/Inyange design 1/colorImages/gpleem484mv1ycpf5x3b",
-          "url": "http://res.cloudinary.com/dccszmlim/image/upload/v1704440377/undefined/Inyange%20design%201/colorImages/gpleem484mv1ycpf5x3b.png",
-          "colorName": "red",
-          "_id": "6597b23abe1c457222581054"
-        }
-      ]
-    },
-    "name": "Inyange design 1",
-    "seller": "6597b17dbe1c457222581044",
-    "category": "6581a6422109c18251af7e7f",
-    "subcategory": "6581a6732109c18251af7e80",
-    "description": "This is a mango juice",
-    "stockQuantity": 100,
-    "price": 1000,
-    "discountPercentage": 2,
-    "availableSizes": ["300 ml bottle", "500 ml bottle"],
-    "createdAt": "2024-01-05T07:39:38.454Z",
-    "updatedAt": "2024-01-05T07:39:38.454Z",
-    "_id": "6597b23abe1c457222581052"
   }
 ]
