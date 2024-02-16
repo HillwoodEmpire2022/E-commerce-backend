@@ -145,6 +145,12 @@
           "url": "http://res.cloudinary.com/hervebu/image/upload/v1702558869/Feli%20Technology%20Inv.%20Group/macbook%20pro/colorImages/qvto8t9lfrobxdzbgj7f.jpg",
           "colorName": "white",
           "_id": "657afc9635c27eadb5c1a117"
+        },
+        {
+          "public_id": "Feli Technology Inv. Group/macbook pro/otherImages/ic1rdxfjwamklholwwyd",
+          "url": "http://res.cloudinary.com/hervebu/image/upload/v1702558866/Feli%20Technology%20Inv.%20Group/macbook%20pro/otherImages/ic1rdxfjwamklholwwyd.jpg",
+          "_id": "657afc9635c27eadb5c1a114",
+          "colorName": "red"
         }
       ]
     },
