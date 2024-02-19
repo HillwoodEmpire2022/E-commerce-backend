@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const ProductSchema = new mongoose.Schema(
   {
@@ -10,17 +10,17 @@ const ProductSchema = new mongoose.Schema(
 
     seller: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
     },
     category: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Category",
+      ref: 'Category',
       required: true,
     },
     subcategory: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "SubCategory",
+      ref: 'SubCategory',
       required: true,
     },
     description: {
@@ -37,13 +37,41 @@ const ProductSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+
+    currency: {
+      type: String,
+      default: 'RWF',
+    },
+
     discountPercentage: {
       type: Number,
     },
-    // availableSizes ["xs", "sm", m, lg, xlg,xxlg]
-    // availableSizes ["120px", "2000px"]
-    // availableSizes ["8", "12", "14", "16"]
-    availableSizes: [String],
+
+    colorMeasurementVariations: {
+      measurementType: {
+        type: String,
+        enum: ['length', 'mass', 'volume'],
+      },
+
+      variations: [
+        {
+          measurementvalue: String,
+
+          colorImg: {
+            public_id: {
+              type: String,
+            },
+            url: {
+              type: String,
+            },
+            colorName: String,
+          },
+
+          colorMeasurementVariationQuantity: Number,
+        },
+      ],
+    },
+
     productImages: {
       productThumbnail: {
         public_id: {
@@ -65,19 +93,6 @@ const ProductSchema = new mongoose.Schema(
           },
         },
       ],
-      colorImages: [
-        {
-          public_id: {
-            type: String,
-          },
-          url: {
-            type: String,
-          },
-          colorName: {
-            type: String,
-          },
-        },
-      ],
     },
   },
   {
@@ -93,5 +108,7 @@ const ProductSchema = new mongoose.Schema(
   }
 );
 
-const Product = mongoose.model("Product", ProductSchema);
+ProductSchema.index({ name: 1, seller: 1 }, { unique: true });
+
+const Product = mongoose.model('Product', ProductSchema);
 export default Product;

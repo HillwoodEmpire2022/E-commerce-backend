@@ -38,10 +38,7 @@ async function seedCategories() {
 }
 
 async function seedSubcategories() {
-  const filePath = path.resolve(
-    __dirname,
-    './data/subcategories.json'
-  );
+  const filePath = path.resolve(__dirname, './data/subcategories.json');
   const rowSubcategories = await readFile(filePath);
   const subcategories = JSON.parse(rowSubcategories);
 
@@ -123,7 +120,7 @@ async function init() {
     await seedUsers();
 
     // Seed Products
-    await seedProducts();
+    // await seedProducts();
 
     console.log('Seeding Complete.');
     process.exit(0);

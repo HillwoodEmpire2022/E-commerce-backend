@@ -9,135 +9,136 @@ import {
 } from '../validations/productValidation.js';
 import Category from '../models/category.js';
 import SubCategory from '../models/subcategory.js';
+import removeEmptySpaces from '../utils/removeEmptySpaces.js';
 
-export const createProduct = async (req, res) => {
-  try {
-    const { error } = uploadProductValidation.validate(req.body, {
-      errors: { label: 'key', wrap: { label: false } },
-      allowUnknown: true,
-    });
+// export const createProduct = async (req, res) => {
+//   console.log(JSON.parse(req.body.measurements[0]));
+//   try {
+//     const { error } = uploadProductValidation.validate(req.body, {
+//       errors: { label: 'key', wrap: { label: false } },
+//       allowUnknown: true,
+//     });
 
-    if (error) {
-      res.status(422).send({ message: error.message });
-      return;
-    }
+//     if (error) {
+//       res.status(422).send({ message: error.message });
+//       return;
+//     }
 
-    const seller = await User.findById(req.body.seller);
-    if (!seller) {
-      return res.status(400).send({
-        message:
-          'There is no seller that matches the provided seller Id.',
-      });
-    }
-    const existingProduct = await Product.find({
-      name: req.body.name,
-      seller: req.body.seller,
-    });
+//     const seller = await User.findById(req.body.seller);
 
-    if (existingProduct.length !== 0) {
-      return res
-        .status(409)
-        .send({ message: 'You have already uploaded this product.' });
-    }
+//     if (!seller) {
+//       return res.status(400).send({
+//         message: 'There is no seller that matches the provided seller Id.',
+//       });
+//     }
 
-    let productThumbnailString = base64FileStringGenerator(
-      req.files.productThumbnail[0]
-    ).content;
+//     const existingProduct = await Product.find({
+//       name: req.body.name,
+//       seller: req.body.seller,
+//     });
 
-    if (!productThumbnailString) {
-      return res
-        .status(400)
-        .send({ message: 'There is no thumbnail image attached.' });
-    }
+//     if (existingProduct.length !== 0) {
+//       return res
+//         .status(409)
+//         .send({ message: 'You have already uploaded this product.' });
+//     }
 
-    const uploadedThumbnail = await uploadToCloudinary(
-      productThumbnailString,
-      seller.companyName,
-      req.body.name,
-      'productThumbnail'
-    );
+//     let productThumbnailString = base64FileStringGenerator(
+//       req.files.productThumbnail[0]
+//     ).content;
 
-    let otherImages = req.files.otherImages;
+//     if (!productThumbnailString) {
+//       return res
+//         .status(400)
+//         .send({ message: 'There is no thumbnail image attached.' });
+//     }
 
-    if (!otherImages || otherImages.length === 0) {
-      return res
-        .status(400)
-        .send({ message: 'There is no any image for otherImages' });
-    }
+//     const uploadedThumbnail = await uploadToCloudinary(
+//       productThumbnailString,
+//       seller.companyName,
+//       req.body.name,
+//       'productThumbnail'
+//     );
 
-    let uploadedOtherImages = [];
-    for (let i = 0; i < otherImages.length; i++) {
-      let imageString = base64FileStringGenerator(
-        otherImages[i]
-      ).content;
-      let uploadedImage = await uploadToCloudinary(
-        imageString,
-        seller.companyName,
-        req.body.name,
-        'otherImages'
-      );
-      uploadedOtherImages[i] = {
-        public_id: uploadedImage.public_id,
-        url: uploadedImage.url,
-      };
-    }
+//     let otherImages = req.files.otherImages;
 
-    let colorImages = req.files.colorImages;
+//     if (!otherImages || otherImages.length === 0) {
+//       return res
+//         .status(400)
+//         .send({ message: 'There is no any image for otherImages' });
+//     }
 
-    if (!colorImages || colorImages.length === 0) {
-      return res
-        .status(400)
-        .send({ message: 'There is no any image for colorImages' });
-    }
+//     let uploadedOtherImages = [];
+//     for (let i = 0; i < otherImages.length; i++) {
+//       let imageString = base64FileStringGenerator(otherImages[i]).content;
+//       let uploadedImage = await uploadToCloudinary(
+//         imageString,
+//         seller.companyName,
+//         req.body.name,
+//         'otherImages'
+//       );
+//       uploadedOtherImages[i] = {
+//         public_id: uploadedImage.public_id,
+//         url: uploadedImage.url,
+//       };
+//     }
 
-    let uploadedColorImages = [];
-    for (let i = 0; i < colorImages.length; i++) {
-      let imageString = base64FileStringGenerator(
-        colorImages[i]
-      ).content;
-      let uploadedImage = await uploadToCloudinary(
-        imageString,
-        seller.companyName,
-        req.body.name,
-        'colorImages'
-      );
-      uploadedColorImages[i] = {
-        public_id: uploadedImage.public_id,
-        url: uploadedImage.url,
-        colorName: req.body.colorNames[i],
-      };
-    }
+//     let colorImages = req.files.colorImages;
 
-    let productObject = new Product({
-      name: req.body.name,
-      description: req.body.description,
-      category: req.body.category,
-      subcategory: req.body.subcategory,
-      seller: req.body.seller,
-      price: req.body.price,
-      discountPercentage: req.body.discountPercentage,
-      stockQuantity: req.body.stockQuantity,
-      quantityParameter: req.body.quantityParameter,
-      brandName: req.body.brandName,
-      availableSizes: req.body.availableSizes,
-      productImages: {
-        productThumbnail: uploadedThumbnail,
-        otherImages: uploadedOtherImages,
-        colorImages: uploadedColorImages,
-      },
-    });
+//     if (!colorImages || colorImages.length === 0) {
+//       return res
+//         .status(400)
+//         .send({ message: 'There is no any image for colorImages' });
+//     }
 
-    const product = await productObject.save();
-    res.status(201).json({
-      status: 'success',
-      data: {
-        product,
-      },
-    });
-  } catch (error) {
-    res.status(500).send({ message: error.message });
-  }
-};
+//     let uploadedColorImages = [];
+//     for (let i = 0; i < colorImages.length; i++) {
+//       let imageString = base64FileStringGenerator(colorImages[i]).content;
+//       let uploadedImage = await uploadToCloudinary(
+//         imageString,
+//         seller.companyName,
+//         req.body.name,
+//         'colorImages'
+//       );
+//       uploadedColorImages[i] = {
+//         public_id: uploadedImage.public_id,
+//         url: uploadedImage.url,
+//         colorName: req.body.colorNames[i],
+//       };
+//     }
+
+// let productObject = new Product({
+//   name: req.body.name,
+//   description: req.body.description,
+//   category: req.body.category,
+//   subcategory: req.body.subcategory,
+//   seller: req.body.seller,
+//   price: req.body.price,
+//   discountPercentage: req.body.discountPercentage,
+//   stockQuantity: req.body.stockQuantity,
+//   quantityParameter: req.body.quantityParameter,
+//   brandName: req.body.brandName,
+//   availableSizes: req.body.availableSizes,
+//   productImages: {
+//     productThumbnail: uploadedThumbnail,
+//     otherImages: uploadedOtherImages,
+//     colorImages: uploadedColorImages,
+//   },
+// });
+
+//     const product = await productObject.save();
+//     res.status(201).json({
+//       status: 'success',
+//       data: {
+//         product,
+//       },
+//     });
+
+//     res.send('Done');
+//   } catch (error) {
+//     res.status(500).send({ message: error.message });
+//   }
+// };
 
 export const getAllProducts = async (req, res) => {
   try {
@@ -188,9 +189,7 @@ export const getSingleProduct = async (req, res) => {
     });
 
     if (error) {
-      return res
-        .status(400)
-        .json({ status: 'fail', message: error.message });
+      return res.status(400).json({ status: 'fail', message: error.message });
     }
     const product = await Product.findOne({
       _id: req.params.productId,
@@ -288,9 +287,7 @@ export const deleteProduct = async (req, res) => {
       message: 'product deleted succesfully',
     });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: 'failed to delete product' });
+    return res.status(500).json({ message: 'failed to delete product' });
   }
 };
 export const updateProductData = async (req, res) => {
@@ -301,9 +298,7 @@ export const updateProductData = async (req, res) => {
     });
 
     if (error) {
-      return res
-        .status(422)
-        .json({ status: 'fail', message: error.message });
+      return res.status(422).json({ status: 'fail', message: error.message });
     }
     const isUserAdmin = req.user.role === 'admin';
 
@@ -311,8 +306,7 @@ export const updateProductData = async (req, res) => {
     if (req.body.seller && req.user.role !== 'admin') {
       return res.status(403).json({
         status: 'fail',
-        message:
-          'Acces denied! You are not allowed to perform this operation.',
+        message: 'Acces denied! You are not allowed to perform this operation.',
       });
     }
 
@@ -355,29 +349,29 @@ export const searchProduct = async (req, res) => {
     const searchItem = req.body.searchItem;
 
     const searchConditions = [
-      { "name": { $regex: "^" + searchItem + "$", $options: 'i' } }
+      { name: { $regex: '^' + searchItem + '$', $options: 'i' } },
     ];
 
     if (searchItem) {
       const category = await Category.findOne({
-        name: { $regex: "^" + searchItem + "$", $options: 'i' },
+        name: { $regex: '^' + searchItem + '$', $options: 'i' },
       });
 
       const subcategory = await SubCategory.findOne({
-        name: { $regex: "^" + searchItem + "$", $options: 'i' }
+        name: { $regex: '^' + searchItem + '$', $options: 'i' },
       });
 
       if (category) {
-        searchConditions.push({ "category": category._id });
+        searchConditions.push({ category: category._id });
       }
 
       if (subcategory) {
-        searchConditions.push({ "subcategory": subcategory._id });
+        searchConditions.push({ subcategory: subcategory._id });
       }
     }
 
     if (!isNaN(searchItem)) {
-      searchConditions.push({ "price": parseFloat(searchItem) });
+      searchConditions.push({ price: parseFloat(searchItem) });
     }
 
     const products = await Product.find({ $or: searchConditions })
@@ -393,20 +387,81 @@ export const searchProduct = async (req, res) => {
 
     if (products.length === 0) {
       return res.status(404).json({
-        status: "fail",
-        message: "No items found"
+        status: 'fail',
+        message: 'No items found',
       });
     }
 
     return res.status(200).json({
-      status: "success",
-      data: { products }
+      status: 'success',
+      data: { products },
     });
   } catch (error) {
     return res.status(500).json({
-      status: "error",
-      message: "Failed to search products"
+      status: 'error',
+      message: 'Failed to search products',
     });
   }
 };
 
+export const createProduct = async (req, res) => {
+  let productObject = {
+    name: removeEmptySpaces(req.body.name),
+    description: removeEmptySpaces(req.body.description),
+    category: req.body.category,
+    subcategory: req.body.subcategory,
+    seller: req.body.seller,
+    price: req.body.price,
+    discountPercentage: req.body.discountPercentage,
+    stockQuantity: req.body.stockQuantity,
+    brandName: removeEmptySpaces(req.body.brandName),
+    productImages: req.body.productImages,
+    ...(req.body.currency && {
+      currency: removeEmptySpaces(req.body.currency),
+    }),
+    colorMeasurementVariations: req.body.colorMeasurementVariations,
+  };
+
+  try {
+    const { error } = uploadProductValidation.validate(productObject, {
+      errors: { label: 'key', wrap: { label: false } },
+      allowUnknown: true,
+    });
+    if (error) {
+      return res.status(422).send({ message: error.message });
+    }
+
+    const seller = await User.findById(req.body.seller);
+
+    if (!seller) {
+      return res.status(400).send({
+        message: 'There is no seller that matches the provided seller Id.',
+      });
+    }
+
+    // Check if product exists in the database
+    const existingProduct = await Product.find({
+      name: req.body.name,
+      seller: req.body.seller,
+    });
+
+    if (existingProduct.length !== 0) {
+      return res.status(400).send({ message: 'Product already exists.' });
+    }
+
+    // // Create the product
+    await Product.create(productObject);
+
+    res.status(201).json({
+      status: 'success',
+      message: 'product created successfully',
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      status: 'arror',
+      message: 'Something unexpected has happend. Please try again later!',
+    });
+  }
+};

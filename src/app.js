@@ -22,7 +22,7 @@ const clientUrl = process.env.CLIENT_URL;
 const clientLocalhostUrl = process.env.CLIENT_LOCALHOST_URL;
 const adminClientUrl = process.env.ADMIN_CLIENT_URL;
 
-app.use(express.json({}));
+app.use(express.json());
 
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(helmet());
