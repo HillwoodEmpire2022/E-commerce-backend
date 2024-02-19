@@ -1,5 +1,5 @@
 function removeEmptySpaces(string) {
-  return string.replace(/\s+/g, " ");
+  return string ? string?.trim().replace(/\s+/g, ' ') : null;
 }
 
 export default removeEmptySpaces;

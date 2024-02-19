@@ -9,9 +9,7 @@ export const uploadProductValidation = Joi.object({
   price: Joi.number().required().greater(0),
   discountPercentage: Joi.number().integer(),
   stockQuantity: Joi.number().required().greater(0).integer(),
-  quantityParameter: Joi.string().required(),
   brandName: Joi.string(),
-  availableSizes: Joi.array().items(Joi.string().required()),
 });
 
 export const addCategoryValidation = Joi.object({
@@ -35,7 +33,5 @@ export const updateProductsValidation = Joi.object({
   price: Joi.number().greater(0),
   discountPercentage: Joi.number().integer(),
   stockQuantity: Joi.number().greater(0).integer(),
-  quantityParameter: Joi.string(),
   brandName: Joi.string(),
-  availableSizes: Joi.array().items(Joi.string()),
 });

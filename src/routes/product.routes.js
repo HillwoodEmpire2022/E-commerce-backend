@@ -9,10 +9,9 @@ import {
   deleteProduct,
   updateProductData,
   searchProduct,
-} from "../controllers/product.js";
-import { upload } from "../utils/multer.js";
-import { isLoggedIn } from "../middlewares/authentication.js";
-import { restrictTo } from "../middlewares/authorization.js";
+} from '../controllers/product.js';
+import { isLoggedIn } from '../middlewares/authentication.js';
+import { restrictTo } from '../middlewares/authorization.js';
 import { checkUser } from '../middlewares/checkUser.js';
 
 const Router = express.Router();
@@ -24,17 +23,7 @@ const Router = express.Router();
  *  description: Products APIs
  */
 
-Router.post(
-  '/',
-  isLoggedIn,
-  restrictTo('admin', 'seller'),
-  upload.fields([
-    { name: 'productThumbnail', maxCount: 1 },
-    { name: 'otherImages', maxCount: 6 },
-    { name: 'colorImages', maxCount: 6 },
-  ]),
-  createProduct
-);
+Router.post('/', isLoggedIn, restrictTo('admin', 'seller'), createProduct);
 
 /**
  * @swagger
@@ -122,8 +111,13 @@ Router.get('/category/:categoryId', getProductsByCategory);
  *              schema:
  *                type: array
  */
-Router.get("/subcategory/:subcategoryId", getProductsBySubCategory);
-Router.delete("/:productId", isLoggedIn, restrictTo("admin","seller"), deleteProduct )
-Router.post("/search", searchProduct);
+Router.get('/subcategory/:subcategoryId', getProductsBySubCategory);
+Router.delete(
+  '/:productId',
+  isLoggedIn,
+  restrictTo('admin', 'seller'),
+  deleteProduct
+);
+Router.post('/search', searchProduct);
 
 export default Router;
