@@ -47,6 +47,14 @@ const ProductSchema = new mongoose.Schema(
       type: Number,
     },
 
+    hasColors: {
+      type: Boolean,
+    },
+
+    hasMeasurements: {
+      type: Boolean,
+    },
+
     colorMeasurementVariations: {
       measurementType: {
         type: String,
