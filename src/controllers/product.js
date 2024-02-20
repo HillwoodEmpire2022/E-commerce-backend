@@ -11,135 +11,6 @@ import Category from '../models/category.js';
 import SubCategory from '../models/subcategory.js';
 import removeEmptySpaces from '../utils/removeEmptySpaces.js';
 
-// export const createProduct = async (req, res) => {
-//   console.log(JSON.parse(req.body.measurements[0]));
-//   try {
-//     const { error } = uploadProductValidation.validate(req.body, {
-//       errors: { label: 'key', wrap: { label: false } },
-//       allowUnknown: true,
-//     });
-
-//     if (error) {
-//       res.status(422).send({ message: error.message });
-//       return;
-//     }
-
-//     const seller = await User.findById(req.body.seller);
-
-//     if (!seller) {
-//       return res.status(400).send({
-//         message: 'There is no seller that matches the provided seller Id.',
-//       });
-//     }
-
-//     const existingProduct = await Product.find({
-//       name: req.body.name,
-//       seller: req.body.seller,
-//     });
-
-//     if (existingProduct.length !== 0) {
-//       return res
-//         .status(409)
-//         .send({ message: 'You have already uploaded this product.' });
-//     }
-
-//     let productThumbnailString = base64FileStringGenerator(
-//       req.files.productThumbnail[0]
-//     ).content;
-
-//     if (!productThumbnailString) {
-//       return res
-//         .status(400)
-//         .send({ message: 'There is no thumbnail image attached.' });
-//     }
-
-//     const uploadedThumbnail = await uploadToCloudinary(
-//       productThumbnailString,
-//       seller.companyName,
-//       req.body.name,
-//       'productThumbnail'
-//     );
-
-//     let otherImages = req.files.otherImages;
-
-//     if (!otherImages || otherImages.length === 0) {
-//       return res
-//         .status(400)
-//         .send({ message: 'There is no any image for otherImages' });
-//     }
-
-//     let uploadedOtherImages = [];
-//     for (let i = 0; i < otherImages.length; i++) {
-//       let imageString = base64FileStringGenerator(otherImages[i]).content;
-//       let uploadedImage = await uploadToCloudinary(
-//         imageString,
-//         seller.companyName,
-//         req.body.name,
-//         'otherImages'
-//       );
-//       uploadedOtherImages[i] = {
-//         public_id: uploadedImage.public_id,
-//         url: uploadedImage.url,
-//       };
-//     }
-
-//     let colorImages = req.files.colorImages;
-
-//     if (!colorImages || colorImages.length === 0) {
-//       return res
-//         .status(400)
-//         .send({ message: 'There is no any image for colorImages' });
-//     }
-
-//     let uploadedColorImages = [];
-//     for (let i = 0; i < colorImages.length; i++) {
-//       let imageString = base64FileStringGenerator(colorImages[i]).content;
-//       let uploadedImage = await uploadToCloudinary(
-//         imageString,
-//         seller.companyName,
-//         req.body.name,
-//         'colorImages'
-//       );
-//       uploadedColorImages[i] = {
-//         public_id: uploadedImage.public_id,
-//         url: uploadedImage.url,
-//         colorName: req.body.colorNames[i],
-//       };
-//     }
-
-// let productObject = new Product({
-//   name: req.body.name,
-//   description: req.body.description,
-//   category: req.body.category,
-//   subcategory: req.body.subcategory,
-//   seller: req.body.seller,
-//   price: req.body.price,
-//   discountPercentage: req.body.discountPercentage,
-//   stockQuantity: req.body.stockQuantity,
-//   quantityParameter: req.body.quantityParameter,
-//   brandName: req.body.brandName,
-//   availableSizes: req.body.availableSizes,
-//   productImages: {
-//     productThumbnail: uploadedThumbnail,
-//     otherImages: uploadedOtherImages,
-//     colorImages: uploadedColorImages,
-//   },
-// });
-
-//     const product = await productObject.save();
-//     res.status(201).json({
-//       status: 'success',
-//       data: {
-//         product,
-//       },
-//     });
-
-//     res.send('Done');
-//   } catch (error) {
-//     res.status(500).send({ message: error.message });
-//   }
-// };
-
 export const getAllProducts = async (req, res) => {
   try {
     const queryObj = {};
@@ -189,7 +60,9 @@ export const getSingleProduct = async (req, res) => {
     });
 
     if (error) {
-      return res.status(400).json({ status: 'fail', message: error.message });
+      return res
+        .status(400)
+        .json({ status: 'fail', message: error.message });
     }
     const product = await Product.findOne({
       _id: req.params.productId,
@@ -287,7 +160,9 @@ export const deleteProduct = async (req, res) => {
       message: 'product deleted succesfully',
     });
   } catch (error) {
-    return res.status(500).json({ message: 'failed to delete product' });
+    return res
+      .status(500)
+      .json({ message: 'failed to delete product' });
   }
 };
 export const updateProductData = async (req, res) => {
@@ -298,7 +173,9 @@ export const updateProductData = async (req, res) => {
     });
 
     if (error) {
-      return res.status(422).json({ status: 'fail', message: error.message });
+      return res
+        .status(422)
+        .json({ status: 'fail', message: error.message });
     }
     const isUserAdmin = req.user.role === 'admin';
 
@@ -306,7 +183,8 @@ export const updateProductData = async (req, res) => {
     if (req.body.seller && req.user.role !== 'admin') {
       return res.status(403).json({
         status: 'fail',
-        message: 'Acces denied! You are not allowed to perform this operation.',
+        message:
+          'Acces denied! You are not allowed to perform this operation.',
       });
     }
 
@@ -411,6 +289,8 @@ export const createProduct = async (req, res) => {
     category: req.body.category,
     subcategory: req.body.subcategory,
     seller: req.body.seller,
+    hasColors: req.body.hasColors || false,
+    hasMeasurements: req.body.hasMeasurements || false,
     price: req.body.price,
     discountPercentage: req.body.discountPercentage,
     stockQuantity: req.body.stockQuantity,
@@ -423,10 +303,13 @@ export const createProduct = async (req, res) => {
   };
 
   try {
-    const { error } = uploadProductValidation.validate(productObject, {
-      errors: { label: 'key', wrap: { label: false } },
-      allowUnknown: true,
-    });
+    const { error } = uploadProductValidation.validate(
+      productObject,
+      {
+        errors: { label: 'key', wrap: { label: false } },
+        allowUnknown: true,
+      }
+    );
     if (error) {
       return res.status(422).send({ message: error.message });
     }
@@ -435,7 +318,8 @@ export const createProduct = async (req, res) => {
 
     if (!seller) {
       return res.status(400).send({
-        message: 'There is no seller that matches the provided seller Id.',
+        message:
+          'There is no seller that matches the provided seller Id.',
       });
     }
 
@@ -446,7 +330,9 @@ export const createProduct = async (req, res) => {
     });
 
     if (existingProduct.length !== 0) {
-      return res.status(400).send({ message: 'Product already exists.' });
+      return res
+        .status(400)
+        .send({ message: 'Product already exists.' });
     }
 
     // // Create the product
@@ -461,7 +347,8 @@ export const createProduct = async (req, res) => {
 
     res.status(500).json({
       status: 'arror',
-      message: 'Something unexpected has happend. Please try again later!',
+      message:
+        'Something unexpected has happend. Please try again later!',
     });
   }
 };
