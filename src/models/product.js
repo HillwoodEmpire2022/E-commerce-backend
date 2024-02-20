@@ -58,7 +58,7 @@ const ProductSchema = new mongoose.Schema(
     colorMeasurementVariations: {
       measurementType: {
         type: String,
-        enum: ['length', 'mass', 'volume'],
+        enum: ['size'],
       },
 
       variations: [
