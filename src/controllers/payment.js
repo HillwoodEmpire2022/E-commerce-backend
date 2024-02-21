@@ -57,7 +57,6 @@ export const checkout = async (req, res, next) => {
 
     await session.withTransaction(async () => {
       // Create Order
-      // TODO: Check Quantity Avalability OR Do Not Display Products
       await Order.create([order], { session });
       // Checkout to flutterwave
       checkoutResponse = await flutterwaveChackout(
@@ -86,6 +85,7 @@ export const checkout = async (req, res, next) => {
 
 // Verify Transaction, Create order, and update product quantities
 export const verifyTransaction = async (req, res) => {
+  // TODO: FIND ORDER BY REFERENVCE FROM FRONTEND NOT WEBHOOK
   // Verify Transaction
   const respose = await verifyTrans(String(req.body.data.id));
 
@@ -109,9 +109,57 @@ export const verifyTransaction = async (req, res) => {
 
   // Update Order Products quantities
   const orderProducts = order.items;
-  orderProducts.forEach(async ({ product, quantity }) => {
-    const orderProduct = await Product.findById(product, ['stockQuantity']);
-    orderProduct.stockQuantity -= quantity;
+  orderProducts.forEach(async (product) => {
+    // Find the product
+    const orderProduct = await Product.findById(product.product);
+
+    const itemHasVariation = product.variation.color || product.variation.size;
+
+    // If no colorMeasurementVariationQuantity, update product quantity
+    if (!itemHasVariation) {
+      orderProduct.stockQuantity -= product.quantity;
+    }
+
+    // If has variation, update quantity and colorMeasurementVariationQuantity
+    if (itemHasVariation) {
+      // {color:"red", size:12}, {color:"red"}, {size:""}
+      const orderedCombination = product.variation;
+
+      // Find position of combination to update
+      const updatePosition =
+        orderProduct.colorMeasurementVariations.variations.findIndex(
+          (variation) => {
+            // If combination is both (color and size)
+            if (
+              orderedCombination.hasOwnProperty('color') &&
+              orderedCombination.hasOwnProperty('size')
+            )
+              return (
+                variation.colorImg.colorName === orderedCombination.color &&
+                variation.measurementvalue === orderedCombination.size
+              );
+
+            // Only color
+            if (orderedCombination.hasOwnProperty('color')) {
+              console.log('Falls here');
+              return variation.colorImg.colorName === orderedCombination.color;
+            }
+
+            // Only size
+            if (orderedCombination.hasOwnProperty('size'))
+              return variation.measurementvalue === orderedCombination.size;
+          }
+        );
+
+      orderProduct.colorMeasurementVariations.variations[
+        updatePosition
+      ].colorMeasurementVariationQuantity -= product.quantity;
+
+      // update product quantity
+      orderProduct.stockQuantity -= product.quantity;
+    }
+
+    // Save the product
     await orderProduct.save();
   });
 
