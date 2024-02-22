@@ -50,7 +50,7 @@ export const checkout = async (req, res, next) => {
   const { email, firstName, lastName } = req.user;
 
   // A frontend URL
-  const redirect_url = process.env.FN_URL;
+  const redirect_url = `${process.env.FN_URL}/payment-verification`;
   try {
     const session = await mongoose.startSession();
     let checkoutResponse;
@@ -85,11 +85,18 @@ export const checkout = async (req, res, next) => {
 
 // Verify Transaction, Create order, and update product quantities
 export const verifyTransaction = async (req, res) => {
-  // TODO: FIND ORDER BY REFERENVCE FROM FRONTEND NOT WEBHOOK
-  // Verify Transaction
-  const respose = await verifyTrans(String(req.body.data.id));
+  const { tx_ref, transaction_id } = req.body;
 
-  // Update Products Quantities
+  // Verify Transaction
+  const respose = await verifyTrans(transaction_id);
+
+  if (!tx_ref || !transaction_id)
+    return res.status(500).json({
+      status: 'error',
+      message: 'There was an error processing payment! Please try again later.',
+    });
+
+  //   // Update Products Quantities
   if (respose.data.status !== 'successful')
     return res.status(500).json({
       status: 'error',
@@ -97,8 +104,10 @@ export const verifyTransaction = async (req, res) => {
     });
 
   const order = await Order.findOne({
-    tx_ref: respose.data.tx_ref,
+    tx_ref: tx_ref,
   });
+
+  // TODO: STORE TRANSACTION
 
   order.status = 'pending';
   order.transId = respose.data.id;
@@ -141,7 +150,6 @@ export const verifyTransaction = async (req, res) => {
 
             // Only color
             if (orderedCombination.hasOwnProperty('color')) {
-              console.log('Falls here');
               return variation.colorImg.colorName === orderedCombination.color;
             }
 

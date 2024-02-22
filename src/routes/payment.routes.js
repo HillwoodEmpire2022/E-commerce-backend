@@ -5,6 +5,6 @@ import { checkout, verifyTransaction } from '../controllers/payment.js';
 const router = express.Router();
 
 router.post('/', isLoggedIn, checkout);
-router.post('/callback', isLoggedIn, verifyTransaction);
+router.post('/verify-payment', isLoggedIn, verifyTransaction);
 
 export default router;
