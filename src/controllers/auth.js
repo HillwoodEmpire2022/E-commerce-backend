@@ -219,7 +219,7 @@ export const googleAuthenticationSuccess = (req, res) => {
   }
 };
 
-export const sendEmailToResetPassword = async (req, res, user) => {
+export const forgotPassword = async (req, res, user) => {
   try {
     const { email } = req.body;
 
@@ -285,25 +285,15 @@ export const resetUserPassword = async (req, res) => {
     }
 
     if (newPassword != confirmPassword) {
-      return res.status(400).json({ message: 'password doesn not match' });
+      return res.status(400).json({ message: 'password does not match' });
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    user.password = newPassword;
+    await user.save();
 
-    // update user with new password
-
-    const updatedUser = await User.findOneAndUpdate(
-      { email },
-      { $set: { password: hashedPassword } },
-      { new: true }
-    );
-
-    if (!updatedUser) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    return res.status(201).json({ message: 'password  reset successfully' });
+    return res.status(201).json({ message: 'password reset successfully' });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ message: 'failed to reset user password' });
   }
 };

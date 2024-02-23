@@ -1,18 +1,18 @@
-import nodemailer from "nodemailer";
+import nodemailer from 'nodemailer';
 
 export const sendEmail = async (options) => {
   // 1) Create a transporter. A service thatsend an email
   const transporter = nodemailer.createTransport({
-    host: process.env.DEV_HOST,
-    port: process.env.DEV_PORT,
+    service: 'gmail',
+    host: 'smtp.gmail.com',
     auth: {
-      user: process.env.DEV_USER,
-      pass: process.env.DEV_PASS,
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASSWORD,
     },
   });
   // 2) Define email options
   const mailOptions = {
-    from: "Hill Gropu <j.iribagiza2@gmail.com>",
+    from: 'Hill Gropu <j.iribagiza2@gmail.com>',
     to: options.to,
     subject: options.subject,
     html: `<p>${options.text} click on the link bellow to reset your password.</p> <a href="${options.url}">Reset-password</a>`,
