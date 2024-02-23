@@ -14,6 +14,7 @@ import sprofileRouter from './routes/profile.routes.js';
 import sellerRoute from './routes/seller.routes.js';
 import paymentRouter from './routes/payment.routes.js';
 import orderRouter from './routes/order.routes.js';
+import userRouter from './routes/user.routes.js';
 
 const app = express();
 dotenv.config();
@@ -57,6 +58,7 @@ app.use('/api/v1/carts', cartRouter);
 app.use('/api/v1/sellers', sellerRoute);
 app.use('/api/v1/payments', paymentRouter);
 app.use('/api/v1/orders', orderRouter);
+app.use('/api/v1/users', userRouter);
 
 app.use('*', (req, res, next) => {
   res.status(404).json({
