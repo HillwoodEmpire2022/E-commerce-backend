@@ -154,7 +154,7 @@ export const userLogin = async (req, res) => {
       return res.status(400).json({ status: 'fail', message: error.message });
     }
 
-    const user = await User.findOne({ email: email });
+    const user = await User.findOne({ email: email }).select('+password');
 
     // Check if use does not exist
     if (!user) {
@@ -302,7 +302,7 @@ export const updatePassword = async (req, res) => {
   try {
     //  find user by Id
     const userId = req.user._id;
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).select('+password');
 
     if (!user) {
       return res.status(404).json({

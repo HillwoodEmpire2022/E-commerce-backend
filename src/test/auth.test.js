@@ -303,7 +303,9 @@ describe('resetUserPassword', () => {
       .send({ newPassword, confirmPassword: newPassword });
 
     expect(response.status).toBe(201);
-    const updatedUser = await User.findOne({ email: user.email });
+    const updatedUser = await User.findOne({ email: user.email }).select(
+      '+password'
+    );
     const isPasswordValid = await bcrypt.compare(
       newPassword,
       updatedUser.password
