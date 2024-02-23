@@ -1,20 +1,20 @@
-import express from "express";
+import express from 'express';
 import {
   userRegister,
   userLogin,
   returnedUserInfo,
   activateAccount,
-  sendEmailToResetPassword,
   resetUserPassword,
   getMe,
   updatePassword,
   userUpdatePhoto,
-  userUpdateProfile
-} from "../controllers/auth.js";
-import passport from "passport";
-import { isLoggedIn } from "../middlewares/authentication.js";
-import { restrictTo } from "../middlewares/authorization.js";
-import { uploadProfilePicture } from "../utils/multer.js";
+  userUpdateProfile,
+  forgotPassword,
+} from '../controllers/auth.js';
+import passport from 'passport';
+import { isLoggedIn } from '../middlewares/authentication.js';
+import { restrictTo } from '../middlewares/authorization.js';
+import { uploadProfilePicture } from '../utils/multer.js';
 const router = express.Router();
 const clientUrl = process.env.CLIENT_URL;
 const webUrl =
@@ -61,7 +61,7 @@ const webUrl =
  *        409:
  *          description: Existing user with the provided email error.
  */
-router.post("/register", userRegister);
+router.post('/register', userRegister);
 /**
  * @swagger
  * /user/login:
@@ -92,16 +92,21 @@ router.post("/register", userRegister);
  *        401:
  *          description: Wrong email or password error.
  */
-router.post("/login", userLogin);
-router.get("/activate-account/:activationToken", activateAccount);
-router.get("/get-me", isLoggedIn, getMe);
-router.post("/reset-password", sendEmailToResetPassword);
-router.patch("/reset-password/:resetUserToken", resetUserPassword);
-router.patch("/update-password" ,isLoggedIn, updatePassword);
-router.patch("/update-photo",isLoggedIn, uploadProfilePicture, userUpdatePhoto);
-router.patch("/profile-data",isLoggedIn, userUpdateProfile);
+router.post('/login', userLogin);
+router.get('/activate-account/:activationToken', activateAccount);
+router.get('/get-me', isLoggedIn, getMe);
+router.post('/forgot-password', forgotPassword);
+router.patch('/reset-password/:resetUserToken', resetUserPassword);
+router.patch('/update-password', isLoggedIn, updatePassword);
+router.patch(
+  '/update-photo',
+  isLoggedIn,
+  uploadProfilePicture,
+  userUpdatePhoto
+);
+router.patch('/profile-data', isLoggedIn, userUpdateProfile);
 
-router.get("/google/success", (req, res) => {
+router.get('/google/success', (req, res) => {
   try {
     const response = returnedUserInfo(req.user);
     res.status(200).json(response);
@@ -112,27 +117,27 @@ router.get("/google/success", (req, res) => {
 
 // Routes for Google OAuth
 router.get(
-  "/google",
-  passport.authenticate("google", {
-    scope: ["email", "profile"],
+  '/google',
+  passport.authenticate('google', {
+    scope: ['email', 'profile'],
   })
 );
 
 router.get(
   `/google/callback`,
-  passport.authenticate("google", {
+  passport.authenticate('google', {
     successRedirect: clientUrl,
-    failureRedirect: "/auth/google/failure",
-    failureMessage: "Cannot login to google, please try again later",
+    failureRedirect: '/auth/google/failure',
+    failureMessage: 'Cannot login to google, please try again later',
   }),
   (req, res) => {
-    res.send("Signed in successfully!");
+    res.send('Signed in successfully!');
   }
 );
 
-router.get("/google/failure", (req, res) => {
+router.get('/google/failure', (req, res) => {
   res.status(401).json({
-    message: "Unable to sign in using Google, please try again later",
+    message: 'Unable to sign in using Google, please try again later',
   });
 });
 

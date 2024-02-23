@@ -1,12 +1,12 @@
-import mongoose from "mongoose";
-import bcrypt from "bcrypt";
+import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
 
 const userSchema = new mongoose.Schema(
   {
     email: {
       type: String,
-      required: [true, "Please provide your email."],
-      unique: [true, "Email already in use"],
+      required: [true, 'Please provide your email.'],
+      unique: [true, 'Email already in use'],
       lowercase: true,
       trim: true,
     },
@@ -21,17 +21,17 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
-    photo: { type: String, default: "default.jpg" },
+    photo: { type: String, default: 'default.jpg' },
 
     role: {
       type: String,
-      enum: ["admin", "seller", "customer"],
-      default: "customer",
+      enum: ['admin', 'seller', 'customer'],
+      default: 'customer',
     },
 
     password: {
       type: String,
-      required: [true, "Please provide a password"],
+      required: [true, 'Please provide a password'],
       minlength: 8,
     },
 
@@ -59,10 +59,10 @@ const userSchema = new mongoose.Schema(
 );
 
 // Hash Password
-userSchema.pre("save", async function (next) {
+userSchema.pre('save', async function (next) {
   // CHECK IF PASSWORD WAS MODIFIED
   // IF NO, Return AND GO OVER
-  if (!this.isModified("password")) return next();
+  if (!this.isModified('password')) return next();
 
   // IF YES HASH THE PASSWORD
   this.password = await bcrypt.hash(this.password, 12);
@@ -70,12 +70,12 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-userSchema.virtual("profile", {
-  ref: "SellerProfile", // Model to populate from
-  localField: "_id", // Field in this schema
-  foreignField: "user", // Field in the referenced model
+userSchema.virtual('profile', {
+  ref: 'SellerProfile', // Model to populate from
+  localField: '_id', // Field in this schema
+  foreignField: 'user', // Field in the referenced model
 });
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model('User', userSchema);
 
 export default User;
