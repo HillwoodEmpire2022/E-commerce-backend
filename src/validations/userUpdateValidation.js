@@ -4,5 +4,7 @@ import Joi from 'joi';
 export const updateUserSchema = Joi.object({
   email: Joi.string().forbidden(),
   password: Joi.string().forbidden(),
+  lastName: Joi.string().forbidden(),
+  FirstName: Joi.string().forbidden(),
   role: Joi.string().valid('admin', 'seller', 'customer'),
 }).min(1); // At least one field must be present
