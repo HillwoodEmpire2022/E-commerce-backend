@@ -26,7 +26,9 @@ export const userRegister = async (req, res, next) => {
     });
 
     if (error) {
-      return res.status(400).json({ status: 'fail', message: error.message });
+      return res
+        .status(400)
+        .json({ status: 'fail', message: error.message });
     }
     // Generate verification token
     const activationToken = jwt.sign(
@@ -35,7 +37,10 @@ export const userRegister = async (req, res, next) => {
     );
 
     // 2) Create user
-    const newUser = await User.create({ ...req.body, activationToken });
+    const newUser = await User.create({
+      ...req.body,
+      activationToken,
+    });
 
     // If user is seller create seller profile
     if (req.body.role === 'seller') {
@@ -64,7 +69,8 @@ export const userRegister = async (req, res, next) => {
       // TODO: Delete user or use transaction.
       return res.status(500).json({
         status: 'fail',
-        message: 'there was an error sending email! Please try again.',
+        message:
+          'there was an error sending email! Please try again.',
       });
     }
 
@@ -93,7 +99,10 @@ export const userRegister = async (req, res, next) => {
 export const activateAccount = async (req, res) => {
   const { activationToken } = req.params;
   try {
-    const decodeToken = jwt.verify(activationToken, process.env.JWT_SECRET_KEY);
+    const decodeToken = jwt.verify(
+      activationToken,
+      process.env.JWT_SECRET_KEY
+    );
     const { email } = decodeToken;
 
     const user = await User.findOne({ email });
@@ -119,7 +128,10 @@ export const activateAccount = async (req, res) => {
 
     return res
       .status(200)
-      .json({ status: 'success', message: 'Account Activated successfully.' });
+      .json({
+        status: 'success',
+        message: 'Account Activated successfully.',
+      });
   } catch (err) {
     return res.status(400).json({ message: 'Invalid token.' });
   }
@@ -135,7 +147,10 @@ export const returnedUserInfo = (user) => {
     profileImageUrl: user.photo,
   };
 
-  const userToken = generateJWToken({ id: user._id, role: user.role });
+  const userToken = generateJWToken({
+    id: user._id,
+    role: user.role,
+  });
   return {
     token: userToken,
     user: displayedUserInfo,
@@ -151,10 +166,14 @@ export const userLogin = async (req, res) => {
       errors: { label: 'key', wrap: { label: false } },
     });
     if (error) {
-      return res.status(400).json({ status: 'fail', message: error.message });
+      return res
+        .status(400)
+        .json({ status: 'fail', message: error.message });
     }
 
-    const user = await User.findOne({ email: email }).select('+password');
+    const user = await User.findOne({ email: email }).select(
+      '+password'
+    );
 
     // Check if use does not exist
     if (!user) {
@@ -234,7 +253,9 @@ export const forgotPassword = async (req, res, user) => {
     const checkUserEmail = await User.findOne({ email: email });
 
     if (!checkUserEmail) {
-      return res.status(404).json({ message: 'email does not exist' });
+      return res
+        .status(404)
+        .json({ message: 'email does not exist' });
     }
 
     const resetUserToken = encodeURIComponent(
@@ -243,7 +264,7 @@ export const forgotPassword = async (req, res, user) => {
       })
     );
 
-    const url = `${process.env.CLIENT_LOCALHOST_URL}/user/reset-password/${resetUserToken}`;
+    const url = `${process.env.CLIENT_LOCALHOST_URL}/reset-password/${resetUserToken}`;
 
     const emailOptions = {
       to: email,
@@ -256,14 +277,19 @@ export const forgotPassword = async (req, res, user) => {
       .status(201)
       .json({ message: 'check your email to reset password' });
   } catch (error) {
-    return res.status(500).json({ message: 'failed to  reset password' });
+    return res
+      .status(500)
+      .json({ message: 'failed to  reset password' });
   }
 };
 
 export const resetUserPassword = async (req, res) => {
   const { resetUserToken } = req.params;
   try {
-    const verifyToken = jwt.verify(resetUserToken, process.env.JWT_SECRET_KEY);
+    const verifyToken = jwt.verify(
+      resetUserToken,
+      process.env.JWT_SECRET_KEY
+    );
 
     const { email } = verifyToken;
 
@@ -281,20 +307,28 @@ export const resetUserPassword = async (req, res) => {
         confirmPassword,
       });
     } catch (validationError) {
-      return res.status(400).json({ message: validationError.message });
+      return res
+        .status(400)
+        .json({ message: validationError.message });
     }
 
     if (newPassword != confirmPassword) {
-      return res.status(400).json({ message: 'password does not match' });
+      return res
+        .status(400)
+        .json({ message: 'password does not match' });
     }
 
     user.password = newPassword;
     await user.save();
 
-    return res.status(201).json({ message: 'password reset successfully' });
+    return res
+      .status(201)
+      .json({ message: 'password reset successfully' });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: 'failed to reset user password' });
+    return res
+      .status(500)
+      .json({ message: 'failed to reset user password' });
   }
 };
 
@@ -309,7 +343,8 @@ export const updatePassword = async (req, res) => {
         message: 'user not found',
       });
     }
-    const { currentPassword, newPassword, confirmPassword } = req.body;
+    const { currentPassword, newPassword, confirmPassword } =
+      req.body;
 
     // validate password
     try {
@@ -368,15 +403,22 @@ export const userUpdatePhoto = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const allowedImageTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    const allowedImageTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/jpg',
+    ];
 
     if (!req.file || !allowedImageTypes.includes(req.file.mimetype)) {
       return res.status(400).json({
-        message: 'Invalid image format. Allowed formats: JPEG, PNG, JPG',
+        message:
+          'Invalid image format. Allowed formats: JPEG, PNG, JPG',
       });
     }
 
-    let profileImageString = base64FileStringGenerator(req.file).content;
+    let profileImageString = base64FileStringGenerator(
+      req.file
+    ).content;
 
     if (!profileImageString) {
       return res
@@ -427,6 +469,8 @@ export const userUpdateProfile = async (req, res) => {
       newUser,
     });
   } catch (error) {
-    return res.status(500).json({ message: 'failed to update profile' });
+    return res
+      .status(500)
+      .json({ message: 'failed to update profile' });
   }
 };
