@@ -126,12 +126,10 @@ export const activateAccount = async (req, res) => {
       validateBeforeSave: false,
     });
 
-    return res
-      .status(200)
-      .json({
-        status: 'success',
-        message: 'Account Activated successfully.',
-      });
+    return res.status(200).json({
+      status: 'success',
+      message: 'Account Activated successfully.',
+    });
   } catch (err) {
     return res.status(400).json({ message: 'Invalid token.' });
   }
@@ -264,7 +262,7 @@ export const forgotPassword = async (req, res, user) => {
       })
     );
 
-    const url = `${process.env.CLIENT_LOCALHOST_URL}/reset-password/${resetUserToken}`;
+    const url = `${process.env.CLIENT_URL}/reset-password/${resetUserToken}`;
 
     const emailOptions = {
       to: email,
