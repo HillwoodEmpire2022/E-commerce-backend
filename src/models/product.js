@@ -55,6 +55,14 @@ const ProductSchema = new mongoose.Schema(
       type: Boolean,
     },
 
+    quantityParameter: {
+      type: String,
+    },
+
+    brandName: {
+      type: String,
+    },
+
     colorMeasurementVariations: {
       measurementType: {
         type: String,
@@ -82,9 +90,6 @@ const ProductSchema = new mongoose.Schema(
 
     productImages: {
       productThumbnail: {
-        public_id: {
-          type: String,
-        },
         url: {
           type: String,
           required: true,
@@ -92,12 +97,8 @@ const ProductSchema = new mongoose.Schema(
       },
       otherImages: [
         {
-          public_id: {
-            type: String,
-          },
           url: {
             type: String,
-            required: true,
           },
         },
       ],
