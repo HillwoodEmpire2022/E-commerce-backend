@@ -28,13 +28,13 @@ export const addSubCategory = async (req, res) => {
     if (!category) {
       return res.status(400).json({
         status: 'fail',
-        message:
-          'No category found for subcategory you are creating.',
+        message: 'No category found for subcategory you are creating.',
       });
     }
 
     const subcategory = await SubCategory.findOne({
       name: subcategoryData.name,
+      category: req.body.category,
     });
     if (subcategory) {
       return res.status(400).json({
@@ -89,9 +89,10 @@ export const getSubCategories = async (req, res) => {
 // Get Sub-category
 export const getSubCategory = async (req, res) => {
   try {
-    const category = await SubCategory.findById(
-      req.params.id
-    ).populate('category', ['id', 'name']);
+    const category = await SubCategory.findById(req.params.id).populate(
+      'category',
+      ['id', 'name']
+    );
 
     if (!category) {
       return res
@@ -105,9 +106,7 @@ export const getSubCategory = async (req, res) => {
       data: category,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ status: 'error', message: 'Internal server error' });
+    res.status(500).json({ status: 'error', message: 'Internal server error' });
   }
 };
 
@@ -145,9 +144,7 @@ export const updateSubCategory = async (req, res) => {
 // Delete Sub-category
 export const deleteSubCategory = async (req, res) => {
   try {
-    const subCategory = await SubCategory.findByIdAndDelete(
-      req.params.id
-    );
+    const subCategory = await SubCategory.findByIdAndDelete(req.params.id);
 
     if (!subCategory) {
       return res
@@ -160,8 +157,6 @@ export const deleteSubCategory = async (req, res) => {
       status: 'success',
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ status: 'error', message: 'Internal server error' });
+    res.status(500).json({ status: 'error', message: 'Internal server error' });
   }
 };
