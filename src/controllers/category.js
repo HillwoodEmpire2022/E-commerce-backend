@@ -2,6 +2,7 @@ import Category from '../models/category.js';
 
 import { addCategoryValidation } from '../validations/productValidation.js';
 import removeEmptySpaces from '../utils/removeEmptySpaces.js';
+import SubCategory from '../models/subcategory.js';
 
 // ******** Categories ***********
 // Create Categories
@@ -130,6 +131,9 @@ export const deleteCategory = async (req, res) => {
         .status(404)
         .json({ status: 'fail', message: 'Category not found' });
     }
+
+    // Delete All Subcategories
+    await SubCategory.deleteMany({ category: req.params.id });
 
     // Send the found category as a response
     res.status(204).json({
