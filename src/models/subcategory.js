@@ -1,17 +1,16 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const SubCategorySchema = new mongoose.Schema(
   {
     name: {
       type: String,
       required: true,
-      unique: true,
       trim: true,
       lowercase: true,
     },
     category: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Category",
+      ref: 'Category',
     },
   },
   {
@@ -28,5 +27,7 @@ const SubCategorySchema = new mongoose.Schema(
   }
 );
 
-const SubCategory = mongoose.model("SubCategory", SubCategorySchema);
+SubCategorySchema.index({ name: 1, category: 1 }, { unique: true });
+
+const SubCategory = mongoose.model('SubCategory', SubCategorySchema);
 export default SubCategory;
