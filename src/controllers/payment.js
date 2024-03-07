@@ -46,6 +46,8 @@ export const checkout = async (req, res, next) => {
   const customerId = req.user._id;
   const tx_ref = Date.now() + customerId;
   const order = { ...req.body, customer: customerId, tx_ref };
+
+  console.log(order, req.body.items);
   const { amount, currency } = order;
   const { email, firstName, lastName } = req.user;
 
