@@ -1,7 +1,6 @@
 import Product from '../models/product.js';
 import User from '../models/user.js';
-import { base64FileStringGenerator } from '../utils/base64Converter.js';
-import { uploadToCloudinary } from '../utils/cloudinary.js';
+import APIFeatures from '../utils/APIFeatures.js';
 import { MongoIDValidator } from '../validations/mongoidValidator.js';
 import {
   updateProductsValidation,
@@ -15,16 +14,15 @@ export const getAllProducts = async (req, res) => {
   try {
     const queryObj = {};
     if (req?.user?.role === 'seller') queryObj.seller = req.user._id;
-    const products = await Product.find(queryObj)
-      .populate({
-        path: 'seller',
-        select: 'email',
-        populate: {
-          path: 'profile',
-          select: 'locations companyName logo website',
-          strictPopulate: false,
-        },
-      })
+
+    // EXECUTE QUERY
+    let features = new APIFeatures(Product.find(queryObj), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
+
+    const products = await features.query
       .populate({
         path: 'category',
         select: 'name',
@@ -32,8 +30,7 @@ export const getAllProducts = async (req, res) => {
       .populate({
         path: 'subcategory',
         select: 'name',
-      })
-      .exec();
+      });
 
     if (products.length === 0) {
       return res
@@ -60,9 +57,7 @@ export const getSingleProduct = async (req, res) => {
     });
 
     if (error) {
-      return res
-        .status(400)
-        .json({ status: 'fail', message: error.message });
+      return res.status(400).json({ status: 'fail', message: error.message });
     }
     const product = await Product.findOne({
       _id: req.params.productId,
@@ -160,9 +155,7 @@ export const deleteProduct = async (req, res) => {
       message: 'product deleted succesfully',
     });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: 'failed to delete product' });
+    return res.status(500).json({ message: 'failed to delete product' });
   }
 };
 export const updateProductData = async (req, res) => {
@@ -173,9 +166,7 @@ export const updateProductData = async (req, res) => {
     });
 
     if (error) {
-      return res
-        .status(422)
-        .json({ status: 'fail', message: error.message });
+      return res.status(422).json({ status: 'fail', message: error.message });
     }
     const isUserAdmin = req.user.role === 'admin';
 
@@ -183,8 +174,7 @@ export const updateProductData = async (req, res) => {
     if (req.body.seller && req.user.role !== 'admin') {
       return res.status(403).json({
         status: 'fail',
-        message:
-          'Acces denied! You are not allowed to perform this operation.',
+        message: 'Acces denied! You are not allowed to perform this operation.',
       });
     }
 
@@ -304,13 +294,10 @@ export const createProduct = async (req, res) => {
   };
 
   try {
-    const { error } = uploadProductValidation.validate(
-      productObject,
-      {
-        errors: { label: 'key', wrap: { label: false } },
-        allowUnknown: true,
-      }
-    );
+    const { error } = uploadProductValidation.validate(productObject, {
+      errors: { label: 'key', wrap: { label: false } },
+      allowUnknown: true,
+    });
     if (error) {
       return res.status(422).send({ message: error.message });
     }
@@ -319,8 +306,7 @@ export const createProduct = async (req, res) => {
 
     if (!seller) {
       return res.status(400).send({
-        message:
-          'There is no seller that matches the provided seller Id.',
+        message: 'There is no seller that matches the provided seller Id.',
       });
     }
 
@@ -331,9 +317,7 @@ export const createProduct = async (req, res) => {
     });
 
     if (existingProduct.length !== 0) {
-      return res
-        .status(400)
-        .send({ message: 'Product already exists.' });
+      return res.status(400).send({ message: 'Product already exists.' });
     }
 
     // // Create the product
@@ -351,8 +335,7 @@ export const createProduct = async (req, res) => {
 
     res.status(500).json({
       status: 'arror',
-      message:
-        'Something unexpected has happend. Please try again later!',
+      message: 'Something unexpected has happend. Please try again later!',
     });
   }
 };
