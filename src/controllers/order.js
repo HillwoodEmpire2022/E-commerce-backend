@@ -25,7 +25,12 @@ export const getOrders = async (req, res, next) => {
         .limitFields()
         .paginate();
 
-      orders = await features.query;
+      if (role === 'customer') orders = await features.query;
+      if (role === 'admin')
+        orders = await features.query.populate({
+          path: 'customer',
+          select: 'firstName lastName email id',
+        });
     }
 
     res.status(200).json({
@@ -236,6 +241,7 @@ async function getOrdersBySeller(sellerId, query = {}) {
       {
         $project: {
           ...projection,
+          createdAt: '$createdAt',
         },
       },
     ]);
