@@ -45,13 +45,10 @@ export const addCategory = async (req, res) => {
 // Get Categories
 export const getCategories = async (req, res) => {
   try {
-    const categories = await Category.find({}, [
-      '-updatedAt',
-      '-createdAt',
-    ])
+    const categories = await Category.find({}, ['-updatedAt', '-createdAt'])
       .populate({
         path: 'subCategories',
-        select: 'name',
+        select: 'name brands',
       })
       .exec();
 
@@ -84,9 +81,7 @@ export const getCategory = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res
-      .status(500)
-      .json({ status: 'error', message: 'Internal server error' });
+    res.status(500).json({ status: 'error', message: 'Internal server error' });
   }
 };
 
@@ -103,9 +98,7 @@ export const updateCategory = async (req, res) => {
     );
 
     if (!updatedCategory) {
-      return res
-        .status(404)
-        .json({ status: '404', message: 'Category found' });
+      return res.status(404).json({ status: '404', message: 'Category found' });
     }
 
     res.status(200).json({
@@ -140,8 +133,6 @@ export const deleteCategory = async (req, res) => {
       status: 'success',
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ status: 'error', message: 'Internal server error' });
+    res.status(500).json({ status: 'error', message: 'Internal server error' });
   }
 };
