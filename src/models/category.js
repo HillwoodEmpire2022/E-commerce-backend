@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const categorySchema = new mongoose.Schema(
   {
@@ -9,7 +9,16 @@ const categorySchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+
+    brands: [
+      {
+        type: String,
+        lowercase: true,
+        unique: true,
+      },
+    ],
   },
+
   {
     // Removes _id add id
     toJSON: {
@@ -24,11 +33,11 @@ const categorySchema = new mongoose.Schema(
   }
 );
 
-categorySchema.virtual("subCategories", {
-  ref: "SubCategory",
-  localField: "_id",
-  foreignField: "category",
+categorySchema.virtual('subCategories', {
+  ref: 'SubCategory',
+  localField: '_id',
+  foreignField: 'category',
 });
 
-const Category = mongoose.model("Category", categorySchema);
+const Category = mongoose.model('Category', categorySchema);
 export default Category;

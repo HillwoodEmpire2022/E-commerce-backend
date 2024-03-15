@@ -12,13 +12,6 @@ const SubCategorySchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',
     },
-    brands: [
-      {
-        type: String,
-        lowercase: true,
-        unique: true,
-      },
-    ],
   },
   {
     // Removes _id add id
