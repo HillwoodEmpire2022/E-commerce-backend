@@ -331,9 +331,9 @@ export const createProduct = async (req, res) => {
       });
 
     // If no brand, create it in subcategory
-    if (!subCategory.brands.includes(req.body.brandName.toLowerCase())) {
-      subCategory.brands = [...subCategory.brands, req.body.brandName];
-      await subCategory.save();
+    if (!category.brands.includes(req.body.brandName.toLowerCase())) {
+      category.brands = [...category.brands, req.body.brandName];
+      await category.save();
     }
 
     // // Create the product
