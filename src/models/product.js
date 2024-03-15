@@ -5,6 +5,7 @@ const ProductSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
+      lowercase: true,
       trim: true,
     },
 
@@ -61,6 +62,7 @@ const ProductSchema = new mongoose.Schema(
 
     brandName: {
       type: String,
+      lowercase: true,
     },
 
     colorMeasurementVariations: {

@@ -320,6 +320,22 @@ export const createProduct = async (req, res) => {
       return res.status(400).send({ message: 'Product already exists.' });
     }
 
+    // Check for Category and subcategory
+    const category = await Category.findById(req.body.category);
+    const subCategory = await SubCategory.findById(req.body.subcategory);
+
+    if (!category || !subCategory)
+      return res.status(400).json({
+        status: 'fail',
+        message: 'category and or subcategory not found',
+      });
+
+    // If no brand, create it in subcategory
+    if (!subCategory.brands.includes(req.body.brandName.toLowerCase())) {
+      subCategory.brands = [...subCategory.brands, req.body.brandName];
+      await subCategory.save();
+    }
+
     // // Create the product
     const product = await Product.create(productObject);
 
