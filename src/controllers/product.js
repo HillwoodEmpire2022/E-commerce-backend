@@ -332,7 +332,10 @@ export const createProduct = async (req, res) => {
 
     // If no brand, create it in subcategory
     if (!category.brands.includes(req.body.brandName.toLowerCase())) {
-      category.brands = [...category.brands, req.body.brandName];
+      category.brands = [
+        ...category.brands,
+        removeEmptySpaces(req.body.brandName),
+      ];
       await category.save();
     }
 
