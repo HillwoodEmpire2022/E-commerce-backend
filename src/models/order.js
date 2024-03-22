@@ -11,9 +11,6 @@ const orderSchema = new mongoose.Schema(
     // Transaction Reference
     tx_ref: String,
 
-    // Transaction ID
-    transId: String,
-
     // Items in the order
     items: [
       {
@@ -22,6 +19,7 @@ const orderSchema = new mongoose.Schema(
           ref: 'Product',
           required: true,
         },
+        seller: String,
         quantity: { type: Number, required: true, min: 1 },
         price: { type: Number, required: true },
         productThumbnail: { type: String, required: true },
@@ -57,6 +55,10 @@ const orderSchema = new mongoose.Schema(
     shippingAddress: {
       country: String,
       city: String,
+      district: String,
+      sector: String,
+      cell: String,
+      village: String,
       address: {
         type: {
           street: String,

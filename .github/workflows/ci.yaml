@@ -36,4 +36,6 @@ jobs:
           echo "CLIENT_LOCALHOST_URL=${{ secrets.CLIENT_LOCALHOST_URL }}" >> $GITHUB_ENV
           echo "GMAIL_USER=${{ secrets.GMAIL_USER }}" >> $GITHUB_ENV
           echo "GMAIL_APP_PASSWORD=${{ secrets.GMAIL_APP_PASSWORD }}" >> $GITHUB_ENV
+          echo "PAYPACK_APP_ID=${{ secrets.PAYPACK_APP_ID }}" >> $GITHUB_ENV
+          echo "PAYPACK_APP_SECRET=${{ secrets.PAYPACK_APP_SECRET }}" >> $GITHUB_ENV
       - run: npm test

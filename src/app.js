@@ -1,8 +1,9 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
 import helmet from 'helmet';
-import dotenv from 'dotenv';
 
 // Routes
 import authRouter from './routes/auth.routes.js';
@@ -17,7 +18,6 @@ import orderRouter from './routes/order.routes.js';
 import userRouter from './routes/user.routes.js';
 
 const app = express();
-dotenv.config();
 
 const clientUrl = process.env.CLIENT_URL;
 const clientLocalhostUrl = process.env.CLIENT_LOCALHOST_URL;
