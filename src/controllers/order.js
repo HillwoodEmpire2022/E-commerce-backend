@@ -1,7 +1,7 @@
 import Order from '../models/order.js';
 import APIFeatures from '../utils/APIFeatures.js';
 import { mongoIdValidator } from '../validations/mongoidValidator.js';
-import orderSchemaJoi from '../validations/orderValidation.js';
+import orderJoiSchema from '../validations/orderValidation.js';
 
 export const getOrders = async (req, res, next) => {
   try {
@@ -93,7 +93,7 @@ export const getOrder = async (req, res) => {
 
 export const updateOrder = async (req, res) => {
   try {
-    const { error } = orderSchemaJoi.validate(req.body, {
+    const { error } = orderJoiSchema.validate(req.body, {
       errors: { label: 'key', wrap: { label: false } },
     });
     if (error) {

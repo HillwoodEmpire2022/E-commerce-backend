@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import dotenv from 'dotenv';
 dotenv.config();
 import mongoose from 'mongoose';
@@ -5,11 +6,77 @@ import Order from '../models/order.js';
 import PaypackJs from 'paypack-js';
 import removeEmptySpaces from '../utils/removeEmptySpaces.js';
 import Product from '../models/product.js';
+import orderJoiSchema from '../validations/orderValidation.js';
 
 const paypack = new PaypackJs.default({
   client_id: process.env.PAYPACK_APP_ID,
   client_secret: process.env.PAYPACK_APP_SECRET,
 });
+
+async function updateOrderAndProducts(order) {
+  // Payment was successfull
+  // Update order status to pending
+  order.status = removeEmptySpaces('pending');
+
+  await order.save({
+    validateBeforeSave: false,
+  });
+
+  // Update Ordered Products quantities
+  const orderProducts = order.items;
+  orderProducts.forEach(async (product) => {
+    // Find the product
+    const orderProduct = await Product.findById(product.product);
+
+    const itemHasVariation = product.variation.color || product.variation.size;
+
+    // If no colorMeasurementVariationQuantity, update product quantity
+    if (!itemHasVariation) {
+      orderProduct.stockQuantity -= product.quantity;
+    }
+
+    // If has variation, update quantity and colorMeasurementVariationQuantity
+    if (itemHasVariation) {
+      // {color:"red", size:12}, {color:"red"}, {size:""}
+      const orderedCombination = product.variation;
+
+      // Find position of combination to update
+      const updatePosition =
+        orderProduct.colorMeasurementVariations.variations.findIndex(
+          (variation) => {
+            // If combination is both (color and size)
+            if (
+              orderedCombination.hasOwnProperty('color') &&
+              orderedCombination.hasOwnProperty('size')
+            )
+              return (
+                variation.colorImg.colorName === orderedCombination.color &&
+                variation.measurementvalue === orderedCombination.size
+              );
+
+            // Only color
+            if (orderedCombination.hasOwnProperty('color')) {
+              return variation.colorImg.colorName === orderedCombination.color;
+            }
+
+            // Only size
+            if (orderedCombination.hasOwnProperty('size'))
+              return variation.measurementvalue === orderedCombination.size;
+          }
+        );
+
+      orderProduct.colorMeasurementVariations.variations[
+        updatePosition
+      ].colorMeasurementVariationQuantity -= product.quantity;
+
+      // update product quantity
+      orderProduct.stockQuantity -= product.quantity;
+    }
+
+    // Save the product
+    await orderProduct.save();
+  });
+}
 
 const findTransaction = async (ref) => {
   let {
@@ -30,8 +97,21 @@ export const checkout = async (req, res, next) => {
     let checkout,
       order,
       timeOut = 0;
-    const customerId = req.user._id;
-    const orderData = { ...req.body, customer: customerId };
+
+    const customerId = String(req.user._id);
+    const orderData = {
+      ...req.body,
+      deliveryPreference: removeEmptySpaces(req.body.deliveryPreference),
+      customer: customerId,
+    };
+
+    const { error } = orderJoiSchema.validate(orderData, {
+      errors: { label: 'key', wrap: { label: false } },
+    });
+    if (error) {
+      console.log(error);
+      return res.status(400).json({ status: 'fail', message: error.message });
+    }
 
     const session = await mongoose.startSession();
 
@@ -39,11 +119,12 @@ export const checkout = async (req, res, next) => {
     await session.withTransaction(async () => {
       // Request for payment
       checkout = await paypack.cashin({
-        number: req.body.phoneNumber,
+        number: req.body.paymentphoneNumber,
         amount: req.body.amount,
         environment: process.env.NODE_ENV,
       });
 
+      orderData.tx_ref = checkout.data.ref;
       // Create Order
       order = await Order.create([orderData], { session });
     });
@@ -58,7 +139,6 @@ export const checkout = async (req, res, next) => {
     }, 1000);
 
     while (!data) {
-      // TODO Send Order Id for user to track order, Inform user to use *182*7*1# to pay
       if (timeOut === 20000) {
         clearInterval(intervalId);
         return res.status(400).json({
@@ -71,74 +151,6 @@ export const checkout = async (req, res, next) => {
       }
       data = await findTransaction(checkout.data.ref);
     }
-
-    // Payment was successfull
-    // Update order status to pending
-    order[0].status = removeEmptySpaces('pending');
-    order[0].tx_ref = checkout.data.ref;
-
-    await order[0].save({
-      validateBeforeSave: false,
-    });
-
-    // TODO PAYMENT PENDING: THIS DOES NOT RUN AND USER PAYS LATER, OPTIONS WEBHOOK OR REPORT
-    // Update Ordered Products quantities
-    const orderProducts = order[0].items;
-    orderProducts.forEach(async (product) => {
-      // Find the product
-      const orderProduct = await Product.findById(product.product);
-
-      const itemHasVariation =
-        product.variation.color || product.variation.size;
-
-      // If no colorMeasurementVariationQuantity, update product quantity
-      if (!itemHasVariation) {
-        orderProduct.stockQuantity -= product.quantity;
-      }
-
-      // If has variation, update quantity and colorMeasurementVariationQuantity
-      if (itemHasVariation) {
-        // {color:"red", size:12}, {color:"red"}, {size:""}
-        const orderedCombination = product.variation;
-
-        // Find position of combination to update
-        const updatePosition =
-          orderProduct.colorMeasurementVariations.variations.findIndex(
-            (variation) => {
-              // If combination is both (color and size)
-              if (
-                orderedCombination.hasOwnProperty('color') &&
-                orderedCombination.hasOwnProperty('size')
-              )
-                return (
-                  variation.colorImg.colorName === orderedCombination.color &&
-                  variation.measurementvalue === orderedCombination.size
-                );
-
-              // Only color
-              if (orderedCombination.hasOwnProperty('color')) {
-                return (
-                  variation.colorImg.colorName === orderedCombination.color
-                );
-              }
-
-              // Only size
-              if (orderedCombination.hasOwnProperty('size'))
-                return variation.measurementvalue === orderedCombination.size;
-            }
-          );
-
-        orderProduct.colorMeasurementVariations.variations[
-          updatePosition
-        ].colorMeasurementVariationQuantity -= product.quantity;
-
-        // update product quantity
-        orderProduct.stockQuantity -= product.quantity;
-      }
-
-      // Save the product
-      await orderProduct.save();
-    });
 
     // Payment successfull
     res.status(200).json({
@@ -155,4 +167,32 @@ export const checkout = async (req, res, next) => {
   }
 };
 
-export const webhook = async (req, res, next) => {};
+export const webhook = async (req, res) => {
+  //Extract X-Paypack-Signature headers from the request
+  const requestHash = req.get('X-Paypack-Signature');
+
+  //secret which you can find on your registered webhook
+  const secret = process.env.WEBHOOK_SECRET_KEY;
+
+  //Create a hash based on the parsed body
+  const hash = crypto
+    .createHmac('sha256', secret)
+    .update(req.rawBody)
+    .digest('base64');
+
+  // Compare the created hash with the value of the X-Paypack-Signature headers
+  if (!(hash === requestHash || req.Method != 'HEAD')) return res.send({});
+
+  // Update Order Products
+  // Find Order By Transaction Reference
+
+  // Check if transaction was successfull
+  if (req?.body?.data?.status !== 'successful') return res.send({});
+
+  // Update Order and product qunatities
+
+  const order = await Order.findOne({ tx_ref: req.body.data.ref });
+  await updateOrderAndProducts(order);
+
+  res.send({});
+};

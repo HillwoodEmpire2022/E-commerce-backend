@@ -19,7 +19,10 @@ const orderSchema = new mongoose.Schema(
           ref: 'Product',
           required: true,
         },
-        seller: String,
+        seller: {
+          type: String,
+          required: true,
+        },
         quantity: { type: Number, required: true, min: 1 },
         price: { type: Number, required: true },
         productThumbnail: { type: String, required: true },
@@ -27,10 +30,14 @@ const orderSchema = new mongoose.Schema(
           color: String,
           size: String,
         },
+
+        sellerPaymentStatus: {
+          type: String,
+          enum: ['due', 'settled'],
+          default: 'due',
+        },
       },
     ],
-
-    phoneNumber: { type: String, required: true },
 
     // Total price of the order
     amount: {
@@ -53,8 +60,9 @@ const orderSchema = new mongoose.Schema(
     },
 
     shippingAddress: {
+      phoneNumber: { type: String, required: true },
       country: String,
-      city: String,
+      province: String,
       district: String,
       sector: String,
       cell: String,
@@ -69,6 +77,11 @@ const orderSchema = new mongoose.Schema(
         },
         geojson: true,
       },
+    },
+
+    deliveryPreference: {
+      type: String,
+      enum: ['delivery', 'pickup'],
     },
   },
   {
