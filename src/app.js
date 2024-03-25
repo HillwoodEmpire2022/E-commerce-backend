@@ -23,7 +23,13 @@ const clientUrl = process.env.CLIENT_URL;
 const clientLocalhostUrl = process.env.CLIENT_LOCALHOST_URL;
 const adminClientUrl = process.env.ADMIN_CLIENT_URL;
 
-app.use(express.json());
+app.use(
+  express.json({
+    verify: (req, res, buf, encoding) => {
+      req.rawBody = buf;
+    },
+  })
+);
 
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(helmet());
@@ -42,6 +48,7 @@ app.use(
       clientLocalhostUrl,
       adminClientUrl,
       'https://e-commerce-frontend-pi-seven.vercel.app',
+      'https://webhook.site',
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],

@@ -10,6 +10,7 @@ import SubCategory from './../models/subcategory.js';
 import User from './../models/user.js';
 import Product from './../models/product.js';
 import SellerProfile from './../models/sellerProfile.js';
+import Order from '../models/order.js';
 
 dotenv.config();
 
@@ -110,14 +111,16 @@ async function init() {
     console.log('DB Coneected');
 
     console.log('Seeding in progress.....');
-    // Upload products
-    await seedCategories();
+    // // Upload products
+    // await seedCategories();
 
-    // Seed Subcategories
-    await seedSubcategories();
+    // // Seed Subcategories
+    // await seedSubcategories();
 
-    // Seed Users
-    await seedUsers();
+    // // Seed Users
+    // await seedUsers();
+
+    await Order.deleteMany({});
 
     // Seed Products
     // await seedProducts();
