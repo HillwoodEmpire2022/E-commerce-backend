@@ -7,6 +7,7 @@ import PaypackJs from 'paypack-js';
 import removeEmptySpaces from '../utils/removeEmptySpaces.js';
 import Product from '../models/product.js';
 import orderJoiSchema from '../validations/orderValidation.js';
+import cashoutValidator from '../validations/cashoutValidation.js';
 
 const paypack = new PaypackJs.default({
   client_id: process.env.PAYPACK_APP_ID,
@@ -157,6 +158,36 @@ export const checkout = async (req, res, next) => {
       status: 'sucess',
       data: {
         message: 'payment was successful',
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'fail',
+      message: error.message,
+    });
+  }
+};
+
+export const cashout = async (req, res, next) => {
+  try {
+    const { error } = cashoutValidator.validate(req.body, {
+      errors: { label: 'key', wrap: { label: false } },
+    });
+    if (error) {
+      return res.status(400).json({ status: 'fail', message: error.message });
+    }
+
+    const response = await paypack.cashout({
+      number: req.body.phoneNumber,
+      amount: req.body.amount,
+      environment: process.env.NODE_ENV,
+    });
+
+    // Payment successfull
+    res.status(200).json({
+      status: 'sucess',
+      data: {
+        message: 'Cashout was successful.',
       },
     });
   } catch (error) {
