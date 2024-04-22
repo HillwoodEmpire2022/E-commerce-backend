@@ -13,10 +13,14 @@ import removeEmptySpaces from '../utils/removeEmptySpaces.js';
 export const getAllProducts = async (req, res) => {
   try {
     const queryObj = {};
-    if (req?.user?.role === 'seller') queryObj.seller = req.user._id;
+    if (req?.user?.role === 'seller')
+      queryObj.seller = req.user._id;
 
     // EXECUTE QUERY
-    let features = new APIFeatures(Product.find(queryObj), req.query)
+    let features = new APIFeatures(
+      Product.find(queryObj),
+      req.query
+    )
       .filter()
       .sort()
       .limitFields()
@@ -35,7 +39,9 @@ export const getAllProducts = async (req, res) => {
     if (products.length === 0) {
       return res
         .status(404)
-        .send({ message: 'There are no products available.' });
+        .send({
+          message: 'There are no products available.',
+        });
     }
     res.status(200).json({
       status: 'success',
@@ -52,12 +58,17 @@ export const getAllProducts = async (req, res) => {
 export const getSingleProduct = async (req, res) => {
   try {
     // 1) Validate user data
-    const { error } = MongoIDValidator.validate(req.params, {
-      errors: { label: 'key', wrap: { label: false } },
-    });
+    const { error } = MongoIDValidator.validate(
+      req.params,
+      {
+        errors: { label: 'key', wrap: { label: false } },
+      }
+    );
 
     if (error) {
-      return res.status(400).json({ status: 'fail', message: error.message });
+      return res
+        .status(400)
+        .json({ status: 'fail', message: error.message });
     }
     const product = await Product.findOne({
       _id: req.params.productId,
@@ -84,7 +95,10 @@ export const getSingleProduct = async (req, res) => {
     if (!product) {
       return res
         .status(404)
-        .json({ status: 'fail', message: 'Product not found.' });
+        .json({
+          status: 'fail',
+          message: 'Product not found.',
+        });
     }
     res.status(200).json(product);
   } catch (error) {
@@ -101,7 +115,10 @@ export const getProductsByCategory = async (req, res) => {
     if (products.length === 0) {
       return res
         .status(404)
-        .send({ message: 'No products belonging in this category.' });
+        .send({
+          message:
+            'No products belonging in this category.',
+        });
     }
     res.status(200).json(products);
   } catch (error) {
@@ -109,7 +126,10 @@ export const getProductsByCategory = async (req, res) => {
   }
 };
 
-export const getProductsBySubCategory = async (req, res) => {
+export const getProductsBySubCategory = async (
+  req,
+  res
+) => {
   try {
     const products = await Product.find({
       subcategory: req.params.subcategoryId,
@@ -117,7 +137,8 @@ export const getProductsBySubCategory = async (req, res) => {
 
     if (products.length === 0) {
       return res.status(404).send({
-        message: 'No products belonging in this sub category.',
+        message:
+          'No products belonging in this sub category.',
       });
     }
     res.status(200).json(products);
@@ -132,7 +153,9 @@ export const deleteProduct = async (req, res) => {
     const { productId } = req.params;
 
     // find product by id
-    const product = await Product.findById({ _id: productId });
+    const product = await Product.findById({
+      _id: productId,
+    });
 
     // check if the product exists
     if (!product) {
@@ -142,7 +165,8 @@ export const deleteProduct = async (req, res) => {
     }
     // check if the user is admin and the product is the owner of product
     if (
-      product.seller.toString() !== req.user._id.toString() &&
+      product.seller.toString() !==
+        req.user._id.toString() &&
       req.user.role != 'admin'
     ) {
       return res.status(403).json({
@@ -155,18 +179,25 @@ export const deleteProduct = async (req, res) => {
       message: 'product deleted succesfully',
     });
   } catch (error) {
-    return res.status(500).json({ message: 'failed to delete product' });
+    return res
+      .status(500)
+      .json({ message: 'failed to delete product' });
   }
 };
 export const updateProductData = async (req, res) => {
   try {
-    const { error } = updateProductsValidation.validate(req.body, {
-      errors: { label: 'key', wrap: { label: false } },
-      allowUnknown: true,
-    });
+    const { error } = updateProductsValidation.validate(
+      req.body,
+      {
+        errors: { label: 'key', wrap: { label: false } },
+        allowUnknown: true,
+      }
+    );
 
     if (error) {
-      return res.status(422).json({ status: 'fail', message: error.message });
+      return res
+        .status(422)
+        .json({ status: 'fail', message: error.message });
     }
     const isUserAdmin = req.user.role === 'admin';
 
@@ -174,24 +205,39 @@ export const updateProductData = async (req, res) => {
     if (req.body.seller && req.user.role !== 'admin') {
       return res.status(403).json({
         status: 'fail',
-        message: 'Acces denied! You are not allowed to perform this operation.',
+        message:
+          'Acces denied! You are not allowed to perform this operation.',
       });
     }
 
-    const product = await Product.findById(req.params.productId);
+    const product = await Product.findById(
+      req.params.productId
+    );
 
     if (!product)
       return res
         .status(404)
-        .json({ status: 'fail', message: 'Product not found.' });
+        .json({
+          status: 'fail',
+          message: 'Product not found.',
+        });
 
     // Check if product belongs to the user, if user updating the product is not an admin
-    if (!isUserAdmin && product.seller.toHexString() !== req.user.id)
+    if (
+      !isUserAdmin &&
+      product.seller.toHexString() !== req.user.id
+    )
       return res
         .status(404)
-        .json({ status: 'fail', message: 'Product not found.' });
+        .json({
+          status: 'fail',
+          message: 'Product not found.',
+        });
 
-    await Product.findByIdAndUpdate(req.params.productId, req.body);
+    await Product.findByIdAndUpdate(
+      req.params.productId,
+      req.body
+    );
 
     res.status(200).json({
       status: 'success',
@@ -217,16 +263,27 @@ export const searchProduct = async (req, res) => {
     const searchItem = req.body.searchItem;
 
     const searchConditions = [
-      { name: { $regex: '^' + searchItem + '$', $options: 'i' } },
+      {
+        name: {
+          $regex: '^' + searchItem + '$',
+          $options: 'i',
+        },
+      },
     ];
 
     if (searchItem) {
       const category = await Category.findOne({
-        name: { $regex: '^' + searchItem + '$', $options: 'i' },
+        name: {
+          $regex: '^' + searchItem + '$',
+          $options: 'i',
+        },
       });
 
       const subcategory = await SubCategory.findOne({
-        name: { $regex: '^' + searchItem + '$', $options: 'i' },
+        name: {
+          $regex: '^' + searchItem + '$',
+          $options: 'i',
+        },
       });
 
       if (category) {
@@ -234,15 +291,21 @@ export const searchProduct = async (req, res) => {
       }
 
       if (subcategory) {
-        searchConditions.push({ subcategory: subcategory._id });
+        searchConditions.push({
+          subcategory: subcategory._id,
+        });
       }
     }
 
     if (!isNaN(searchItem)) {
-      searchConditions.push({ price: parseFloat(searchItem) });
+      searchConditions.push({
+        price: parseFloat(searchItem),
+      });
     }
 
-    const products = await Product.find({ $or: searchConditions })
+    const products = await Product.find({
+      $or: searchConditions,
+    })
       .populate({
         path: 'category',
         select: 'name',
@@ -281,8 +344,10 @@ export const createProduct = async (req, res) => {
     seller: req.body.seller,
     hasColors: req.body.hasColors || false,
     hasMeasurements: req.body.hasMeasurements || false,
-    price: req.body.price,
-    quantityParameter: removeEmptySpaces(req.body.quantityParameter),
+    price: calculatePriceWithMarkup(req.body.price),
+    quantityParameter: removeEmptySpaces(
+      req.body.quantityParameter
+    ),
     discountPercentage: req.body.discountPercentage,
     stockQuantity: req.body.stockQuantity,
     brandName: removeEmptySpaces(req.body.brandName),
@@ -290,23 +355,30 @@ export const createProduct = async (req, res) => {
     ...(req.body.currency && {
       currency: removeEmptySpaces(req.body.currency),
     }),
-    colorMeasurementVariations: req.body.colorMeasurementVariations,
+    colorMeasurementVariations:
+      req.body.colorMeasurementVariations,
   };
 
   try {
-    const { error } = uploadProductValidation.validate(productObject, {
-      errors: { label: 'key', wrap: { label: false } },
-      allowUnknown: true,
-    });
+    const { error } = uploadProductValidation.validate(
+      productObject,
+      {
+        errors: { label: 'key', wrap: { label: false } },
+        allowUnknown: true,
+      }
+    );
     if (error) {
-      return res.status(422).send({ message: error.message });
+      return res
+        .status(422)
+        .send({ message: error.message });
     }
 
     const seller = await User.findById(req.body.seller);
 
     if (!seller) {
       return res.status(400).send({
-        message: 'There is no seller that matches the provided seller Id.',
+        message:
+          'There is no seller that matches the provided seller Id.',
       });
     }
 
@@ -317,12 +389,18 @@ export const createProduct = async (req, res) => {
     });
 
     if (existingProduct.length !== 0) {
-      return res.status(400).send({ message: 'Product already exists.' });
+      return res
+        .status(400)
+        .send({ message: 'Product already exists.' });
     }
 
     // Check for Category and subcategory
-    const category = await Category.findById(req.body.category);
-    const subCategory = await SubCategory.findById(req.body.subcategory);
+    const category = await Category.findById(
+      req.body.category
+    );
+    const subCategory = await SubCategory.findById(
+      req.body.subcategory
+    );
 
     if (!category || !subCategory)
       return res.status(400).json({
@@ -331,7 +409,11 @@ export const createProduct = async (req, res) => {
       });
 
     // If no brand, create it in subcategory
-    if (!category.brands.includes(req.body.brandName.toLowerCase())) {
+    if (
+      !category.brands.includes(
+        req.body.brandName.toLowerCase()
+      )
+    ) {
       category.brands = [
         ...category.brands,
         removeEmptySpaces(req.body.brandName),
@@ -354,7 +436,14 @@ export const createProduct = async (req, res) => {
 
     res.status(500).json({
       status: 'arror',
-      message: 'Something unexpected has happend. Please try again later!',
+      message:
+        'Something unexpected has happend. Please try again later!',
     });
   }
 };
+
+function calculatePriceWithMarkup(price) {
+  const markupPercentage = 0.05; // 5% markup
+  const markupAmount = price * markupPercentage;
+  return price + markupAmount;
+}
