@@ -10,15 +10,11 @@ import {
   userUpdatePhoto,
   userUpdateProfile,
   forgotPassword,
+  deleteAccount,
 } from '../controllers/auth.js';
-import passport from 'passport';
 import { isLoggedIn } from '../middlewares/authentication.js';
-import { restrictTo } from '../middlewares/authorization.js';
 import { uploadProfilePicture } from '../utils/multer.js';
 const router = express.Router();
-const clientUrl = process.env.CLIENT_URL;
-const webUrl =
-  process.env.CLIENT_LOCALHOST_URL || `http://localhost:${process.env.PORT}`;
 
 /**
  * @swagger
@@ -93,52 +89,37 @@ router.post('/register', userRegister);
  *          description: Wrong email or password error.
  */
 router.post('/login', userLogin);
-router.get('/activate-account/:activationToken', activateAccount);
+router.get(
+  '/activate-account/:activationToken',
+  activateAccount
+);
 router.get('/get-me', isLoggedIn, getMe);
 router.post('/forgot-password', forgotPassword);
-router.patch('/reset-password/:resetUserToken', resetUserPassword);
-router.patch('/update-password', isLoggedIn, updatePassword);
+router.patch(
+  '/reset-password/:resetUserToken',
+  resetUserPassword
+);
+router.patch(
+  '/update-password',
+  isLoggedIn,
+  updatePassword
+);
 router.patch(
   '/update-photo',
   isLoggedIn,
   uploadProfilePicture,
   userUpdatePhoto
 );
-router.patch('/profile-data', isLoggedIn, userUpdateProfile);
-
-router.get('/google/success', (req, res) => {
-  try {
-    const response = returnedUserInfo(req.user);
-    res.status(200).json(response);
-  } catch (err) {
-    res.status(500).json({ err: err.message });
-  }
-});
-
-// Routes for Google OAuth
-router.get(
-  '/google',
-  passport.authenticate('google', {
-    scope: ['email', 'profile'],
-  })
+router.patch(
+  '/profile-data',
+  isLoggedIn,
+  userUpdateProfile
 );
 
-router.get(
-  `/google/callback`,
-  passport.authenticate('google', {
-    successRedirect: clientUrl,
-    failureRedirect: '/auth/google/failure',
-    failureMessage: 'Cannot login to google, please try again later',
-  }),
-  (req, res) => {
-    res.send('Signed in successfully!');
-  }
+router.delete(
+  '/delete-account/:id',
+  isLoggedIn,
+  deleteAccount
 );
-
-router.get('/google/failure', (req, res) => {
-  res.status(401).json({
-    message: 'Unable to sign in using Google, please try again later',
-  });
-});
 
 export default router;
