@@ -23,14 +23,19 @@ console.log(__dirname);
 async function connectDb() {
   try {
     console.log('Connecting to database.....');
-    await mongoose.connect(process.env.DEVELOPMENT_MONGODB_URI);
+    await mongoose.connect(
+      process.env.DEVELOPMENT_MONGODB_URI
+    );
   } catch (error) {
     console.log('ERROR **', error);
   }
 }
 
 async function seedCategories() {
-  const filePath = path.resolve(__dirname, './data/categories.json');
+  const filePath = path.resolve(
+    __dirname,
+    './data/categories.json'
+  );
   const rowCategories = await readFile(filePath);
   const categories = JSON.parse(rowCategories);
 
@@ -39,7 +44,10 @@ async function seedCategories() {
 }
 
 async function seedSubcategories() {
-  const filePath = path.resolve(__dirname, './data/subcategories.json');
+  const filePath = path.resolve(
+    __dirname,
+    './data/subcategories.json'
+  );
   const rowSubcategories = await readFile(filePath);
   const subcategories = JSON.parse(rowSubcategories);
 
@@ -48,7 +56,10 @@ async function seedSubcategories() {
 }
 
 async function seedUsers() {
-  const filePath = path.resolve(__dirname, './data/users.json');
+  const filePath = path.resolve(
+    __dirname,
+    './data/users.json'
+  );
   const rowUsers = await readFile(filePath);
   let users = JSON.parse(rowUsers);
 
@@ -84,16 +95,22 @@ async function seedUsers() {
 }
 
 async function seedProducts() {
-  const filePath = path.resolve(__dirname, './data/products.json');
+  const filePath = path.resolve(
+    __dirname,
+    './data/products.json'
+  );
   const rowProducts = await readFile(filePath);
   let products = JSON.parse(rowProducts);
 
   // Get all seller ids
-  const sellers = await User.find({ role: 'seller' }, ['_id']);
+  const sellers = await User.find({ role: 'seller' }, [
+    '_id',
+  ]);
 
   // Loop over product and assign sellerID which is randomly selected from the sellers
   products = products.map((product) => {
-    const sellerPos = Math.floor(Math.random() * (2 - 0 + 1)) + 0;
+    const sellerPos =
+      Math.floor(Math.random() * (2 - 0 + 1)) + 0;
     return {
       ...product,
       seller: sellers[sellerPos]._id,
@@ -112,18 +129,18 @@ async function init() {
 
     console.log('Seeding in progress.....');
     // // Upload products
-    // await seedCategories();
+    await seedCategories();
 
     // // Seed Subcategories
-    // await seedSubcategories();
+    await seedSubcategories();
 
     // // Seed Users
-    // await seedUsers();
+    await seedUsers();
 
     await Order.deleteMany({});
 
     // Seed Products
-    // await seedProducts();
+    await seedProducts();
 
     console.log('Seeding Complete.');
     process.exit(0);

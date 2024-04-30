@@ -21,9 +21,12 @@ export const userRegister = async (req, res, next) => {
   const { email } = req.body;
   try {
     // 1) Validate user data
-    const { error } = signupValidationSchema.validate(req.body, {
-      errors: { label: 'key', wrap: { label: false } },
-    });
+    const { error } = signupValidationSchema.validate(
+      req.body,
+      {
+        errors: { label: 'key', wrap: { label: false } },
+      }
+    );
 
     if (error) {
       return res
@@ -78,7 +81,9 @@ export const userRegister = async (req, res, next) => {
     res.status(201).json({
       status: 'success',
       activationToken:
-        process.env.NODE_ENV === 'test' ? activationToken : undefined,
+        process.env.NODE_ENV === 'test'
+          ? activationToken
+          : undefined,
       data: 'Email to activate your account was sent to your email.',
     });
   } catch (error) {
@@ -108,15 +113,17 @@ export const activateAccount = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res
-        .status(404)
-        .json({ status: 'fail', message: 'User not found.' });
+      return res.status(404).json({
+        status: 'fail',
+        message: 'User not found.',
+      });
     }
 
     if (user.verified) {
-      return res
-        .status(400)
-        .json({ status: 'fail', message: 'Email already verified.' });
+      return res.status(400).json({
+        status: 'fail',
+        message: 'Email already verified.',
+      });
     }
 
     user.verified = true;
@@ -131,7 +138,9 @@ export const activateAccount = async (req, res) => {
       message: 'Account Activated successfully.',
     });
   } catch (err) {
-    return res.status(400).json({ message: 'Invalid token.' });
+    return res
+      .status(400)
+      .json({ message: 'Invalid token.' });
   }
 };
 
@@ -160,24 +169,28 @@ export const userLogin = async (req, res) => {
     let { email, password } = req.body;
 
     // Validate user information with joi.
-    const { error } = loginValidationSchema.validate(req.body, {
-      errors: { label: 'key', wrap: { label: false } },
-    });
+    const { error } = loginValidationSchema.validate(
+      req.body,
+      {
+        errors: { label: 'key', wrap: { label: false } },
+      }
+    );
     if (error) {
       return res
         .status(400)
         .json({ status: 'fail', message: error.message });
     }
 
-    const user = await User.findOne({ email: email }).select(
-      '+password'
-    );
+    const user = await User.findOne({
+      email: email,
+    }).select('+password');
 
     // Check if use does not exist
     if (!user) {
-      return res
-        .status(401)
-        .json({ status: 'fail', message: 'Invalid credentials.' });
+      return res.status(401).json({
+        status: 'fail',
+        message: 'Invalid credentials.',
+      });
     }
 
     // Check if account in verified
@@ -190,9 +203,10 @@ export const userLogin = async (req, res) => {
 
     // Check password
     if (!(await bcrypt.compare(password, user.password))) {
-      return res
-        .status(401)
-        .json({ status: 'fail', message: 'Invalid credentials.' });
+      return res.status(401).json({
+        status: 'fail',
+        message: 'Invalid credentials.',
+      });
     }
     const response = returnedUserInfo(user);
 
@@ -210,7 +224,8 @@ export const userLogin = async (req, res) => {
 
 // Get Account info of user (email, names, role)
 export const getMe = async (req, res) => {
-  const { email, role, id, firstName, lastName, photo } = req.user;
+  const { email, role, id, firstName, lastName, photo } =
+    req.user;
 
   res.status(200).json({
     status: 'success',
@@ -248,7 +263,9 @@ export const forgotPassword = async (req, res, user) => {
       return;
     }
 
-    const checkUserEmail = await User.findOne({ email: email });
+    const checkUserEmail = await User.findOne({
+      email: email,
+    });
 
     if (!checkUserEmail) {
       return res
@@ -257,9 +274,13 @@ export const forgotPassword = async (req, res, user) => {
     }
 
     const resetUserToken = encodeURIComponent(
-      jwt.sign({ email: email }, process.env.JWT_SECRET_KEY, {
-        expiresIn: '1h',
-      })
+      jwt.sign(
+        { email: email },
+        process.env.JWT_SECRET_KEY,
+        {
+          expiresIn: '1h',
+        }
+      )
     );
 
     const url = `${process.env.CLIENT_URL}/reset-password/${resetUserToken}`;
@@ -271,9 +292,9 @@ export const forgotPassword = async (req, res, user) => {
       url,
     };
     await sendEmail(emailOptions);
-    return res
-      .status(201)
-      .json({ message: 'check your email to reset password' });
+    return res.status(201).json({
+      message: 'check your email to reset password',
+    });
   } catch (error) {
     return res
       .status(500)
@@ -294,7 +315,9 @@ export const resetUserPassword = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ message: 'user  not found' });
+      return res
+        .status(404)
+        .json({ message: 'user  not found' });
     }
 
     const { newPassword, confirmPassword } = req.body;
@@ -334,15 +357,20 @@ export const updatePassword = async (req, res) => {
   try {
     //  find user by Id
     const userId = req.user._id;
-    const user = await User.findById(userId).select('+password');
+    const user = await User.findById(userId).select(
+      '+password'
+    );
 
     if (!user) {
       return res.status(404).json({
         message: 'user not found',
       });
     }
-    const { currentPassword, newPassword, confirmPassword } =
-      req.body;
+    const {
+      currentPassword,
+      newPassword,
+      confirmPassword,
+    } = req.body;
 
     // validate password
     try {
@@ -398,7 +426,9 @@ export const userUpdatePhoto = async (req, res) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res
+        .status(404)
+        .json({ message: 'User not found' });
     }
 
     const allowedImageTypes = [
@@ -407,7 +437,10 @@ export const userUpdatePhoto = async (req, res) => {
       'image/jpg',
     ];
 
-    if (!req.file || !allowedImageTypes.includes(req.file.mimetype)) {
+    if (
+      !req.file ||
+      !allowedImageTypes.includes(req.file.mimetype)
+    ) {
       return res.status(400).json({
         message:
           'Invalid image format. Allowed formats: JPEG, PNG, JPG',
@@ -419,15 +452,16 @@ export const userUpdatePhoto = async (req, res) => {
     ).content;
 
     if (!profileImageString) {
-      return res
-        .status(400)
-        .json({ message: 'There is no profile image attached.' });
+      return res.status(400).json({
+        message: 'There is no profile image attached.',
+      });
     }
 
-    const uploadedProfileImage = await uploadProfileImageToCloudinary(
-      profileImageString,
-      user.userName
-    );
+    const uploadedProfileImage =
+      await uploadProfileImageToCloudinary(
+        profileImageString,
+        user.userName
+      );
 
     user.photo = uploadedProfileImage.url;
     await user.save();
@@ -439,9 +473,9 @@ export const userUpdatePhoto = async (req, res) => {
       },
     });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: 'Failed to update profile picture' });
+    return res.status(500).json({
+      message: 'Failed to update profile picture',
+    });
   }
 };
 
@@ -452,7 +486,9 @@ export const userUpdateProfile = async (req, res) => {
     const user = await User.findById({ _id: userId });
 
     if (!user) {
-      return res.status(400).json({ message: 'user not found' });
+      return res
+        .status(400)
+        .json({ message: 'user not found' });
     }
     const { firstName, lastName } = req.body;
 
@@ -470,5 +506,33 @@ export const userUpdateProfile = async (req, res) => {
     return res
       .status(500)
       .json({ message: 'failed to update profile' });
+  }
+};
+
+// Delete Account
+export const deleteAccount = async (req, res) => {
+  try {
+    const userRole = req.user.role;
+    const userId =
+      userRole === 'admin' ? req.params.id : req.user._id;
+
+    const user = await User.findByIdAndDelete(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'User not found',
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'User deleted',
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'fail',
+      message: 'Internal server error',
+    });
   }
 };
