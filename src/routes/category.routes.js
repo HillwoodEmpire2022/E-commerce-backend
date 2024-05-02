@@ -16,7 +16,6 @@ Router.get('/', getCategories);
 
 Router.use(isLoggedIn, restrictTo('admin'));
 
-// Categories
 /**
  * @swagger
  * tags:
