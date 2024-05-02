@@ -2,6 +2,7 @@ import { verifyJWToken } from '../utils/jsonWebToken.js';
 import User from '../models/user.js';
 
 // Attach User to the request if one is authenticated
+// Like is Logged in, but does not prevent user from getting accessing resource
 export const checkUser = async (req, res, next) => {
   try {
     let token;
@@ -27,9 +28,6 @@ export const checkUser = async (req, res, next) => {
     req.user = currentUser;
     next();
   } catch (error) {
-    res.status(500).json({
-      status: 'fail',
-      message: error.message,
-    });
+    return next();
   }
 };

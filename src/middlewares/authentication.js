@@ -13,7 +13,8 @@ export const isLoggedIn = async (req, res, next) => {
     if (!token) {
       res.status(401).json({
         status: 'fail',
-        message: 'Access denied. Please login again.',
+        message:
+          'Access denied. Please signin again to continue.',
       });
       return;
     }
@@ -30,6 +31,16 @@ export const isLoggedIn = async (req, res, next) => {
         status: 'fail',
         message: 'User no longer exists',
       });
+
+    // 4) Check if user account is active
+    if (!currentUser.active)
+      return res.status(403).json({
+        status: 'fail',
+        message:
+          'Your account has been temporarily closed! Contact customer support for help.',
+      });
+
+    // TODO: USer Changed password resently
 
     // 5) GRANT ACCESS (AUTHORIZE)
     req.user = currentUser;
