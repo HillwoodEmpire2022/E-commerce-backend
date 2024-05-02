@@ -9,7 +9,6 @@ import helmet from 'helmet';
 import authRouter from './routes/auth.routes.js';
 import categoryRouter from './routes/category.routes.js';
 import productRouter from './routes/product.routes.js';
-import cartRouter from './routes/cart.routes.js';
 import subCategoryRouter from './routes/subcategories.routes.js';
 import sprofileRouter from './routes/profile.routes.js';
 import sellerRoute from './routes/seller.routes.js';
@@ -31,7 +30,9 @@ app.use(
   })
 );
 
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(
+  express.urlencoded({ limit: '50mb', extended: true })
+);
 app.use(helmet());
 if (
   process.env.NODE_ENV === 'development' ||
@@ -61,7 +62,6 @@ app.use('/api/v1/products', productRouter);
 app.use('/api/v1/categories', categoryRouter);
 app.use('/api/v1/subcategories', subCategoryRouter);
 app.use('/api/v1/profiles', sprofileRouter);
-app.use('/api/v1/carts', cartRouter);
 app.use('/api/v1/sellers', sellerRoute);
 app.use('/api/v1/payments', paymentRouter);
 app.use('/api/v1/orders', orderRouter);

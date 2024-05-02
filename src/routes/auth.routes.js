@@ -2,7 +2,6 @@ import express from 'express';
 import {
   userRegister,
   userLogin,
-  returnedUserInfo,
   activateAccount,
   resetUserPassword,
   getMe,
@@ -11,6 +10,7 @@ import {
   userUpdateProfile,
   forgotPassword,
   deleteAccount,
+  requestVerificationEmail,
 } from '../controllers/auth.js';
 import { isLoggedIn } from '../middlewares/authentication.js';
 import { uploadProfilePicture } from '../utils/multer.js';
@@ -89,6 +89,10 @@ router.post('/register', userRegister);
  *          description: Wrong email or password error.
  */
 router.post('/login', userLogin);
+router.post(
+  '/request-account-verification-email',
+  requestVerificationEmail
+);
 router.get(
   '/activate-account/:activationToken',
   activateAccount

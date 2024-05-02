@@ -9,12 +9,15 @@ import {
   loginValidationSchema,
   emailValidation,
   passwordValidation,
-  uploadProfileValidation,
 } from '../validations/authValidations.js';
 import { generateJWToken } from '../utils/jsonWebToken.js';
 import { sendActivationEmail } from '../utils/activationEmail.js';
 import { sendEmail } from '../utils/sendEmail.js';
 import { uploadProfileImageToCloudinary } from '../utils/cloudinary.js';
+
+const activationTokenGenerator = (email) => {
+  return jwt.sign({ email }, process.env.JWT_SECRET_KEY);
+};
 
 // ********* Register ************
 export const userRegister = async (req, res, next) => {
@@ -34,10 +37,7 @@ export const userRegister = async (req, res, next) => {
         .json({ status: 'fail', message: error.message });
     }
     // Generate verification token
-    const activationToken = jwt.sign(
-      { email: email },
-      process.env.JWT_SECRET_KEY
-    );
+    const activationToken = activationTokenGenerator(email);
 
     // 2) Create user
     const newUser = await User.create({
@@ -94,8 +94,8 @@ export const userRegister = async (req, res, next) => {
       });
     }
     res.status(500).json({
-      status: 'fail',
-      message: error.message,
+      status: 'error',
+      message: 'Internal server error.',
     });
   }
 };
@@ -201,6 +201,14 @@ export const userLogin = async (req, res) => {
           'Account not activated! Check your email to activate your account.',
       });
 
+    // Check if user account is active
+    if (!user.active)
+      return res.status(403).json({
+        status: 'fail',
+        message:
+          'Your account has been temporarily closed! Contact customer support for help.',
+      });
+
     // Check password
     if (!(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({
@@ -240,15 +248,6 @@ export const getMe = async (req, res) => {
       },
     },
   });
-};
-
-export const googleAuthenticationSuccess = (req, res) => {
-  try {
-    const response = returnedUserInfo(req.user);
-    return res.status(200).json(response);
-  } catch (err) {
-    res.status(500).json({ err: err.message });
-  }
 };
 
 export const forgotPassword = async (req, res, user) => {
@@ -533,6 +532,75 @@ export const deleteAccount = async (req, res) => {
     res.status(500).json({
       status: 'fail',
       message: 'Internal server error',
+    });
+  }
+};
+
+// Request for activation email
+export const requestVerificationEmail = async (
+  req,
+  res
+) => {
+  try {
+    const { email } = req.body;
+
+    // Check if user with provided email exists
+    const user = await User.findOne({ email });
+
+    if (!user)
+      return res.status(404).json({
+        status: 'fail',
+        message: 'user with provided email does not exist.',
+      });
+
+    // Create activation token
+    const activationToken = activationTokenGenerator(email);
+
+    // Update user with activation email
+    user.activationToken = activationToken;
+    await user.save({
+      validateBeforeSave: false,
+    });
+
+    // Send Verification Email
+    const url = `${
+      process.env.CLIENT_URL ||
+      'https://e-commerce-frontend-pi-seven.vercel.app'
+    }/activate-account/${activationToken}`;
+
+    // Email Obtions
+    const emailOptions = {
+      to: user.email,
+      subject: 'Email activation Link',
+      text: `Hello ${user.firstName}, Welcome! to FeliExpress!`,
+      url,
+    };
+
+    try {
+      await sendActivationEmail(emailOptions);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({
+        status: 'fail',
+        message:
+          'there was an error sending email! Please try again.',
+      });
+    }
+
+    // 4) Send Successful response
+    res.status(200).json({
+      status: 'success',
+      activationToken:
+        process.env.NODE_ENV === 'test'
+          ? activationToken
+          : undefined,
+      data: 'Email to activate your account was sent to your email.',
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Internal server error.',
     });
   }
 };
