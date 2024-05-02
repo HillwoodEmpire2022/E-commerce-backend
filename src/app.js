@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import express from 'express';
+import swaggerUI from 'swagger-ui-express';
 import morgan from 'morgan';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -15,6 +16,7 @@ import sellerRoute from './routes/seller.routes.js';
 import paymentRouter from './routes/payment.routes.js';
 import orderRouter from './routes/order.routes.js';
 import userRouter from './routes/user.routes.js';
+import { specs } from './utils/swaggerDocsSpecs.js';
 
 const app = express();
 
@@ -57,6 +59,11 @@ app.use(
 );
 
 // Routing
+app.use(
+  '/api-docs',
+  swaggerUI.serve,
+  swaggerUI.setup(specs)
+);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/products', productRouter);
 app.use('/api/v1/categories', categoryRouter);
