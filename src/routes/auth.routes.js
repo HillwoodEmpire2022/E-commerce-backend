@@ -11,9 +11,11 @@ import {
   forgotPassword,
   deleteAccount,
   requestVerificationEmail,
+  deactivateAccount,
 } from '../controllers/auth.js';
 import { isLoggedIn } from '../middlewares/authentication.js';
 import { uploadProfilePicture } from '../utils/multer.js';
+import { restrictTo } from '../middlewares/authorization.js';
 const router = express.Router();
 
 /**
@@ -150,6 +152,43 @@ router.post('/login', userLogin);
 router.post(
   '/request-account-verification-email',
   requestVerificationEmail
+);
+
+// Close/Deactivate Account
+/**
+ * @swagger
+ * /deactivate-account/{id}:
+ *   patch:
+ *     summary: Deactivate an account
+ *     tags:
+ *       - Authentication
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The id of the account to deactivate
+ *         schema:
+ *           type: string
+ *     description: This endpoint allows admins to deactivate an account. Deactivation typically involves disabling login and potentially removing some account data (depending on your service's policy).
+ *     responses:
+ *       '200':
+ *         description: Deactivation successful
+ *       '400':
+ *         description: Bad Request - Invalid request body or path parameter
+ *       '401':
+ *         description: Unauthorized - User is not logged in or does not have admin privileges
+ *       '403':
+ *         description: Forbidden - User is not authorized to deactivate accounts
+ *       '500':
+ *         description: Internal Server Error - An error occurred while deactivating the account
+ */
+router.patch(
+  '/deactivate-account/:id',
+  isLoggedIn,
+  restrictTo('admin'),
+  deactivateAccount
 );
 
 router.get(

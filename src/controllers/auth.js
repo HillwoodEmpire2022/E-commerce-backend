@@ -14,6 +14,7 @@ import { generateJWToken } from '../utils/jsonWebToken.js';
 import { sendActivationEmail } from '../utils/activationEmail.js';
 import { sendEmail } from '../utils/sendEmail.js';
 import { uploadProfileImageToCloudinary } from '../utils/cloudinary.js';
+import { mongoIdValidator } from '../validations/mongoidValidator.js';
 
 const activationTokenGenerator = (email) => {
   return jwt.sign({ email }, process.env.JWT_SECRET_KEY);
@@ -599,6 +600,52 @@ export const requestVerificationEmail = async (
   } catch (error) {
     console.error(error);
     res.status(500).json({
+      status: 'error',
+      message: 'Internal server error.',
+    });
+  }
+};
+
+export const deactivateAccount = async (req, res, nex) => {
+  try {
+    const { error } = mongoIdValidator.validate(
+      req.params,
+      {
+        errors: { label: 'key', wrap: { label: false } },
+      }
+    );
+
+    if (error) {
+      return res.status(400).json({
+        status: 'fail',
+        message: error.message,
+      });
+    }
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      {
+        active: false,
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (!user)
+      return res.status(404).json({
+        status: 'fail',
+        message: 'User not found.',
+      });
+
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        user,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
       status: 'error',
       message: 'Internal server error.',
     });
