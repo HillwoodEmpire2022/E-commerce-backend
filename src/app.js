@@ -16,6 +16,7 @@ import sellerRoute from './routes/seller.routes.js';
 import paymentRouter from './routes/payment.routes.js';
 import orderRouter from './routes/order.routes.js';
 import userRouter from './routes/user.routes.js';
+import productClassRouter from './routes/productClass.routes.js';
 import { specs } from './utils/swaggerDocsSpecs.js';
 
 const app = express();
@@ -73,6 +74,7 @@ app.use('/api/v1/sellers', sellerRoute);
 app.use('/api/v1/payments', paymentRouter);
 app.use('/api/v1/orders', orderRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/productclasses', productClassRouter);
 
 app.use('*', (req, res, next) => {
   res.status(404).json({

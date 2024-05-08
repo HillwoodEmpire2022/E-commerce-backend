@@ -14,16 +14,29 @@ const ProductSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+
+    productClass: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'ProductClass',
+      required: true,
+    },
+
     category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',
       required: true,
     },
+
     subcategory: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'SubCategory',
-      required: true,
     },
+
+    brandName: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Brand',
+    },
+
     description: {
       type: String,
       trim: true,
@@ -58,11 +71,6 @@ const ProductSchema = new mongoose.Schema(
 
     quantityParameter: {
       type: String,
-    },
-
-    brandName: {
-      type: String,
-      lowercase: true,
     },
 
     colorMeasurementVariations: {
@@ -119,7 +127,10 @@ const ProductSchema = new mongoose.Schema(
   }
 );
 
-ProductSchema.index({ name: 1, seller: 1 }, { unique: true });
+ProductSchema.index(
+  { name: 1, seller: 1 },
+  { unique: true }
+);
 
 const Product = mongoose.model('Product', ProductSchema);
 export default Product;
