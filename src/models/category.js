@@ -30,11 +30,6 @@ const categorySchema = new mongoose.Schema(
   }
 );
 
-categorySchema.index(
-  { name: 1, productClass: 1 },
-  { unique: true }
-);
-
 categorySchema.virtual('subCategories', {
   ref: 'SubCategory',
   localField: '_id',

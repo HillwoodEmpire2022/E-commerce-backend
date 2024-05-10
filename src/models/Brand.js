@@ -1,14 +1,13 @@
 import mongoose from 'mongoose';
-
 const brandSchema = new mongoose.Schema(
   {
     name: {
       type: String,
       required: true,
+      trim: true,
+      lowercase: true,
     },
-  },
 
-  {
     productClass: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'ProductClass',
@@ -16,6 +15,7 @@ const brandSchema = new mongoose.Schema(
     },
   },
   {
+    timestamps: true,
     toJSON: {
       virtuals: true,
       transform: function (doc, ret) {
@@ -27,6 +27,11 @@ const brandSchema = new mongoose.Schema(
   }
 );
 
+brandSchema.index(
+  { name: 1, productClass: 1 },
+  { unique: true }
+);
+
 const Brand = mongoose.model('Brand', brandSchema);
 
-module.exports = Brand;
+export default Brand;
