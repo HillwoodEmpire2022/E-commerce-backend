@@ -46,6 +46,7 @@ export const isLoggedIn = async (req, res, next) => {
     req.user = currentUser;
     next();
   } catch (error) {
+    console.log(error);
     if (
       error.message === 'jwt malformed, Please login again'
     ) {

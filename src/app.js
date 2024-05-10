@@ -74,7 +74,7 @@ app.use('/api/v1/sellers', sellerRoute);
 app.use('/api/v1/payments', paymentRouter);
 app.use('/api/v1/orders', orderRouter);
 app.use('/api/v1/users', userRouter);
-app.use('/api/v1/productclasses', productClassRouter);
+app.use('/api/v1/product-classes', productClassRouter);
 
 app.use('*', (req, res, next) => {
   res.status(404).json({
