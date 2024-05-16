@@ -42,7 +42,7 @@ export const getAllProducts = async (req, res) => {
         select: 'name',
       })
       .populate({
-        path: 'subcategory',
+        path: 'subCategory',
         select: 'name',
       });
 
