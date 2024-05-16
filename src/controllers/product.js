@@ -10,7 +10,7 @@ import Category from '../models/category.js';
 import SubCategory from '../models/subcategory.js';
 import removeEmptySpaces from '../utils/removeEmptySpaces.js';
 import ProductClass from '../models/ProductClass.js';
-import Brand from '../models/brand.js';
+import Brand from '../models/brand.model.js';
 
 export const getAllProducts = async (req, res) => {
   try {
