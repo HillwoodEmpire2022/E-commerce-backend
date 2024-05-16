@@ -408,8 +408,6 @@ export const createProduct = async (req, res) => {
       productClass,
     });
 
-    // console.log(productClass, category, subCategory, brand);
-
     if (!category || !subCategory || !productClass)
       return res.status(400).json({
         status: 'fail',
