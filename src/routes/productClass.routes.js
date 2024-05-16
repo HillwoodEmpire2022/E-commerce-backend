@@ -56,7 +56,7 @@ Router.get('/:id', getProductClassById);
  * @swagger
  * /product-classes:
  *   post:
- *     summary: Create a new product class
+ *     summary: Create product class
  *     tags: [Product Classes]
  *     security:
  *       - bearerAuth: []
@@ -108,6 +108,12 @@ Router.post(
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/ProductClass'
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: The email address to send the verification email to.
+ *                 example: Clothing
  *     responses:
  *       200:
  *         description: Product class updated successfully

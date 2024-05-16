@@ -49,7 +49,15 @@ export const createProductClass = async (req, res) => {
 
 export const getProductClasses = async (req, res) => {
   try {
-    const productClasses = await ProductClass.find();
+    const productClasses = await ProductClass.find()
+      .populate({
+        path: 'categories',
+        select: 'name',
+      })
+      .populate({
+        path: 'brands',
+        select: 'name',
+      });
 
     return res.status(201).json({
       status: 'success',

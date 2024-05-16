@@ -25,7 +25,7 @@ Router.use(isLoggedIn, restrictTo('admin'));
 
 /**
  * @swagger
- * /category/create:
+ * /categories:
  *    post:
  *      summary: API for creating a new category. Only admin users are given access to this route.
  *      tags: [Categories]
@@ -40,6 +40,8 @@ Router.use(isLoggedIn, restrictTo('admin'));
  *              type: object
  *              properties:
  *                  name:
+ *                     type: string
+ *                  productClass:
  *                     type: string
  *      responses:
  *        201:

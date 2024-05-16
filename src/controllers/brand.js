@@ -1,4 +1,4 @@
-import Brand from '../models/Brand.js';
+import Brand from '../models/brand.js';
 import removeEmptySpaces from '../utils/removeEmptySpaces.js';
 
 export const createBrand = async (req, res) => {

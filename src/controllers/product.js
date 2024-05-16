@@ -9,6 +9,8 @@ import {
 import Category from '../models/category.js';
 import SubCategory from '../models/subcategory.js';
 import removeEmptySpaces from '../utils/removeEmptySpaces.js';
+import ProductClass from '../models/ProductClass.js';
+import Brand from '../models/brand.js';
 
 export const getAllProducts = async (req, res) => {
   try {
@@ -28,6 +30,14 @@ export const getAllProducts = async (req, res) => {
 
     const products = await features.query
       .populate({
+        path: 'brand',
+        select: 'name',
+      })
+      .populate({
+        path: 'productClass',
+        select: 'name',
+      })
+      .populate({
         path: 'category',
         select: 'name',
       })
@@ -36,13 +46,6 @@ export const getAllProducts = async (req, res) => {
         select: 'name',
       });
 
-    if (products.length === 0) {
-      return res
-        .status(404)
-        .send({
-          message: 'There are no products available.',
-        });
-    }
     res.status(200).json({
       status: 'success',
       count: products.length,
@@ -93,12 +96,10 @@ export const getSingleProduct = async (req, res) => {
       .exec();
 
     if (!product) {
-      return res
-        .status(404)
-        .json({
-          status: 'fail',
-          message: 'Product not found.',
-        });
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Product not found.',
+      });
     }
     res.status(200).json(product);
   } catch (error) {
@@ -113,12 +114,9 @@ export const getProductsByCategory = async (req, res) => {
     });
 
     if (products.length === 0) {
-      return res
-        .status(404)
-        .send({
-          message:
-            'No products belonging in this category.',
-        });
+      return res.status(404).send({
+        message: 'No products belonging in this category.',
+      });
     }
     res.status(200).json(products);
   } catch (error) {
@@ -215,24 +213,20 @@ export const updateProductData = async (req, res) => {
     );
 
     if (!product)
-      return res
-        .status(404)
-        .json({
-          status: 'fail',
-          message: 'Product not found.',
-        });
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Product not found.',
+      });
 
     // Check if product belongs to the user, if user updating the product is not an admin
     if (
       !isUserAdmin &&
       product.seller.toHexString() !== req.user.id
     )
-      return res
-        .status(404)
-        .json({
-          status: 'fail',
-          message: 'Product not found.',
-        });
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Product not found.',
+      });
 
     await Product.findByIdAndUpdate(
       req.params.productId,
@@ -340,8 +334,9 @@ export const createProduct = async (req, res) => {
     name: removeEmptySpaces(req.body.name),
     description: removeEmptySpaces(req.body.description),
     category: req.body.category,
-    subcategory: req.body.subcategory,
+    subCategory: req.body.subCategory,
     seller: req.body.seller,
+    productClass: req.body.productClass,
     hasColors: req.body.hasColors || false,
     hasMeasurements: req.body.hasMeasurements || false,
     price: calculatePriceWithMarkup(req.body.price),
@@ -350,7 +345,7 @@ export const createProduct = async (req, res) => {
     ),
     discountPercentage: req.body.discountPercentage,
     stockQuantity: req.body.stockQuantity,
-    brandName: removeEmptySpaces(req.body.brandName),
+    brand: req.body.brand,
     productImages: req.body.productImages,
     ...(req.body.currency && {
       currency: removeEmptySpaces(req.body.currency),
@@ -394,34 +389,42 @@ export const createProduct = async (req, res) => {
         .send({ message: 'Product already exists.' });
     }
 
-    // Check for Category and subcategory
-    const category = await Category.findById(
-      req.body.category
-    );
-    const subCategory = await SubCategory.findById(
-      req.body.subcategory
+    // Check for ProductClass, Category, subcategory, and Brand
+    const productClass = await ProductClass.findById(
+      req.body.productClass
     );
 
-    if (!category || !subCategory)
+    const category = await Category.findOne({
+      _id: req.body.category,
+      productClass,
+    });
+
+    const subCategory = await SubCategory.findById(
+      req.body.subCategory
+    );
+
+    const brand = await Brand.findOne({
+      _id: req.body.brand,
+      productClass,
+    });
+
+    // console.log(productClass, category, subCategory, brand);
+
+    if (!category || !subCategory || !productClass)
       return res.status(400).json({
         status: 'fail',
-        message: 'category and or subcategory not found',
+        message:
+          'ProductClass or category or subcategory not found',
       });
 
-    // If no brand, create it in subcategory
-    if (
-      !category.brands.includes(
-        req.body.brandName.toLowerCase()
-      )
-    ) {
-      category.brands = [
-        ...category.brands,
-        removeEmptySpaces(req.body.brandName),
-      ];
-      await category.save();
+    if (req.body.brand && !brand) {
+      return res.status(400).json({
+        status: 'fail',
+        message: 'Brand does not exist.',
+      });
     }
 
-    // // Create the product
+    // Create the product
     const product = await Product.create(productObject);
 
     res.status(201).json({

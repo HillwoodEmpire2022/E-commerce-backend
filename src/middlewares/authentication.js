@@ -46,19 +46,6 @@ export const isLoggedIn = async (req, res, next) => {
     req.user = currentUser;
     next();
   } catch (error) {
-    console.log(error);
-    if (
-      error.message === 'jwt malformed, Please login again'
-    ) {
-      return res.status(401).json({
-        status: 'fail',
-        message:
-          'You are not signed in! Please sign in to continue.',
-      });
-    }
-    return res.status(500).json({
-      status: 'fail',
-      message: 'Internal server error.',
-    });
+    next(error);
   }
 };

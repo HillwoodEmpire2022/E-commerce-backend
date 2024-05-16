@@ -8,7 +8,7 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "seed": "node src/seeds/index.js",
-    "test": "jest --runInBand --testTimeout=60000"
+    "test": "jest --runInBand --testTimeout=60000 --detectOpenHandles"
   },
   "repository": {
     "type": "git",

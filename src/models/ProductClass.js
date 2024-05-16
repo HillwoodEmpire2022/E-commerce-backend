@@ -23,6 +23,18 @@ const productClassSchema = new mongoose.Schema(
   }
 );
 
+productClassSchema.virtual('categories', {
+  ref: 'Category',
+  localField: '_id',
+  foreignField: 'productClass',
+});
+
+productClassSchema.virtual('brands', {
+  ref: 'Brand',
+  localField: '_id',
+  foreignField: 'productClass',
+});
+
 const ProductClass = mongoose.model(
   'ProductClass',
   productClassSchema

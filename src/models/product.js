@@ -15,24 +15,27 @@ const ProductSchema = new mongoose.Schema(
       required: true,
     },
 
+    // Categorization
     productClass: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'ProductClass',
       required: true,
     },
 
+    // Should belong to ProductClass
     category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',
       required: true,
     },
 
-    subcategory: {
+    subCategory: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'SubCategory',
     },
 
-    brandName: {
+    // Should Belong in Product Class
+    brand: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Brand',
     },
