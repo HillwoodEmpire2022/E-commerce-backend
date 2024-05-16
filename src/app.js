@@ -19,7 +19,6 @@ import userRouter from './routes/user.routes.js';
 import productClassRouter from './routes/productClass.routes.js';
 import brandsRouter from './routes/brand.routes.js';
 import { specs } from './utils/swaggerDocsSpecs.js';
-import Brand from './models/brand.js';
 
 const app = express();
 
