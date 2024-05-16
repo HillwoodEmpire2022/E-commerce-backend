@@ -8,17 +8,23 @@ import SubCategory from '../models/subcategory.js';
 // Create Categories
 export const addCategory = async (req, res) => {
   try {
-    const { error } = addCategoryValidation.validate(req.body, {
-      errors: { label: 'key', wrap: { label: false } },
-    });
+    const { error } = addCategoryValidation.validate(
+      req.body,
+      {
+        errors: { label: 'key', wrap: { label: false } },
+      }
+    );
     if (error) {
-      return res.status(422).send({ message: error.message });
+      return res
+        .status(422)
+        .send({ message: error.message });
     }
 
     const categoryData = {
       ...req.body,
       name: removeEmptySpaces(req.body.name),
     };
+
     const existingCategory = await Category.findOne({
       name: categoryData.name,
     });
@@ -29,6 +35,7 @@ export const addCategory = async (req, res) => {
     }
     const category = await Category.create({
       name: categoryData.name,
+      productClass: categoryData.productClass,
     });
 
     res.status(201).json({
@@ -45,7 +52,10 @@ export const addCategory = async (req, res) => {
 // Get Categories
 export const getCategories = async (req, res) => {
   try {
-    const categories = await Category.find({}, ['-updatedAt', '-createdAt'])
+    const categories = await Category.find({}, [
+      '-updatedAt',
+      '-createdAt',
+    ])
       .populate({
         path: 'subCategories',
         select: 'name brands',
@@ -69,9 +79,10 @@ export const getCategory = async (req, res) => {
     const category = await Category.findById(req.params.id);
 
     if (!category) {
-      return res
-        .status(404)
-        .json({ status: 'fail', message: 'Category not found' });
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Category not found',
+      });
     }
 
     // Send the found category as a response
@@ -81,7 +92,10 @@ export const getCategory = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ status: 'error', message: 'Internal server error' });
+    res.status(500).json({
+      status: 'error',
+      message: 'Internal server error',
+    });
   }
 };
 
@@ -91,14 +105,17 @@ export const updateCategory = async (req, res) => {
     const { id } = req.params;
     const updatedData = req.body;
 
-    const updatedCategory = await Category.findByIdAndUpdate(
-      id,
-      updatedData,
-      { new: true } // Return the updated document
-    );
+    const updatedCategory =
+      await Category.findByIdAndUpdate(
+        id,
+        updatedData,
+        { new: true } // Return the updated document
+      );
 
     if (!updatedCategory) {
-      return res.status(404).json({ status: '404', message: 'Category found' });
+      return res
+        .status(404)
+        .json({ status: '404', message: 'Category found' });
     }
 
     res.status(200).json({
@@ -117,22 +134,30 @@ export const updateCategory = async (req, res) => {
 // Delete Categories
 export const deleteCategory = async (req, res) => {
   try {
-    const category = await Category.findByIdAndDelete(req.params.id);
+    const category = await Category.findByIdAndDelete(
+      req.params.id
+    );
 
     if (!category) {
-      return res
-        .status(404)
-        .json({ status: 'fail', message: 'Category not found' });
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Category not found',
+      });
     }
 
     // Delete All Subcategories
-    await SubCategory.deleteMany({ category: req.params.id });
+    await SubCategory.deleteMany({
+      category: req.params.id,
+    });
 
     // Send the found category as a response
     res.status(204).json({
       status: 'success',
     });
   } catch (error) {
-    res.status(500).json({ status: 'error', message: 'Internal server error' });
+    res.status(500).json({
+      status: 'error',
+      message: 'Internal server error',
+    });
   }
 };

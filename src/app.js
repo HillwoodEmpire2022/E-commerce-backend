@@ -16,7 +16,10 @@ import sellerRoute from './routes/seller.routes.js';
 import paymentRouter from './routes/payment.routes.js';
 import orderRouter from './routes/order.routes.js';
 import userRouter from './routes/user.routes.js';
+import productClassRouter from './routes/productClass.routes.js';
+import brandsRouter from './routes/brand.routes.js';
 import { specs } from './utils/swaggerDocsSpecs.js';
+import Brand from './models/brand.js';
 
 const app = express();
 
@@ -73,11 +76,40 @@ app.use('/api/v1/sellers', sellerRoute);
 app.use('/api/v1/payments', paymentRouter);
 app.use('/api/v1/orders', orderRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/product-classes', productClassRouter);
+app.use('/api/v1/brands', brandsRouter);
 
 app.use('*', (req, res, next) => {
-  res.status(404).json({
-    status: 'fail',
-    message: `Root (${req.originalUrl}) does not exist.`,
+  next(new Error('Resource not found'));
+});
+
+app.use((err, req, res, next) => {
+  console.error(err);
+  if (err.name === 'TokenExpiredError') {
+    return res.status(401).json({
+      status: 'fail',
+      message: `Authentication session expired. Please signin to continue.`,
+    });
+  }
+  if (err.name === 'JsonWebTokenError') {
+    return res.status(401).json({
+      status: 'fail',
+      message: `Invalid authentication token. Please signin to continue.`,
+    });
+  }
+
+  if (err.message === 'Resource not found') {
+    return res.status(404).json({
+      status: 'fail',
+      message: `Root (${req.originalUrl}) does not exist.`,
+    });
+  }
+
+  res.status(500).json({
+    status: 'error',
+    err,
+    message:
+      'Internal server error! Please try again later.',
   });
 });
 

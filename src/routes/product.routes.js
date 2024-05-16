@@ -23,7 +23,68 @@ const Router = express.Router();
  *  description: Products APIs
  */
 
-Router.post('/', isLoggedIn, restrictTo('admin', 'seller'), createProduct);
+/**
+ * @swagger
+ * /products:
+ *    post:
+ *      summary: Create product
+ *      tags: [Products]
+ *      security:
+ *        - bearerAuth: []
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                name:
+ *                  type: string
+ *                productClass:
+ *                  type: string
+ *                category:
+ *                  type: string
+ *                subCategory:
+ *                  type: string
+ *                brand:
+ *                  type: string
+ *                description:
+ *                  type: string
+ *                stockQuantity:
+ *                  type: number
+ *                stockLocation:
+ *                  type: string
+ *                price:
+ *                  type: number
+ *                currency:
+ *                  type: string
+ *                discountPercentage:
+ *                  type: number
+ *                quantityParameter:
+ *                  type: string
+ *                colorMeasurementVariations:
+ *                  type: array
+ *                  items:
+ *                    type: object
+ *                productImages:
+ *                  type: array
+ *                  items:
+ *                    type: string
+ *      responses:
+ *        200:
+ *          description: The updated product object
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ */
+
+Router.post(
+  '/',
+  isLoggedIn,
+  restrictTo('admin', 'seller'),
+  createProduct
+);
 
 /**
  * @swagger
@@ -65,7 +126,72 @@ Router.get('/', checkUser, getAllProducts);
  */
 Router.get('/:productId', getSingleProduct);
 
-Router.patch('/:productId', isLoggedIn, updateProductData);
+/**
+ * @swagger
+ * /products/{id}:
+ *    patch:
+ *      summary: Update product data by its id
+ *      tags: [Products]
+ *      parameters:
+ *        - in: path
+ *          name: productId
+ *          schema:
+ *            type: string
+ *          required: true
+ *          description: The value from the _id field of the product object
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                name:
+ *                  type: string
+ *                productClass:
+ *                  type: string
+ *                category:
+ *                  type: string
+ *                subCategory:
+ *                  type: string
+ *                brand:
+ *                  type: string
+ *                description:
+ *                  type: string
+ *                stockQuantity:
+ *                  type: number
+ *                stockLocation:
+ *                  type: string
+ *                price:
+ *                  type: number
+ *                currency:
+ *                  type: string
+ *                discountPercentage:
+ *                  type: number
+ *                quantityParameter:
+ *                  type: string
+ *                colorMeasurementVariations:
+ *                  type: array
+ *                  items:
+ *                    type: object
+ *                productImages:
+ *                  type: array
+ *                  items:
+ *                    type: string
+ *      responses:
+ *        200:
+ *          description: The updated product object
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ */
+Router.patch(
+  '/:productId',
+  isLoggedIn,
+  restrictTo('admin', 'seller'),
+  updateProductData
+);
 
 /**
  * @swagger
@@ -111,7 +237,10 @@ Router.get('/category/:categoryId', getProductsByCategory);
  *              schema:
  *                type: array
  */
-Router.get('/subcategory/:subcategoryId', getProductsBySubCategory);
+Router.get(
+  '/subcategory/:subcategoryId',
+  getProductsBySubCategory
+);
 Router.delete(
   '/:productId',
   isLoggedIn,

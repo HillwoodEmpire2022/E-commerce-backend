@@ -8,6 +8,7 @@ const SubCategorySchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
+
     category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',
@@ -27,7 +28,14 @@ const SubCategorySchema = new mongoose.Schema(
   }
 );
 
-SubCategorySchema.index({ name: 1, category: 1 }, { unique: true });
+SubCategorySchema.index(
+  { name: 1, category: 1 },
+  { unique: true }
+);
 
-const SubCategory = mongoose.model('SubCategory', SubCategorySchema);
+const SubCategory = mongoose.model(
+  'SubCategory',
+  SubCategorySchema
+);
+
 export default SubCategory;

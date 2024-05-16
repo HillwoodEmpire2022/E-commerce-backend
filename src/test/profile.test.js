@@ -1,43 +1,46 @@
-import request from "supertest";
-import app from "../app";
-import User from "../models/user";
-import SellerProfile from "../models/sellerProfile";
-import { signin } from "./setup";
+import request from 'supertest';
+import app from '../app.js';
+import User from '../models/user.js';
+import SellerProfile from '../models/sellerProfile.js';
+import { signin } from './setup';
 
 let adminUser;
 let token;
 
-describe("Profile Tests", () => {
+describe('Profile Tests', () => {
   beforeAll(async () => {
     await User.deleteMany({});
 
     await SellerProfile.deleteMany({});
     // Create user with admin role
     adminUser = await User.create({
-      email: "admin@example.com",
-      firstName: "John",
-      lastName: "Doe",
-      password: "test1234",
-      confirmPassword: "test1234",
-      role: "admin",
+      email: 'admin@example.com',
+      firstName: 'John',
+      lastName: 'Doe',
+      password: 'test1234',
+      confirmPassword: 'test1234',
+      role: 'admin',
       verified: true,
     });
 
-    token = signin({ id: adminUser.id, role: adminUser.role });
+    token = signin({
+      id: adminUser.id,
+      role: adminUser.role,
+    });
   });
 
-  it("should create a profile upon successful registration", async () => {
+  it('should create a profile upon successful registration', async () => {
     const userData = {
-      email: "uniquetest1@example.com",
-      firstName: "John",
-      lastName: "Doe",
-      password: "test1234",
-      confirmPassword: "test1234",
-      role: "seller",
+      email: 'uniquetest1@example.com',
+      firstName: 'John',
+      lastName: 'Doe',
+      password: 'test1234',
+      confirmPassword: 'test1234',
+      role: 'seller',
     };
 
     const response = await request(app)
-      .post("/api/v1/auth/register")
+      .post('/api/v1/auth/register')
       .send(userData);
 
     //   Activate Account
@@ -46,10 +49,14 @@ describe("Profile Tests", () => {
     );
 
     // Find Created User
-    const user = await User.findOne({ email: userData.email });
+    const user = await User.findOne({
+      email: userData.email,
+    });
 
     // Find Profile
-    const profile = await SellerProfile.findOne({ user: user._id });
+    const profile = await SellerProfile.findOne({
+      user: user._id,
+    });
 
     expect(profile.user).toEqual(user._id);
   });
@@ -121,52 +128,55 @@ describe("Profile Tests", () => {
   // });
 });
 
-describe("admin list all sellers", () => {
+describe('admin list all sellers', () => {
   beforeAll(async () => {
     await User.deleteMany({});
 
     await SellerProfile.deleteMany({});
     // Create user with admin role
     adminUser = await User.create({
-      email: "admin@example.com",
-      firstName: "John",
-      lastName: "Doe",
-      password: "test1234",
-      confirmPassword: "test1234",
-      role: "admin",
+      email: 'admin@example.com',
+      firstName: 'John',
+      lastName: 'Doe',
+      password: 'test1234',
+      confirmPassword: 'test1234',
+      role: 'admin',
       verified: true,
     });
 
-    token = signin({ id: adminUser.id, role: adminUser.role });
+    token = signin({
+      id: adminUser.id,
+      role: adminUser.role,
+    });
   });
 
-  it("it should return 401 if user is not logeged in", async () => {
-    const res = await request(app).get("/api/v1/sellers");
+  it('it should return 401 if user is not logeged in', async () => {
+    const res = await request(app).get('/api/v1/sellers');
     expect(res.statusCode).toBe(401);
   });
 
-  it("it should return 404 if no sellers", async () => {
+  it('it should return 404 if no sellers', async () => {
     const response = await request(app)
-      .get("/api/v1/sellers")
-      .set("Authorization", `Bearer ${token}`);
+      .get('/api/v1/sellers')
+      .set('Authorization', `Bearer ${token}`);
     expect(response.statusCode).toBe(404);
   });
 
-  it("it should return 201 if admi get all sellers", async () => {
+  it('it should return 201 if admi get all sellers', async () => {
     const sellerUser = await User.create({
-      email: "seller@example.com",
-      firstName: "Seller",
-      lastName: "One",
-      password: "test1234",
-      confirmPassword: "test1234",
-      role: "seller",
+      email: 'seller@example.com',
+      firstName: 'Seller',
+      lastName: 'One',
+      password: 'test1234',
+      confirmPassword: 'test1234',
+      role: 'seller',
       verified: true,
     });
 
     await SellerProfile.create({ user: sellerUser._id });
     const response = await request(app)
-      .get("/api/v1/sellers")
-      .set("Authorization", `Bearer ${token}`);
+      .get('/api/v1/sellers')
+      .set('Authorization', `Bearer ${token}`);
     expect(response.statusCode).toBe(201);
     expect(response.body.data.sellers).toHaveLength(1);
   });

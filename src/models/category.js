@@ -10,12 +10,11 @@ const categorySchema = new mongoose.Schema(
       trim: true,
     },
 
-    brands: [
-      {
-        type: String,
-        lowercase: true,
-      },
-    ],
+    productClass: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'ProductClass',
+      required: true,
+    },
   },
 
   {
@@ -24,10 +23,9 @@ const categorySchema = new mongoose.Schema(
       virtuals: true,
       transform(doc, ret) {
         delete ret._id;
+        delete ret.__v;
       },
     },
-
-    versionKey: false,
     timestamps: true,
   }
 );
