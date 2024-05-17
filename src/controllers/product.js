@@ -90,7 +90,7 @@ export const getSingleProduct = async (req, res) => {
         select: 'name',
       })
       .populate({
-        path: 'subcategory',
+        path: 'subCategory',
         select: 'name',
       })
       .exec();
@@ -130,7 +130,7 @@ export const getProductsBySubCategory = async (
 ) => {
   try {
     const products = await Product.find({
-      subcategory: req.params.subcategoryId,
+      subCategory: req.params.subcategoryId,
     });
 
     if (products.length === 0) {
@@ -286,7 +286,7 @@ export const searchProduct = async (req, res) => {
 
       if (subcategory) {
         searchConditions.push({
-          subcategory: subcategory._id,
+          subCategory: subcategory._id,
         });
       }
     }
@@ -305,7 +305,7 @@ export const searchProduct = async (req, res) => {
         select: 'name',
       })
       .populate({
-        path: 'subcategory',
+        path: 'subCategory',
         select: 'name',
       })
       .exec();
