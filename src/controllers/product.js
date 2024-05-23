@@ -13,7 +13,7 @@ import ProductClass from '../models/ProductClass.js';
 import Brand from '../models/brand.model.js';
 import AppError from '../utils/AppError.js';
 
-export const getAllProducts = async (req, res) => {
+export const getAllProducts = async (req, res, next) => {
   try {
     const queryObj = {};
     if (req?.user?.role === 'seller')
@@ -55,8 +55,7 @@ export const getAllProducts = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).send({ error: error.message });
+    next(error);
   }
 };
 
@@ -336,35 +335,10 @@ export const searchProduct = async (req, res) => {
   }
 };
 
-// TODO: NEXT
-export const createProduct = async (req, res) => {
-  let productObject = {
-    name: removeEmptySpaces(req.body.name),
-    description: removeEmptySpaces(req.body.description),
-    category: req.body.category,
-    subCategory: req.body.subCategory,
-    seller: req.body.seller,
-    productClass: req.body.productClass,
-    hasColors: req.body.hasColors || false,
-    hasMeasurements: req.body.hasMeasurements || false,
-    price: calculatePriceWithMarkup(req.body.price),
-    quantityParameter: removeEmptySpaces(
-      req.body.quantityParameter
-    ),
-    discountPercentage: req.body.discountPercentage,
-    stockQuantity: req.body.stockQuantity,
-    brand: req.body.brand,
-    productImages: req.body.productImages,
-    ...(req.body.currency && {
-      currency: removeEmptySpaces(req.body.currency),
-    }),
-    colorMeasurementVariations:
-      req.body.colorMeasurementVariations,
-  };
-
+export const createProduct = async (req, res, next) => {
   try {
     const { error } = uploadProductValidation.validate(
-      productObject,
+      req.body,
       {
         errors: { label: 'key', wrap: { label: false } },
         allowUnknown: true,
@@ -374,13 +348,55 @@ export const createProduct = async (req, res) => {
       return next(new AppError(error.message, 400));
     }
 
-    const seller = await User.findById(req.body.seller);
+    let productObject = {
+      name: removeEmptySpaces(req.body.name),
+      description: removeEmptySpaces(req.body.description),
+      category: req.body.category,
+      subCategory: req.body.subCategory,
+      seller: req.body.seller,
+      productClass: req.body.productClass,
+      hasColors: req.body.hasColors || false,
+      hasMeasurements: req.body.hasMeasurements || false,
+      price: calculatePriceWithMarkup(req.body.price),
+      quantityParameter: removeEmptySpaces(
+        req.body.quantityParameter
+      ),
+      discountPercentage: req.body.discountPercentage,
+      stockQuantity: req.body.stockQuantity,
+      brand: req.body.brand,
+      productImages: req.body.productImages,
+      ...(req.body.currency && {
+        currency: removeEmptySpaces(req.body.currency),
+      }),
+      colorMeasurementVariations:
+        req.body.colorMeasurementVariations,
+    };
+
+    const seller = await User.findOne({
+      _id: req.body.seller,
+      verified: true,
+      active: true,
+      role: 'seller',
+    });
 
     if (!seller) {
       return next(
         new AppError(
           'There is no seller that matches the provided seller Id.',
           404
+        )
+      );
+    }
+
+    // Forbid seller from creating products for other sellers
+    if (
+      req.body.seller !== req.user._id.toHexString() &&
+      req.user.role !== 'admin'
+    ) {
+      return next(
+        new AppError(
+          'You are not allowed to create products for other sellers',
+          403
         )
       );
     }
@@ -407,16 +423,21 @@ export const createProduct = async (req, res) => {
       productClass,
     });
 
-    const subCategory = await SubCategory.findById(
-      req.body.subCategory
-    );
+    const subCategory = await SubCategory.findOne({
+      _id: req.body.subCategory,
+      category: category?._id || req.body.category,
+    });
 
     const brand = await Brand.findOne({
       _id: req.body.brand,
       productClass,
     });
 
-    if (!category || !subCategory || !productClass)
+    if (
+      !category ||
+      (req.body.subCategory && !subCategory) ||
+      !productClass
+    )
       return next(
         new AppError(
           'ProductClass or category or subcategory not found',

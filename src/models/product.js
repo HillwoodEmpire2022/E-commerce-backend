@@ -43,6 +43,7 @@ const ProductSchema = new mongoose.Schema(
     description: {
       type: String,
       trim: true,
+      required: true,
     },
     stockQuantity: {
       type: Number,
