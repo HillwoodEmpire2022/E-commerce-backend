@@ -30,7 +30,9 @@ describe('User Registration', () => {
     });
     expect(response.status).toBe(201);
 
-    const createdUser = await User.findOne({ email: userData.email });
+    const createdUser = await User.findOne({
+      email: userData.email,
+    });
 
     expect(createdUser).toBeDefined();
     expect(createdUser.activationToken).toBeDefined();
@@ -58,7 +60,9 @@ describe('User Registration', () => {
       role: 'customer',
     };
 
-    await request(app).post('/api/v1/auth/register').send(user1data);
+    await request(app)
+      .post('/api/v1/auth/register')
+      .send(user1data);
 
     const user2data = {
       email: 'duplicate@example.com',
@@ -76,7 +80,8 @@ describe('User Registration', () => {
     expect(response2.status).toBe(400);
     expect(response2.body).toMatchObject({
       status: 'fail',
-      message: 'Email (duplicate@example.com) already in use.',
+      message:
+        'Email (duplicate@example.com) already in use.',
     });
   });
 });
@@ -95,9 +100,13 @@ describe('Account Activation', () => {
       role: 'customer',
     };
 
-    const res = await request(app).post('/api/v1/auth/register').send(userData);
+    const res = await request(app)
+      .post('/api/v1/auth/register')
+      .send(userData);
 
-    const createUser = await User.findOne({ email: userData.email });
+    const createUser = await User.findOne({
+      email: userData.email,
+    });
 
     const response = await request(app).get(
       `/api/v1/auth/activate-account/${createUser.activationToken}`
@@ -142,9 +151,13 @@ describe('Account Activation', () => {
       role: 'customer',
     };
 
-    await request(app).post('/api/v1/auth/register').send(userData);
+    await request(app)
+      .post('/api/v1/auth/register')
+      .send(userData);
 
-    const createUser = await User.findOne({ email: userData.email });
+    const createUser = await User.findOne({
+      email: userData.email,
+    });
 
     await request(app).get(
       `/api/v1/auth/activate-account/${createUser.activationToken}`
@@ -187,7 +200,10 @@ describe('userLogin', () => {
 
     const response = await request(app)
       .post('/api/v1/auth/login')
-      .send({ email: user.email, password: 'wrong_password' });
+      .send({
+        email: user.email,
+        password: 'wrong_password',
+      });
 
     expect(response.status).toBe(401);
     expect(response.body).toEqual({
@@ -206,11 +222,16 @@ describe('userLogin', () => {
       role: 'customer',
     };
 
-    await request(app).post('/api/v1/auth/register').send(userData);
+    await request(app)
+      .post('/api/v1/auth/register')
+      .send(userData);
 
     const response = await request(app)
       .post('/api/v1/auth/login')
-      .send({ email: userData.email, password: userData.password });
+      .send({
+        email: userData.email,
+        password: userData.password,
+      });
 
     expect(response.status).toBe(401);
     expect(response.body).toEqual({
@@ -230,9 +251,13 @@ describe('userLogin', () => {
       role: 'customer',
     };
 
-    await request(app).post('/api/v1/auth/register').send(userData);
+    await request(app)
+      .post('/api/v1/auth/register')
+      .send(userData);
 
-    const createUser = await User.findOne({ email: userData.email });
+    const createUser = await User.findOne({
+      email: userData.email,
+    });
 
     await request(app).get(
       `/api/v1/auth/activate-account/${createUser.activationToken}`
@@ -240,11 +265,16 @@ describe('userLogin', () => {
 
     const response = await request(app)
       .post('/api/v1/auth/login')
-      .send({ email: userData.email, password: userData.password });
+      .send({
+        email: userData.email,
+        password: userData.password,
+      });
 
     expect(response.status).toBe(200);
     expect(response.body.token).toBeDefined();
-    expect(response.body.data.user.email).toEqual('test@example.com');
+    expect(response.body.data.user.email).toEqual(
+      'test@example.com'
+    );
   });
 });
 
@@ -262,7 +292,9 @@ describe('sendEmailToResetPassword', () => {
       });
 
     expect(resetPasswordResponse.status).toBe(404);
-    expect(resetPasswordResponse.body.message).toBe('email does not exist');
+    expect(resetPasswordResponse.body.message).toBe(
+      'email does not exist'
+    );
   });
 
   it('should return a 422 status if email validation fails', async () => {
@@ -275,7 +307,9 @@ describe('sendEmailToResetPassword', () => {
       });
 
     expect(resetPasswordResponse.status).toBe(422);
-    expect(resetPasswordResponse.body.message).toBeDefined();
+    expect(
+      resetPasswordResponse.body.message
+    ).toBeDefined();
   });
 });
 
@@ -303,9 +337,9 @@ describe('resetUserPassword', () => {
       .send({ newPassword, confirmPassword: newPassword });
 
     expect(response.status).toBe(201);
-    const updatedUser = await User.findOne({ email: user.email }).select(
-      '+password'
-    );
+    const updatedUser = await User.findOne({
+      email: user.email,
+    }).select('+password');
     const isPasswordValid = await bcrypt.compare(
       newPassword,
       updatedUser.password
@@ -363,7 +397,9 @@ describe('resetUserPassword', () => {
       });
 
     expect(response.status).toBe(500);
-    expect(response.body.message).toBe('failed to reset user password');
+    expect(response.body.message).toBe(
+      'failed to reset user password'
+    );
   });
 });
 
@@ -372,23 +408,29 @@ describe('Testing update user password after login', () => {
     userId = '';
   beforeAll(async () => {
     // Register user
-    const response = await request(app).post('/api/v1/auth/register').send({
-      firstName: 'myfirstname',
-      lastName: 'mysecondname',
-      email: 'testemail1234@gmail.com',
-      password: 'testpass2345',
-    });
+    const response = await request(app)
+      .post('/api/v1/auth/register')
+      .send({
+        firstName: 'myfirstname',
+        lastName: 'mysecondname',
+        email: 'testemail1234@gmail.com',
+        password: 'testpass2345',
+      });
     token = await response.body.token;
   });
 
   beforeEach(async () => {
     // Login user
-    const response = await request(app).post('/api/v1/auth/login').send({
-      email: 'testemail1234@gmail.com',
-      password: 'testpass2345',
-    });
+    const response = await request(app)
+      .post('/api/v1/auth/login')
+      .send({
+        email: 'testemail1234@gmail.com',
+        password: 'testpass2345',
+      });
     token = signin({ id: response.id });
-    userId = response.body.user ? response.body.user._id : null;
+    userId = response.body.user
+      ? response.body.user._id
+      : null;
   });
 
   it('It should return 401 if user is not logged in', async () => {
@@ -420,27 +462,35 @@ describe('user update profile data', () => {
     userId = '';
   beforeAll(async () => {
     // Register user
-    const response = await request(app).post('/api/v1/auth/register').send({
-      firstName: 'myfirstname1',
-      lastName: 'mysecondname2',
-      email: 'testemail1234@gmail.com',
-      password: 'testpass2345',
-    });
+    const response = await request(app)
+      .post('/api/v1/auth/register')
+      .send({
+        firstName: 'myfirstname1',
+        lastName: 'mysecondname2',
+        email: 'testemail1234@gmail.com',
+        password: 'testpass2345',
+      });
     token = await response.body.token;
   });
 
   beforeEach(async () => {
     // Login user
-    const response = await request(app).post('/api/v1/auth/login').send({
-      email: 'testemail1234@gmail.com',
-      password: 'testpass2345',
-    });
+    const response = await request(app)
+      .post('/api/v1/auth/login')
+      .send({
+        email: 'testemail1234@gmail.com',
+        password: 'testpass2345',
+      });
     token = signin({ id: response.id });
-    userId = response.body.user ? response.body.user._id : null;
+    userId = response.body.user
+      ? response.body.user._id
+      : null;
   });
 
   it('it should return 401 if user is not loged in', async () => {
-    const response = await request(app).patch('/api/v1/auth/profile-data');
+    const response = await request(app).patch(
+      '/api/v1/auth/profile-data'
+    );
     expect(response.status).toBe(401);
   });
 

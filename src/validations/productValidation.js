@@ -16,11 +16,8 @@ export const uploadProductValidation = Joi.object({
       new Error('Category is Invalid or not provided')
     ),
   subCategory: Joi.string()
-    .required()
     .regex(/^[0-9a-fA-F]{24}$/)
-    .error(
-      new Error('SubCategory is Invalid or not provided')
-    ),
+    .error(new Error('SubCategory is Invalid')),
   seller: Joi.string()
     .required()
     .regex(/^[0-9a-fA-F]{24}$/)
