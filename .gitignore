@@ -7,7 +7,7 @@ yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
 credentials
-
+product.test.js
 test_files
 
 # Diagnostic reports (https://nodejs.org/api/report.html)

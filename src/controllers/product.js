@@ -11,6 +11,7 @@ import SubCategory from '../models/subcategory.js';
 import removeEmptySpaces from '../utils/removeEmptySpaces.js';
 import ProductClass from '../models/ProductClass.js';
 import Brand from '../models/brand.model.js';
+import AppError from '../utils/AppError.js';
 
 export const getAllProducts = async (req, res) => {
   try {
@@ -54,11 +55,12 @@ export const getAllProducts = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error(error);
     res.status(500).send({ error: error.message });
   }
 };
 
-export const getSingleProduct = async (req, res) => {
+export const getSingleProduct = async (req, res, next) => {
   try {
     // 1) Validate user data
     const { error } = MongoIDValidator.validate(
@@ -69,10 +71,9 @@ export const getSingleProduct = async (req, res) => {
     );
 
     if (error) {
-      return res
-        .status(400)
-        .json({ status: 'fail', message: error.message });
+      return next(new AppError(error.message, 400));
     }
+
     const product = await Product.findOne({
       _id: req.params.productId,
     })
@@ -96,14 +97,11 @@ export const getSingleProduct = async (req, res) => {
       .exec();
 
     if (!product) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'Product not found.',
-      });
+      return next(new AppError('Product not found', 404));
     }
     res.status(200).json(product);
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    next(error);
   }
 };
 
@@ -120,7 +118,7 @@ export const getProductsByCategory = async (req, res) => {
     }
     res.status(200).json(products);
   } catch (error) {
-    res.status(500).send({ error: error.message });
+    next(error);
   }
 };
 
@@ -149,39 +147,53 @@ export const getProductsBySubCategory = async (
 export const deleteProduct = async (req, res) => {
   try {
     const { productId } = req.params;
+    // 1) Validate user data
+    const { error } = MongoIDValidator.validate(
+      req.params,
+      {
+        errors: { label: 'key', wrap: { label: false } },
+      }
+    );
 
-    // find product by id
+    if (error) {
+      return next(new AppError(error.message, 400));
+    }
+
+    // 2) find product by id
     const product = await Product.findById({
       _id: productId,
     });
 
-    // check if the product exists
+    // 3) check if the product exists
     if (!product) {
-      return res.status(404).json({
-        message: 'product not found',
-      });
+      return next(new AppError('Product not found', 404));
     }
-    // check if the user is admin and the product is the owner of product
+
+    // 4) check if the user is admin and the product is the owner of product
     if (
       product.seller.toString() !==
         req.user._id.toString() &&
       req.user.role != 'admin'
     ) {
-      return res.status(403).json({
-        message: ' You are not the owner of this product',
-      });
+      return next(
+        new AppError(
+          'You are not the owner of this product',
+          403
+        )
+      );
     }
-    // delete product if it is exist
+
+    // 5) delete product if it is exist
     await Product.deleteOne({ _id: productId });
+
     return res.status(201).json({
       message: 'product deleted succesfully',
     });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: 'failed to delete product' });
+    next(error);
   }
 };
+
 export const updateProductData = async (req, res) => {
   try {
     const { error } = updateProductsValidation.validate(
@@ -193,19 +205,19 @@ export const updateProductData = async (req, res) => {
     );
 
     if (error) {
-      return res
-        .status(422)
-        .json({ status: 'fail', message: error.message });
+      return next(new AppError(error.message, 400));
     }
+
     const isUserAdmin = req.user.role === 'admin';
 
     // If Update include seller, require admin to perform operation
     if (req.body.seller && req.user.role !== 'admin') {
-      return res.status(403).json({
-        status: 'fail',
-        message:
-          'Acces denied! You are not allowed to perform this operation.',
-      });
+      return next(
+        new AppError(
+          'Access denied! You are not allowed to perform this operation.',
+          403
+        )
+      );
     }
 
     const product = await Product.findById(
@@ -213,20 +225,19 @@ export const updateProductData = async (req, res) => {
     );
 
     if (!product)
-      return res.status(404).json({
-        status: 'fail',
-        message: 'Product not found.',
-      });
+      return next(new AppError('Product not found', 404));
 
     // Check if product belongs to the user, if user updating the product is not an admin
     if (
       !isUserAdmin &&
       product.seller.toHexString() !== req.user.id
     )
-      return res.status(404).json({
-        status: 'fail',
-        message: 'Product not found.',
-      });
+      return next(
+        new AppError(
+          'You cannot update a product that does not belong to you.',
+          403
+        )
+      );
 
     await Product.findByIdAndUpdate(
       req.params.productId,
@@ -243,11 +254,7 @@ export const updateProductData = async (req, res) => {
       },
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      status: 'fail',
-      message: 'Unexpected error has occured!',
-    });
+    next(error);
   }
 };
 
@@ -329,6 +336,7 @@ export const searchProduct = async (req, res) => {
   }
 };
 
+// TODO: NEXT
 export const createProduct = async (req, res) => {
   let productObject = {
     name: removeEmptySpaces(req.body.name),
@@ -363,18 +371,18 @@ export const createProduct = async (req, res) => {
       }
     );
     if (error) {
-      return res
-        .status(422)
-        .send({ message: error.message });
+      return next(new AppError(error.message, 400));
     }
 
     const seller = await User.findById(req.body.seller);
 
     if (!seller) {
-      return res.status(400).send({
-        message:
+      return next(
+        new AppError(
           'There is no seller that matches the provided seller Id.',
-      });
+          404
+        )
+      );
     }
 
     // Check if product exists in the database
@@ -384,9 +392,9 @@ export const createProduct = async (req, res) => {
     });
 
     if (existingProduct.length !== 0) {
-      return res
-        .status(400)
-        .send({ message: 'Product already exists.' });
+      return next(
+        new AppError('Product already exists.', 400)
+      );
     }
 
     // Check for ProductClass, Category, subcategory, and Brand
@@ -409,18 +417,18 @@ export const createProduct = async (req, res) => {
     });
 
     if (!category || !subCategory || !productClass)
-      return res.status(400).json({
-        status: 'fail',
-        message:
+      return next(
+        new AppError(
           'ProductClass or category or subcategory not found',
-      });
+          400
+        )
+      );
 
-    if (req.body.brand && !brand) {
-      return res.status(400).json({
-        status: 'fail',
-        message: 'Brand does not exist.',
-      });
-    }
+    // TODO: Seller Request for Brand
+    if (req.body.brand && !brand)
+      return next(
+        new AppError('Brand does not exist.', 400)
+      );
 
     // Create the product
     const product = await Product.create(productObject);
@@ -433,13 +441,7 @@ export const createProduct = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      status: 'arror',
-      message:
-        'Something unexpected has happend. Please try again later!',
-    });
+    next(error);
   }
 };
 

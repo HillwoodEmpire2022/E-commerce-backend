@@ -25,11 +25,11 @@ async function init() {
     await mongoose.connect(databaseUrl);
 
     app.listen(PORT, () => {
-      console.log('Database connection successful!');
-      console.log(`Server running on port ${PORT}...`);
+      console.log('🔢 Database connection successful!');
+      console.log(`🚀 Server running on port ${PORT}...`);
     });
   } catch (error) {
-    console.log('ERROR **', error);
+    console.error('ERROR 🔥', error);
   }
 }
 
