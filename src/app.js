@@ -19,6 +19,8 @@ import userRouter from './routes/user.routes.js';
 import productClassRouter from './routes/productClass.routes.js';
 import brandsRouter from './routes/brand.routes.js';
 import { specs } from './utils/swaggerDocsSpecs.js';
+import globalErrorHandler from './controllers/globalErrorHandler.js';
+import AppError from './utils/AppError.js';
 
 const app = express();
 
@@ -79,37 +81,11 @@ app.use('/api/v1/product-classes', productClassRouter);
 app.use('/api/v1/brands', brandsRouter);
 
 app.use('*', (req, res, next) => {
-  next(new Error('Resource not found'));
+  next(
+    new AppError(`Route ${req.baseUrl} not found.`, 404)
+  );
 });
 
-app.use((err, req, res, next) => {
-  console.error(err);
-  if (err.name === 'TokenExpiredError') {
-    return res.status(401).json({
-      status: 'fail',
-      message: `Authentication session expired. Please signin to continue.`,
-    });
-  }
-  if (err.name === 'JsonWebTokenError') {
-    return res.status(401).json({
-      status: 'fail',
-      message: `Invalid authentication token. Please signin to continue.`,
-    });
-  }
-
-  if (err.message === 'Resource not found') {
-    return res.status(404).json({
-      status: 'fail',
-      message: `Root (${req.originalUrl}) does not exist.`,
-    });
-  }
-
-  res.status(500).json({
-    status: 'error',
-    err,
-    message:
-      'Internal server error! Please try again later.',
-  });
-});
+app.use(globalErrorHandler);
 
 export default app;
