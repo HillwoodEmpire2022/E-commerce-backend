@@ -1,4 +1,4 @@
-import ProductClass from '../models/ProductClass.js';
+import ProductClass from '../models/productClass.js';
 import removeEmptySpaces from '../utils/removeEmptySpaces.js';
 import { productClassValidation } from '../validations/productClassValidation.js';
 
