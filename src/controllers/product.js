@@ -9,9 +9,10 @@ import {
 import Category from '../models/category.js';
 import SubCategory from '../models/subcategory.js';
 import removeEmptySpaces from '../utils/removeEmptySpaces.js';
-import ProductClass from '../models/ProductClass.js';
+import ProductClass from '../models/productClass.js';
 import Brand from '../models/brand.model.js';
 import AppError from '../utils/AppError.js';
+import { strictTransportSecurity } from 'helmet';
 
 export const getAllProducts = async (req, res, next) => {
   try {
@@ -193,7 +194,7 @@ export const deleteProduct = async (req, res) => {
   }
 };
 
-export const updateProductData = async (req, res) => {
+export const updateProductData = async (req, res, next) => {
   try {
     const { error } = updateProductsValidation.validate(
       req.body,
@@ -210,7 +211,7 @@ export const updateProductData = async (req, res) => {
     const isUserAdmin = req.user.role === 'admin';
 
     // If Update include seller, require admin to perform operation
-    if (req.body.seller && req.user.role !== 'admin') {
+    if (req.body.seller && !isUserAdmin) {
       return next(
         new AppError(
           'Access denied! You are not allowed to perform this operation.',
@@ -233,22 +234,25 @@ export const updateProductData = async (req, res) => {
     )
       return next(
         new AppError(
-          'You cannot update a product that does not belong to you.',
+          'Access denied! You cannot update a product that does not belong to you.',
           403
         )
       );
 
-    await Product.findByIdAndUpdate(
+    const updatedProduct = await Product.findByIdAndUpdate(
       req.params.productId,
-      req.body
+      req.body,
+      {
+        new: strictTransportSecurity,
+      }
     );
 
     res.status(200).json({
       status: 'success',
       data: {
         product: {
-          id: product.id,
-          name: product.name,
+          id: updatedProduct.id,
+          name: updatedProduct.name,
         },
       },
     });

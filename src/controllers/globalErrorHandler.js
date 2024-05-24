@@ -4,7 +4,8 @@ export default function globalErrorHandler(
   res,
   next
 ) {
-  console.error('🔥Error: ', err);
+  if (process.env.NODE_ENV !== 'test')
+    console.error('🔥Error: ', err);
 
   // JWT Errors
   if (err.name === 'TokenExpiredError') {
