@@ -1,11 +1,12 @@
 import request from 'supertest';
-import ProductClass from '../models/ProductClass';
 import User from '../models/user';
 import { signin } from './setup';
 import Category from '../models/category';
 import app from '../app';
 import Product from '../models/product';
 import SubCategory from '../models/subcategory';
+import ProductClass from '../models/productClass';
+import { sign } from 'jsonwebtoken';
 
 let adminUser, sellerUSer, sellerUSer2, customer;
 // Classes
@@ -572,5 +573,325 @@ describe('Create Products', () => {
     expect(res.body.message).toBe(
       'ProductClass or category or subcategory not found'
     );
+  });
+});
+
+describe('Update Products', () => {
+  beforeAll(async () => {
+    await User.deleteMany({});
+    await Product.deleteMany({});
+    await Category.deleteMany({});
+    await ProductClass.deleteMany({});
+
+    // Create user with admin role
+    adminUser = await User.create({
+      email: 'admin@example.com',
+      firstName: 'John',
+      lastName: 'Doe',
+      password: 'test1234',
+      confirmPassword: 'test1234',
+      role: 'admin',
+      verified: true,
+    });
+
+    sellerUSer = await User.create({
+      email: 'seller@example.com',
+      firstName: 'John',
+      lastName: 'Doe',
+      password: 'test1234',
+      confirmPassword: 'test1234',
+      role: 'seller',
+      verified: true,
+    });
+    sellerUSer2 = await User.create({
+      email: 'seller2@example.com',
+      firstName: 'John',
+      lastName: 'Doe',
+      password: 'test1234',
+      confirmPassword: 'test1234',
+      role: 'seller',
+      verified: true,
+    });
+    customer = await User.create({
+      email: 'customer@example.com',
+      firstName: 'John',
+      lastName: 'Doe',
+      password: 'test1234',
+      confirmPassword: 'test1234',
+      role: 'customer',
+      verified: true,
+    });
+
+    token = signin({
+      id: adminUser.id,
+      role: adminUser.role,
+    });
+
+    // Create product using ProductClass model
+    clothing = await ProductClass.create({
+      name: 'Clothing',
+    });
+
+    electronics = await ProductClass.create({
+      name: 'Electronics',
+    });
+
+    smartphones_and_accessories = await Category.create({
+      name: 'smartphones and ',
+      productClass: electronics._id,
+    });
+    smartphones = await Category.create({
+      name: 'Smartphones',
+      productClass: electronics._id,
+    });
+  });
+
+  it('should update product by admin', async () => {
+    const newProduct = {
+      name: `test product ${Date.now()}`,
+      seller: sellerUSer._id,
+      productClass: electronics._id,
+      category: smartphones_and_accessories._id,
+      description: 'Description',
+      stockQuantity: 400,
+      price: 1000,
+      productImages: {
+        productThumbnail: {
+          url: 'http://example.com/thumbnail.jpg',
+        },
+      },
+    };
+
+    const response = await request(app)
+      .post('/api/v1/products')
+      .set('Authorization', `Bearer ${token}`)
+      .send(newProduct);
+
+    const res = await request(app)
+      .patch(
+        `/api/v1/products/${response.body.data.product.id}`
+      )
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        name: 'new name',
+        price: 2000,
+        stockQuantity: 500,
+        description: 'new description',
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.product).toMatchObject({
+      name: 'new name',
+    });
+  });
+
+  it('should update seller if user is admin', async () => {
+    const newProduct = {
+      name: `test product ${Date.now()}`,
+      seller: sellerUSer._id,
+      productClass: electronics._id,
+      category: smartphones_and_accessories._id,
+      description: 'Description',
+      stockQuantity: 400,
+      price: 1000,
+      productImages: {
+        productThumbnail: {
+          url: 'http://example.com/thumbnail.jpg',
+        },
+      },
+    };
+
+    const response = await request(app)
+      .post('/api/v1/products')
+      .set('Authorization', `Bearer ${token}`)
+      .send(newProduct);
+
+    const res = await request(app)
+      .patch(
+        `/api/v1/products/${response.body.data.product.id}`
+      )
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        seller: sellerUSer2._id,
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.product).toMatchObject({
+      name: newProduct.name,
+    });
+  });
+
+  it('should update product by owner seller', async () => {
+    const seller2Totoken = signin({
+      id: sellerUSer2._id,
+      role: sellerUSer2.role,
+    });
+    const newProduct = {
+      name: `test product ${Date.now()}`,
+      seller: sellerUSer2._id,
+      productClass: electronics._id,
+      category: smartphones_and_accessories._id,
+      description: 'Description',
+      stockQuantity: 400,
+      price: 1000,
+      productImages: {
+        productThumbnail: {
+          url: 'http://example.com/thumbnail.jpg',
+        },
+      },
+    };
+
+    const response = await request(app)
+      .post('/api/v1/products')
+      .set('Authorization', `Bearer ${seller2Totoken}`)
+      .send(newProduct);
+
+    const res = await request(app)
+      .patch(
+        `/api/v1/products/${response.body.data.product.id}`
+      )
+      .set('Authorization', `Bearer ${seller2Totoken}`)
+      .send({
+        name: 'new name',
+        price: 2000,
+        stockQuantity: 500,
+        description: 'new description',
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.product).toMatchObject({
+      name: 'new name',
+    });
+  });
+
+  it('should not update product if it does not exist', async () => {
+    const seller2Totoken = signin({
+      id: sellerUSer2._id,
+      role: sellerUSer2.role,
+    });
+    const newProduct = {
+      name: `test product ${Date.now()}`,
+      seller: sellerUSer2._id,
+      productClass: electronics._id,
+      category: smartphones_and_accessories._id,
+      description: 'Description',
+      stockQuantity: 400,
+      price: 1000,
+      productImages: {
+        productThumbnail: {
+          url: 'http://example.com/thumbnail.jpg',
+        },
+      },
+    };
+
+    const response = await request(app)
+      .post('/api/v1/products')
+      .set('Authorization', `Bearer ${seller2Totoken}`)
+      .send(newProduct);
+
+    const res = await request(app)
+      .patch(`/api/v1/products/${customer._id}`)
+      .set('Authorization', `Bearer ${seller2Totoken}`)
+      .send({
+        name: 'new name',
+        price: 2000,
+        stockQuantity: 500,
+        description: 'new description',
+      });
+
+    expect(res.status).toBe(404);
+    expect(res.body).toMatchObject({
+      status: 'fail',
+      message: 'Product not found',
+    });
+  });
+
+  it('should not update seller if user is not admin', async () => {
+    const seller2Totoken = signin({
+      id: sellerUSer2._id,
+      role: sellerUSer2.role,
+    });
+
+    const newProduct = {
+      name: `test product ${Date.now()}`,
+      seller: sellerUSer._id,
+      productClass: electronics._id,
+      category: smartphones_and_accessories._id,
+      description: 'Description',
+      stockQuantity: 400,
+      price: 1000,
+      productImages: {
+        productThumbnail: {
+          url: 'http://example.com/thumbnail.jpg',
+        },
+      },
+    };
+
+    const response = await request(app)
+      .post('/api/v1/products')
+      .set('Authorization', `Bearer ${token}`)
+      .send(newProduct);
+
+    const res = await request(app)
+      .patch(
+        `/api/v1/products/${response.body.data.product.id}`
+      )
+      .set('Authorization', `Bearer ${seller2Totoken}`)
+      .send({
+        seller: sellerUSer._id,
+      });
+
+    expect(res.status).toBe(403);
+    expect(res.body).toMatchObject({
+      status: 'fail',
+      message:
+        'Access denied! You are not allowed to perform this operation.',
+    });
+  });
+
+  it('should not update by a seller if the seller does not own the product', async () => {
+    const seller2Totoken = signin({
+      id: sellerUSer2._id,
+      role: sellerUSer2.role,
+    });
+
+    const newProduct = {
+      name: `test product ${Date.now()}`,
+      seller: sellerUSer._id,
+      productClass: electronics._id,
+      category: smartphones_and_accessories._id,
+      description: 'Description',
+      stockQuantity: 400,
+      price: 1000,
+      productImages: {
+        productThumbnail: {
+          url: 'http://example.com/thumbnail.jpg',
+        },
+      },
+    };
+
+    const response = await request(app)
+      .post('/api/v1/products')
+      .set('Authorization', `Bearer ${token}`)
+      .send(newProduct);
+
+    const res = await request(app)
+      .patch(
+        `/api/v1/products/${response.body.data.product.id}`
+      )
+      .set('Authorization', `Bearer ${seller2Totoken}`)
+      .send({
+        name: 'new name',
+        price: 2000,
+        stockQuantity: 500,
+        description: 'new description',
+      });
+
+    expect(res.status).toBe(403);
+    expect(res.body).toMatchObject({
+      status: 'fail',
+      message:
+        'Access denied! You cannot update a product that does not belong to you.',
+    });
   });
 });

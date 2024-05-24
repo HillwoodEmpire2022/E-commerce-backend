@@ -80,16 +80,11 @@ export const updateProductsValidation = Joi.object({
   price: Joi.number().greater(0),
   discountPercentage: Joi.number().integer(),
   stockQuantity: Joi.number().greater(0).integer(),
-  stockQuantity: Joi.number()
-    .required()
-    .greater(0)
-    .integer(),
+  stockQuantity: Joi.number().greater(0).integer(),
   brand: Joi.string()
-    .required()
     .regex(/^[0-9a-fA-F]{24}$/)
     .error(new Error('Brand is Invalid or not provided')),
   productClass: Joi.string()
-    .required()
     .regex(/^[0-9a-fA-F]{24}$/)
     .error(
       new Error('productClass is Invalid or not provided')

@@ -5,10 +5,6 @@ import jwt from 'jsonwebtoken';
 beforeAll(async () => {
   try {
     await mongoose.connect(process.env.TEST_DB);
-    await User.deleteMany({});
-    await Product.deleteMany({});
-    await Category.deleteMany({});
-    await ProductClass.deleteMany({});
   } catch (error) {
     console.log('Error ***** ', error);
   }
