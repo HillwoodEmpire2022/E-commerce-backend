@@ -11,16 +11,24 @@ import cashoutValidator from '../validations/cashoutValidation.js';
 import { randomStringGenerator } from '../utils/randomStringGenerator.js';
 
 import flw from '../services/flutterwave.js';
+import { log } from 'console';
+import { response } from 'express';
 
 const paypack = new PaypackJs.default({
   client_id: process.env.PAYPACK_APP_ID,
   client_secret: process.env.PAYPACK_APP_SECRET,
 });
 
-async function updateOrderAndProducts(order) {
+async function updateOrderAndProducts(
+  order,
+  customerDetails,
+  transactionId
+) {
   // Payment was successfull
   // Update order status to pending
   order.status = removeEmptySpaces('pending');
+  order.customerDetails = customerDetails;
+  order.transactionId = transactionId;
 
   await order.save({
     validateBeforeSave: false,
@@ -269,7 +277,7 @@ export const rw_mobile_money = async (req, res, next) => {
       tx_ref,
       payment_type: {
         type: 'mobile_money',
-        details: req.body.shippingAddress.phoneNumber,
+        details: req.body.phoneNumber,
       },
       deliveryPreference: removeEmptySpaces(
         req.body.deliveryPreference
@@ -290,8 +298,8 @@ export const rw_mobile_money = async (req, res, next) => {
         order_id: order[0]._id.toHexString(),
         amount: req.body.amount,
         currency: 'RWF',
-        email: req?.body?.email,
-        phone_number: req.body.shippingAddress.phoneNumber,
+        email: req.body.email,
+        phone_number: req.body.phoneNumber,
         fullname: `${req.user.firstName} ${req.user.lastName}`,
       };
 
@@ -311,3 +319,71 @@ export const rw_mobile_money = async (req, res, next) => {
     next(error);
   }
 };
+
+export const flw_webhook = async (req, res, next) => {
+  // If you specified a secret hash, check for the signature
+  const secretHash = process.env.FLW_ECRYPTION_KEY;
+  const signature = req.headers['verif-hash'];
+
+  if (!signature || signature !== secretHash) {
+    // This request isn't from Flutterwave; discard
+    res.status(401).end();
+  }
+
+  const payload = req.body;
+  console.log(
+    'Flutterwave Event: 🚀🚀 ',
+    payload?.['event.type']
+  );
+
+  // Find Order
+  const order = await Order.findOne({
+    tx_ref: payload.data.tx_ref,
+  });
+
+  // Verify Transaction
+  const response = await verifyTransaction(
+    payload.data.id,
+    order.amount
+  );
+
+  if (
+    response?.message &&
+    response.message ===
+      'No transaction was found for this id'
+  ) {
+    // Transaction Not found
+    return res.status(404).end();
+  }
+
+  // If Payment was unsucessfull
+  if (
+    response &&
+    response.status !== 'successful' &&
+    response.data.status !== 'successful'
+  ) {
+    // TODO: Handle failed payment: Notify user and admin
+    return res.status(404).end();
+  }
+
+  // Update Order
+  await updateOrderAndProducts(
+    order,
+    response.data.customer,
+    response.data.id
+  );
+
+  res.status(200).end();
+};
+
+async function verifyTransaction(transactionId) {
+  try {
+    const res = await flw.Transaction.verify({
+      id: transactionId,
+    });
+
+    return res;
+  } catch (error) {
+    throw error;
+  }
+}

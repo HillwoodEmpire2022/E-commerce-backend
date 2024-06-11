@@ -8,6 +8,16 @@ const orderSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+
+    // In Case user is not Signed in
+    // Will be added after user has payed from the flutterwave
+    customerDetails: {
+      id: Number,
+      name: String,
+      phone_number: String,
+      email: String,
+      created_at: Date,
+    },
     // Transaction Reference
     tx_ref: String,
 
@@ -22,7 +32,7 @@ const orderSchema = new mongoose.Schema(
       details: String,
     },
 
-    transactionId: String,
+    transactionId: Number,
 
     // Items in the order
     items: [
