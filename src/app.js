@@ -39,7 +39,15 @@ app.use(
 app.use(
   express.urlencoded({ limit: '50mb', extended: true })
 );
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'", 'https:'], // Allow all https resources
+      },
+    },
+  })
+);
 if (
   process.env.NODE_ENV === 'development' ||
   process.env.NODE_ENV === 'production'

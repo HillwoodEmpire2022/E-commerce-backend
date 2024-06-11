@@ -3,6 +3,9 @@ import swaggerJsDoc from 'swagger-jsdoc';
 const LIVE_SERVER = process.env.BACKEND_LIVE_URL;
 const LOCALHOST_URL = `${process.env.BACKEND_LOCALHOST_URL}/api/v1`;
 
+const stagingUrl = process.env.STAGING_BACKEND_URL;
+const productionUrl = process.env.PRODUCTION_BACKEND_URL;
+
 const options = {
   definition: {
     openapi: '3.0.0',
@@ -18,8 +21,12 @@ const options = {
         description: 'Localhost Server',
       },
       {
-        url: LIVE_SERVER,
-        description: 'Live server',
+        url: `${stagingUrl}/api/v1`,
+        description: 'Staging Live Server',
+      },
+      {
+        url: `${productionUrl}/api/v1`,
+        description: 'Production Live Server',
       },
     ],
     components: {
