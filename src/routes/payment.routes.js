@@ -27,7 +27,7 @@ router.post('/', isLoggedIn, checkout);
 
 /**
  * @swagger
- * /checkout/momo:
+ * /payments/checkout/momo:
  *    post:
  *      summary: Checkout with mobile money
  *      tags: [Checkout]
