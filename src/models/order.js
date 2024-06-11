@@ -11,6 +11,19 @@ const orderSchema = new mongoose.Schema(
     // Transaction Reference
     tx_ref: String,
 
+    payment_type: {
+      type: {
+        type: String,
+        enum: ['mobile_money', 'card'],
+        required: true,
+      },
+      // If Mobile money: contains number
+      // If Card: contains card details: first 6 and last 4 digits
+      details: String,
+    },
+
+    transactionId: String,
+
     // Items in the order
     items: [
       {
@@ -42,6 +55,11 @@ const orderSchema = new mongoose.Schema(
     // Total price of the order
     amount: {
       type: Number,
+      required: true,
+    },
+
+    email: {
+      type: String,
       required: true,
     },
 

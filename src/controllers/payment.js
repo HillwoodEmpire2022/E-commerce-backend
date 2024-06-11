@@ -8,6 +8,9 @@ import removeEmptySpaces from '../utils/removeEmptySpaces.js';
 import Product from '../models/product.js';
 import orderJoiSchema from '../validations/orderValidation.js';
 import cashoutValidator from '../validations/cashoutValidation.js';
+import { randomStringGenerator } from '../utils/randomStringGenerator.js';
+
+import flw from '../services/flutterwave.js';
 
 const paypack = new PaypackJs.default({
   client_id: process.env.PAYPACK_APP_ID,
@@ -27,9 +30,12 @@ async function updateOrderAndProducts(order) {
   const orderProducts = order.items;
   orderProducts.forEach(async (product) => {
     // Find the product
-    const orderProduct = await Product.findById(product.product);
+    const orderProduct = await Product.findById(
+      product.product
+    );
 
-    const itemHasVariation = product.variation.color || product.variation.size;
+    const itemHasVariation =
+      product.variation.color || product.variation.size;
 
     // If no colorMeasurementVariationQuantity, update product quantity
     if (!itemHasVariation) {
@@ -51,24 +57,35 @@ async function updateOrderAndProducts(order) {
               orderedCombination.hasOwnProperty('size')
             )
               return (
-                variation.colorImg.colorName === orderedCombination.color &&
-                variation.measurementvalue === orderedCombination.size
+                variation.colorImg.colorName ===
+                  orderedCombination.color &&
+                variation.measurementvalue ===
+                  orderedCombination.size
               );
 
             // Only color
-            if (orderedCombination.hasOwnProperty('color')) {
-              return variation.colorImg.colorName === orderedCombination.color;
+            if (
+              orderedCombination.hasOwnProperty('color')
+            ) {
+              return (
+                variation.colorImg.colorName ===
+                orderedCombination.color
+              );
             }
 
             // Only size
             if (orderedCombination.hasOwnProperty('size'))
-              return variation.measurementvalue === orderedCombination.size;
+              return (
+                variation.measurementvalue ===
+                orderedCombination.size
+              );
           }
         );
 
       orderProduct.colorMeasurementVariations.variations[
         updatePosition
-      ].colorMeasurementVariationQuantity -= product.quantity;
+      ].colorMeasurementVariationQuantity -=
+        product.quantity;
 
       // update product quantity
       orderProduct.stockQuantity -= product.quantity;
@@ -87,7 +104,8 @@ const findTransaction = async (ref) => {
   });
 
   let data = transactions.find(
-    ({ data }) => data.ref === ref && data.status === 'successful'
+    ({ data }) =>
+      data.ref === ref && data.status === 'successful'
   );
 
   return data;
@@ -102,7 +120,9 @@ export const checkout = async (req, res, next) => {
     const customerId = String(req.user._id);
     const orderData = {
       ...req.body,
-      deliveryPreference: removeEmptySpaces(req.body.deliveryPreference),
+      deliveryPreference: removeEmptySpaces(
+        req.body.deliveryPreference
+      ),
       customer: customerId,
     };
 
@@ -111,7 +131,9 @@ export const checkout = async (req, res, next) => {
     });
     if (error) {
       console.log(error);
-      return res.status(400).json({ status: 'fail', message: error.message });
+      return res
+        .status(400)
+        .json({ status: 'fail', message: error.message });
     }
 
     const session = await mongoose.startSession();
@@ -174,7 +196,9 @@ export const cashout = async (req, res, next) => {
       errors: { label: 'key', wrap: { label: false } },
     });
     if (error) {
-      return res.status(400).json({ status: 'fail', message: error.message });
+      return res
+        .status(400)
+        .json({ status: 'fail', message: error.message });
     }
 
     const response = await paypack.cashout({
@@ -212,18 +236,78 @@ export const webhook = async (req, res) => {
     .digest('base64');
 
   // Compare the created hash with the value of the X-Paypack-Signature headers
-  if (!(hash === requestHash || req.Method != 'HEAD')) return res.send({});
+  if (!(hash === requestHash || req.Method != 'HEAD'))
+    return res.send({});
 
   // Update Order Products
   // Find Order By Transaction Reference
 
   // Check if transaction was successfull
-  if (req?.body?.data?.status !== 'successful') return res.send({});
+  if (req?.body?.data?.status !== 'successful')
+    return res.send({});
 
   // Update Order and product qunatities
 
-  const order = await Order.findOne({ tx_ref: req.body.data.ref });
+  const order = await Order.findOne({
+    tx_ref: req.body.data.ref,
+  });
   await updateOrderAndProducts(order);
 
   res.send({});
+};
+
+export const rw_mobile_money = async (req, res, next) => {
+  try {
+    const tx_ref = randomStringGenerator();
+    let paymentLink, order;
+    const session = await mongoose.startSession();
+
+    // Create Order Data
+    const customerId = String(req.user._id);
+    const orderData = {
+      ...req.body,
+      tx_ref,
+      payment_type: {
+        type: 'mobile_money',
+        details: req.body.shippingAddress.phoneNumber,
+      },
+      deliveryPreference: removeEmptySpaces(
+        req.body.deliveryPreference
+      ),
+      customer: customerId,
+    };
+
+    // TODO Validate Order Data
+
+    // First Create Order and initiate payment
+    // Start Transaction
+    await session.withTransaction(async () => {
+      order = await Order.create([orderData], { session });
+
+      // Create Payment Payload
+      const payload = {
+        tx_ref,
+        order_id: order[0]._id.toHexString(),
+        amount: req.body.amount,
+        currency: 'RWF',
+        email: req?.body?.email,
+        phone_number: req.body.shippingAddress.phoneNumber,
+        fullname: `${req.user.firstName} ${req.user.lastName}`,
+      };
+
+      // Initiate Payment
+      paymentLink = await flw.MobileMoney.rwanda(payload);
+    });
+
+    // End Transaction
+    await session.endSession();
+
+    // Return Payment Link
+    res.status(201).json({
+      status: 'success',
+      data: paymentLink,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
