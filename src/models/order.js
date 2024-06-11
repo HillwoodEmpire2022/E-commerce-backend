@@ -8,8 +8,31 @@ const orderSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+
+    // In Case user is not Signed in
+    // Will be added after user has payed from the flutterwave
+    customerDetails: {
+      id: Number,
+      name: String,
+      phone_number: String,
+      email: String,
+      created_at: Date,
+    },
     // Transaction Reference
     tx_ref: String,
+
+    payment_type: {
+      type: {
+        type: String,
+        enum: ['mobile_money', 'card'],
+        required: true,
+      },
+      // If Mobile money: contains number
+      // If Card: contains card details: first 6 and last 4 digits
+      details: String,
+    },
+
+    transactionId: Number,
 
     // Items in the order
     items: [
@@ -42,6 +65,11 @@ const orderSchema = new mongoose.Schema(
     // Total price of the order
     amount: {
       type: Number,
+      required: true,
+    },
+
+    email: {
+      type: String,
       required: true,
     },
 
