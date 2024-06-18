@@ -45,11 +45,28 @@ const orderJoiSchema = Joi.object({
     village: Joi.string().allow(null, '').optional(),
     address: Joi.object({
       street: Joi.string().allow(null, '').optional(),
-      coordinates: Joi.array().items(Joi.number()).length(2).optional(),
+      coordinates: Joi.array()
+        .items(Joi.number())
+        .length(2)
+        .optional(),
     }).optional(),
     geojson: Joi.boolean().optional(),
   }).optional(),
-  deliveryPreference: Joi.string().valid('delivery', 'pickup').required(),
+  deliveryPreference: Joi.string()
+    .valid('delivery', 'pickup')
+    .required(),
+});
+
+export const updateOrderJoiSchema = Joi.object({
+  status: Joi.string().valid(
+    'awaits payment',
+    'pending',
+    'processing',
+    'shipped',
+    'delivered',
+    'cancelled',
+    'transaction failed'
+  ),
 });
 
 export default orderJoiSchema;
