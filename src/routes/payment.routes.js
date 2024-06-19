@@ -8,6 +8,9 @@ import {
   flw_webhook,
   rw_mobile_money,
   webhook,
+  flw_card,
+  authorizeFlwOtpTransaction,
+  validateFlwOtpTransaction,
 } from '../controllers/payment.js';
 import { restrictTo } from '../middlewares/authorization.js';
 
@@ -22,6 +25,9 @@ dotenv.config();
 const router = express.Router();
 
 router.post('/flw-webhook', flw_webhook);
+router.post('/checkout/card', flw_card);
+router.post('/authorize-card', authorizeFlwOtpTransaction);
+router.post('/validate-card', validateFlwOtpTransaction);
 
 router.post('/', isLoggedIn, checkout);
 
