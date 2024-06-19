@@ -6,7 +6,6 @@ import app from '../app';
 import Product from '../models/product';
 import SubCategory from '../models/subcategory';
 import ProductClass from '../models/productClass';
-import { sign } from 'jsonwebtoken';
 
 let adminUser, sellerUSer, sellerUSer2, customer;
 // Classes

@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import open from 'open';
 import dotenv from 'dotenv';
 dotenv.config();
 import mongoose from 'mongoose';
@@ -11,9 +12,6 @@ import cashoutValidator from '../validations/cashoutValidation.js';
 import { randomStringGenerator } from '../utils/randomStringGenerator.js';
 
 import flw from '../services/flutterwave.js';
-import { log } from 'console';
-import { response } from 'express';
-
 const paypack = new PaypackJs.default({
   client_id: process.env.PAYPACK_APP_ID,
   client_secret: process.env.PAYPACK_APP_SECRET,
@@ -277,7 +275,7 @@ export const rw_mobile_money = async (req, res, next) => {
       tx_ref,
       payment_type: {
         type: 'mobile_money',
-        details: req.body.phoneNumber,
+        mobile_number: req.body.phoneNumber,
       },
       deliveryPreference: removeEmptySpaces(
         req.body.deliveryPreference
@@ -387,3 +385,191 @@ async function verifyTransaction(transactionId) {
     throw error;
   }
 }
+
+// For 3DS no problem
+// For PIN transactions
+// Create a route that receives pin and proceed withpayment
+export const flw_card = async (req, res, next) => {
+  // Initiating the transaction
+  const tx_ref = randomStringGenerator();
+  let order;
+  let orderData;
+  const customerId = '65f9649f6f870a6b8522f2a1';
+
+  // Payment Payload
+  const payload = {
+    ...req.body.payment_payload,
+    enckey: process.env.FLW_ECRYPTION_KEY,
+    tx_ref: tx_ref,
+  };
+
+  const session = await mongoose.startSession();
+
+  try {
+    const response = await flw.Charge.card(payload);
+
+    // Authorizing transactions
+    // // For PIN and AVS Authorization modes
+    if (
+      response?.meta?.authorization.mode === 'pin' ||
+      response?.meta?.authorization.mode === 'avs_noauth'
+    ) {
+      // Create Order
+      const orderData = {
+        ...req.body,
+        payload: undefined,
+        payment_type: {
+          type: 'card',
+        },
+        tx_ref,
+        deliveryPreference: removeEmptySpaces(
+          req.body.deliveryPreference
+        ),
+        customer: customerId,
+      };
+
+      // Create a transaction in your database
+      await session.withTransaction(async () => {
+        // Create order
+        await Order.create([orderData], {
+          session,
+        });
+      });
+
+      // Respond with payload that will be sent to /authorize with pin
+      return res.status(200).json({
+        status: 'success',
+        message: response.message,
+        data: {
+          authorization: {
+            mode: response?.meta?.authorization.mode,
+            fields: response?.meta?.authorization.fields,
+          },
+          payment_payload: payload,
+        },
+      });
+    }
+
+    // For 3DS or VBV transactions, redirect users to their issue to authorize the transaction
+    if (response?.meta?.authorization.mode === 'redirect') {
+      //  Order Data
+
+      const orderData = {
+        ...req.body,
+        payload: undefined,
+        payment_type: {
+          type: 'card',
+          card: JSON.parse(
+            JSON.stringify(response.data.card)
+          ),
+        },
+        tx_ref,
+        deliveryPreference: removeEmptySpaces(
+          req.body.deliveryPreference
+        ),
+        customer: customerId,
+        transactionId: response.data.id,
+      };
+
+      // Create a transaction in your database
+      await session.withTransaction(async () => {
+        // Create order
+        await Order.create([orderData], {
+          session,
+        });
+
+        // Initiate payment
+        const url = response.meta.authorization.redirect;
+
+        // Redirect User to the authorization page to enter OTP
+        open(url);
+      });
+      return res.status(200).json({
+        status: 'success',
+        message: 'Redirecting to authorize transaction',
+      });
+    }
+
+    // TODO: Handle other responses including errors
+    // console.log(response);
+    res.status(200).json({
+      status: 'success',
+      test: 'Here',
+      response,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'fail',
+      message: error.message,
+    });
+  }
+};
+
+// For PIN and AVS transactions: Authorize
+export const authorizeFlwOtpTransaction = async (
+  req,
+  res,
+  next
+) => {
+  const authorizationPayload = req.body.payment_payload;
+
+  // Auth Mode
+  const authMode = req.body.auth_mode;
+
+  // Create new Payload
+  // Country Must be 2Characters
+  authorizationPayload.authorization = {
+    mode: authMode,
+    ...(authMode === 'pin'
+      ? { pin: req.body.pin }
+      : { ...req.body.address }),
+  };
+
+  const charge = await flw.Charge.card(
+    authorizationPayload
+  );
+
+  // Update order with PAYMENT_TYPE Card
+  const order = await Order.findOne({
+    tx_ref: charge.data.tx_ref,
+  });
+
+  order.payment_type = {
+    type: 'card',
+    card: JSON.parse(JSON.stringify(charge.data.card)),
+  };
+
+  await order.save({
+    validateBeforeSave: false,
+  });
+
+  console.log(charge);
+
+  // Return FLW_REF and send it together with OTP to /validate
+  return res.status(200).json({
+    status: 'success',
+    message: 'Provide OTP to validate transaction',
+    data: {
+      flw_ref: charge.data.flw_ref,
+      validateUrl: '/validate-card',
+    },
+  });
+};
+
+// For PIN and AVS Validate with OTP
+export const validateFlwOtpTransaction = async (
+  req,
+  res,
+  next
+) => {
+  const response = await flw.Charge.validate({
+    otp: req.body.otp,
+    flw_ref: req.body.flw_ref,
+  });
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Transaction was successful',
+    data: response,
+  });
+};

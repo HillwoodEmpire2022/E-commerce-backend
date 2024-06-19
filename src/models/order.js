@@ -28,8 +28,29 @@ const orderSchema = new mongoose.Schema(
         required: true,
       },
       // If Mobile money: contains number
+      mobile_number: String,
+
       // If Card: contains card details: first 6 and last 4 digits
-      details: String,
+      card: {
+        first_6digits: {
+          type: String,
+        },
+        last_4digits: {
+          type: String,
+        },
+        issuer: {
+          type: String,
+        },
+        country: {
+          type: String,
+        },
+        type: {
+          type: String,
+        },
+        expiry: {
+          type: String,
+        },
+      },
     },
 
     transactionId: Number,

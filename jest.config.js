@@ -4,11 +4,15 @@ export default {
   },
   moduleFileExtensions: ['js'],
   testMatch: ['**/*.test.js'],
-  transformIgnorePatterns: ['/node_modules/(?!my-module).+\\.js$'],
+  transformIgnorePatterns: [
+    '/node_modules/(?!my-module).+\\.js$',
+  ],
   collectCoverage: true,
   // Read Env Variable (Optional if Next line enabled)
   setupFiles: ['dotenv/config'],
   setupFilesAfterEnv: ['<rootDir>/src/test/setup.js'],
   testEnvironment: 'node',
   verbose: true,
+  testTimeout: 60000,
+  detectOpenHandles: true,
 };
