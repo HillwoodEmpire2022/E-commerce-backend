@@ -17,11 +17,7 @@ const paypack = new PaypackJs.default({
   client_secret: process.env.PAYPACK_APP_SECRET,
 });
 
-async function updateOrderAndProducts(
-  order,
-  customerDetails,
-  transactionId
-) {
+async function updateOrderAndProducts(order, customerDetails, transactionId) {
   // Payment was successfull
   // Update order status to pending
   order.status = removeEmptySpaces('pending');
@@ -36,12 +32,9 @@ async function updateOrderAndProducts(
   const orderProducts = order.items;
   orderProducts.forEach(async (product) => {
     // Find the product
-    const orderProduct = await Product.findById(
-      product.product
-    );
+    const orderProduct = await Product.findById(product.product);
 
-    const itemHasVariation =
-      product.variation.color || product.variation.size;
+    const itemHasVariation = product.variation.color || product.variation.size;
 
     // If no colorMeasurementVariationQuantity, update product quantity
     if (!itemHasVariation) {
@@ -54,43 +47,24 @@ async function updateOrderAndProducts(
       const orderedCombination = product.variation;
 
       // Find position of combination to update
-      const updatePosition =
-        orderProduct.colorMeasurementVariations.variations.findIndex(
-          (variation) => {
-            // If combination is both (color and size)
-            if (
-              orderedCombination.hasOwnProperty('color') &&
-              orderedCombination.hasOwnProperty('size')
-            )
-              return (
-                variation.colorImg.colorName ===
-                  orderedCombination.color &&
-                variation.measurementvalue ===
-                  orderedCombination.size
-              );
+      const updatePosition = orderProduct.colorMeasurementVariations.variations.findIndex((variation) => {
+        // If combination is both (color and size)
+        if (orderedCombination.hasOwnProperty('color') && orderedCombination.hasOwnProperty('size'))
+          return (
+            variation.colorImg.colorName === orderedCombination.color &&
+            variation.measurementvalue === orderedCombination.size
+          );
 
-            // Only color
-            if (
-              orderedCombination.hasOwnProperty('color')
-            ) {
-              return (
-                variation.colorImg.colorName ===
-                orderedCombination.color
-              );
-            }
+        // Only color
+        if (orderedCombination.hasOwnProperty('color')) {
+          return variation.colorImg.colorName === orderedCombination.color;
+        }
 
-            // Only size
-            if (orderedCombination.hasOwnProperty('size'))
-              return (
-                variation.measurementvalue ===
-                orderedCombination.size
-              );
-          }
-        );
+        // Only size
+        if (orderedCombination.hasOwnProperty('size')) return variation.measurementvalue === orderedCombination.size;
+      });
 
-      orderProduct.colorMeasurementVariations.variations[
-        updatePosition
-      ].colorMeasurementVariationQuantity -=
+      orderProduct.colorMeasurementVariations.variations[updatePosition].colorMeasurementVariationQuantity -=
         product.quantity;
 
       // update product quantity
@@ -109,10 +83,7 @@ const findTransaction = async (ref) => {
     transaction_ref: ref,
   });
 
-  let data = transactions.find(
-    ({ data }) =>
-      data.ref === ref && data.status === 'successful'
-  );
+  let data = transactions.find(({ data }) => data.ref === ref && data.status === 'successful');
 
   return data;
 };
@@ -126,9 +97,7 @@ export const checkout = async (req, res, next) => {
     const customerId = String(req.user._id);
     const orderData = {
       ...req.body,
-      deliveryPreference: removeEmptySpaces(
-        req.body.deliveryPreference
-      ),
+      deliveryPreference: removeEmptySpaces(req.body.deliveryPreference),
       customer: customerId,
     };
 
@@ -137,9 +106,7 @@ export const checkout = async (req, res, next) => {
     });
     if (error) {
       console.log(error);
-      return res
-        .status(400)
-        .json({ status: 'fail', message: error.message });
+      return res.status(400).json({ status: 'fail', message: error.message });
     }
 
     const session = await mongoose.startSession();
@@ -202,9 +169,7 @@ export const cashout = async (req, res, next) => {
       errors: { label: 'key', wrap: { label: false } },
     });
     if (error) {
-      return res
-        .status(400)
-        .json({ status: 'fail', message: error.message });
+      return res.status(400).json({ status: 'fail', message: error.message });
     }
 
     const response = await paypack.cashout({
@@ -236,21 +201,16 @@ export const webhook = async (req, res) => {
   const secret = process.env.WEBHOOK_SECRET_KEY;
 
   //Create a hash based on the parsed body
-  const hash = crypto
-    .createHmac('sha256', secret)
-    .update(req.rawBody)
-    .digest('base64');
+  const hash = crypto.createHmac('sha256', secret).update(req.rawBody).digest('base64');
 
   // Compare the created hash with the value of the X-Paypack-Signature headers
-  if (!(hash === requestHash || req.Method != 'HEAD'))
-    return res.send({});
+  if (!(hash === requestHash || req.Method != 'HEAD')) return res.send({});
 
   // Update Order Products
   // Find Order By Transaction Reference
 
   // Check if transaction was successfull
-  if (req?.body?.data?.status !== 'successful')
-    return res.send({});
+  if (req?.body?.data?.status !== 'successful') return res.send({});
 
   // Update Order and product qunatities
 
@@ -277,9 +237,7 @@ export const rw_mobile_money = async (req, res, next) => {
         type: 'mobile_money',
         mobile_number: req.body.phoneNumber,
       },
-      deliveryPreference: removeEmptySpaces(
-        req.body.deliveryPreference
-      ),
+      deliveryPreference: removeEmptySpaces(req.body.deliveryPreference),
       customer: customerId,
     };
 
@@ -329,10 +287,7 @@ export const flw_webhook = async (req, res, next) => {
   }
 
   const payload = req.body;
-  console.log(
-    'Flutterwave Event: 🚀🚀 ',
-    payload?.['event.type']
-  );
+  console.log('Flutterwave Event: 🚀🚀 ', payload?.['event.type']);
 
   // Find Order
   const order = await Order.findOne({
@@ -340,36 +295,21 @@ export const flw_webhook = async (req, res, next) => {
   });
 
   // Verify Transaction
-  const response = await verifyTransaction(
-    payload.data.id,
-    order.amount
-  );
+  const response = await verifyTransaction(payload.data.id, order.amount);
 
-  if (
-    response?.message &&
-    response.message ===
-      'No transaction was found for this id'
-  ) {
+  if (response?.message && response.message === 'No transaction was found for this id') {
     // Transaction Not found
     return res.status(404).end();
   }
 
   // If Payment was unsucessfull
-  if (
-    response &&
-    response.status !== 'successful' &&
-    response.data.status !== 'successful'
-  ) {
+  if (response && response.status !== 'successful' && response.data.status !== 'successful') {
     // TODO: Handle failed payment: Notify user and admin
     return res.status(404).end();
   }
 
   // Update Order
-  await updateOrderAndProducts(
-    order,
-    response.data.customer,
-    response.data.id
-  );
+  await updateOrderAndProducts(order, response.data.customer, response.data.id);
 
   res.status(200).end();
 };
@@ -392,9 +332,7 @@ async function verifyTransaction(transactionId) {
 export const flw_card = async (req, res, next) => {
   // Initiating the transaction
   const tx_ref = randomStringGenerator();
-  let order;
-  let orderData;
-  const customerId = '65f9649f6f870a6b8522f2a1';
+  const customerId = req.user._id;
 
   // Payment Payload
   const payload = {
@@ -410,10 +348,7 @@ export const flw_card = async (req, res, next) => {
 
     // Authorizing transactions
     // // For PIN and AVS Authorization modes
-    if (
-      response?.meta?.authorization.mode === 'pin' ||
-      response?.meta?.authorization.mode === 'avs_noauth'
-    ) {
+    if (response?.meta?.authorization.mode === 'pin' || response?.meta?.authorization.mode === 'avs_noauth') {
       // Create Order
       const orderData = {
         ...req.body,
@@ -422,9 +357,7 @@ export const flw_card = async (req, res, next) => {
           type: 'card',
         },
         tx_ref,
-        deliveryPreference: removeEmptySpaces(
-          req.body.deliveryPreference
-        ),
+        deliveryPreference: removeEmptySpaces(req.body.deliveryPreference),
         customer: customerId,
       };
 
@@ -437,7 +370,7 @@ export const flw_card = async (req, res, next) => {
       });
 
       // Respond with payload that will be sent to /authorize with pin
-      return res.status(200).json({
+      return res.status(100).json({
         status: 'success',
         message: response.message,
         data: {
@@ -459,14 +392,10 @@ export const flw_card = async (req, res, next) => {
         payload: undefined,
         payment_type: {
           type: 'card',
-          card: JSON.parse(
-            JSON.stringify(response.data.card)
-          ),
+          card: JSON.parse(JSON.stringify(response.data.card)),
         },
         tx_ref,
-        deliveryPreference: removeEmptySpaces(
-          req.body.deliveryPreference
-        ),
+        deliveryPreference: removeEmptySpaces(req.body.deliveryPreference),
         customer: customerId,
         transactionId: response.data.id,
       };
@@ -484,7 +413,7 @@ export const flw_card = async (req, res, next) => {
         // Redirect User to the authorization page to enter OTP
         open(url);
       });
-      return res.status(200).json({
+      return res.status(302).json({
         status: 'success',
         message: 'Redirecting to authorize transaction',
       });
@@ -506,11 +435,7 @@ export const flw_card = async (req, res, next) => {
 };
 
 // For PIN and AVS transactions: Authorize
-export const authorizeFlwOtpTransaction = async (
-  req,
-  res,
-  next
-) => {
+export const authorizeFlwOtpTransaction = async (req, res, next) => {
   const authorizationPayload = req.body.payment_payload;
 
   // Auth Mode
@@ -520,14 +445,10 @@ export const authorizeFlwOtpTransaction = async (
   // Country Must be 2Characters
   authorizationPayload.authorization = {
     mode: authMode,
-    ...(authMode === 'pin'
-      ? { pin: req.body.pin }
-      : { ...req.body.address }),
+    ...(authMode === 'pin' ? { pin: req.body.pin } : { ...req.body.address }),
   };
 
-  const charge = await flw.Charge.card(
-    authorizationPayload
-  );
+  const charge = await flw.Charge.card(authorizationPayload);
 
   // Update order with PAYMENT_TYPE Card
   const order = await Order.findOne({
@@ -543,25 +464,19 @@ export const authorizeFlwOtpTransaction = async (
     validateBeforeSave: false,
   });
 
-  console.log(charge);
-
   // Return FLW_REF and send it together with OTP to /validate
-  return res.status(200).json({
+  return res.status(100).json({
     status: 'success',
     message: 'Provide OTP to validate transaction',
     data: {
       flw_ref: charge.data.flw_ref,
-      validateUrl: '/validate-card',
+      validateUrl: 'api/v1/payments/validate-card',
     },
   });
 };
 
 // For PIN and AVS Validate with OTP
-export const validateFlwOtpTransaction = async (
-  req,
-  res,
-  next
-) => {
+export const validateFlwOtpTransaction = async (req, res, next) => {
   const response = await flw.Charge.validate({
     otp: req.body.otp,
     flw_ref: req.body.flw_ref,
@@ -569,7 +484,6 @@ export const validateFlwOtpTransaction = async (
 
   res.status(200).json({
     status: 'success',
-    message: 'Transaction was successful',
-    data: response,
+    message: 'Order was paid successful',
   });
 };
