@@ -465,12 +465,12 @@ export const authorizeFlwOtpTransaction = async (req, res, next) => {
   });
 
   // Return FLW_REF and send it together with OTP to /validate
-  return res.status(200).json({
+  return res.status(100).json({
     status: 'success',
     message: 'Provide OTP to validate transaction',
     data: {
       flw_ref: charge.data.flw_ref,
-      validateUrl: '/validate-card',
+      validateUrl: 'api/v1/payments/validate-card',
     },
   });
 };
@@ -484,7 +484,6 @@ export const validateFlwOtpTransaction = async (req, res, next) => {
 
   res.status(200).json({
     status: 'success',
-    message: 'Transaction was successful',
-    data: response,
+    message: 'Order was paid successful',
   });
 };

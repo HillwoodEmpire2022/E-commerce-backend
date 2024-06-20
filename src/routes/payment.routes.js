@@ -100,28 +100,7 @@ router.post('/', isLoggedIn, checkout);
  *                          items:
  *                            type: number
  *                payment_payload:
- *                  type: object
- *                  properties:
- *                    card_number:
- *                      type: string
- *                    cvv:
- *                      type: string
- *                    expiry_month:
- *                      type: string
- *                    expiry_year:
- *                      type: string
- *                    currency:
- *                      type: string
- *                    amount:
- *                      type: string
- *                    redirect_url:
- *                      type: string
- *                    fullname:
- *                      type: string
- *                    email:
- *                      type: string
- *                    phone_number:
- *                      type: string
+ *                  $ref: '#/components/schemas/CardPayload'
  *      responses:
  *        100:
  *          description: Card payment/charge initiated with PIN authorization
@@ -256,7 +235,198 @@ router.post('/', isLoggedIn, checkout);
  *
  */
 router.post('/checkout/card', flw_card);
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     AuthorizationPayload:
+ *       type: object
+ *       properties:
+ *         card_number:
+ *           type: string
+ *           example: "4556XXXXXXX"
+ *         cvv:
+ *           type: string
+ *           example: "780"
+ *         expiry_month:
+ *           type: string
+ *           example: "09"
+ *         expiry_year:
+ *           type: string
+ *           example: "25"
+ *         currency:
+ *           type: string
+ *           example: "RWF"
+ *         amount:
+ *           type: string
+ *           example: "3320"
+ *         redirect_url:
+ *           type: string
+ *           example: 'https://www.xxxxxxxx'
+ *         fullname:
+ *           type: string
+ *           example: 'Joe Doe'
+ *         email:
+ *           type: string
+ *           example: 'example@example.com'
+ *         phone_number:
+ *           type: string
+ *           example: '25078XXXXXXXXXX'
+ *         enckey:
+ *           type: string
+ *           example: 'FLWSECK_TEST46.....'
+ *         tx_ref:
+ *           type: string
+ *           example: '9628f93-a3f5-4b16-8b38-9d28c87b195d'
+ *     CardPayload:
+ *       type: object
+ *       properties:
+ *         card_number:
+ *           type: string
+ *           example: "4556XXXXXXX"
+ *         cvv:
+ *           type: string
+ *           example: "780"
+ *         expiry_month:
+ *           type: string
+ *           example: "09"
+ *         expiry_year:
+ *           type: string
+ *           example: "25"
+ *         currency:
+ *           type: string
+ *           example: "RWF"
+ *         amount:
+ *           type: string
+ *           example: "3320"
+ *         redirect_url:
+ *           type: string
+ *           example: 'https://www.xxxxxxxx'
+ *         fullname:
+ *           type: string
+ *           example: 'Joe Doe'
+ *         email:
+ *           type: string
+ *           example: 'example@example.com'
+ *         phone_number:
+ *           type: string
+ *           example: '25078XXXXXXXXXX'
+ *     Address:
+ *       type: object
+ *       properties:
+ *         city:
+ *           type: string
+ *           example: 'Kigali'
+ *         address:
+ *           type: string
+ *           example: 'KK 9'
+ *         state:
+ *           type: string
+ *           example: 'Rwanda'
+ *         country:
+ *           type: string
+ *           example: 'RW'
+ *         zipcode:
+ *           type: string
+ *           example: '00000'
+ *     AvsNoAuthBody:
+ *       type: object
+ *       properties:
+ *         auth_mode:
+ *           type: string
+ *           example: 'avs_noauth'
+ *         address:
+ *           $ref: '#/components/schemas/Address'
+ *         payment_payload:
+ *           $ref: '#/components/schemas/AuthorizationPayload'
+ *     PinAuthBody:
+ *       type: object
+ *       properties:
+ *         auth_mode:
+ *           type: string
+ *           example: 'pin'
+ *         pin:
+ *           type: string
+ *           example: '3310'
+ *         payment_payload:
+ *           $ref: '#/components/schemas/AuthorizationPayload'
+ */
+
+/**
+ * @swagger
+ * /payments/checkout/authorize-card:
+ *   post:
+ *     summary: Authorize card payment with PIN or AVS
+ *     tags: [Checkout]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             oneOf:
+ *               - $ref: '#/components/schemas/PinAuthBody'
+ *               - $ref: '#/components/schemas/AvsNoAuthBody'
+ *     responses:
+ *       100:
+ *         description: Provide OTP to validate transaction
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: "success"
+ *                 message:
+ *                   type: string
+ *                   example: "Provide OTP to validate transaction"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     flw_ref:
+ *                       type: string
+ *                       example: "FW_REF_1234567890"
+ *                     validateUrl:
+ *                       type: string
+ *                       example: "api/v1/payments/validate-card"
+ */
 router.post('/authorize-card', authorizeFlwOtpTransaction);
+
+/**
+ * @swagger
+ * /payments/checkout/validate-card:
+ *   post:
+ *     summary: Provide OTP to validate transaction
+ *     tags: [Checkout]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *            type: object
+ *            properties:
+ *              otp:
+ *               type: number
+ *               example: 12345
+ *              flw_ref:
+ *               type: string
+ *               example: "FW_REF_1234567890"
+ 
+ *     responses:
+ *       100:
+ *         description: Provide OTP to validate transaction
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: "success"
+ *                 message:
+ *                   type: string
+ *                   example: "Order was paid successful"
+ */
 router.post('/validate-card', validateFlwOtpTransaction);
 
 /**
