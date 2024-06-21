@@ -333,11 +333,18 @@ export const flw_card = async (req, res, next) => {
   // Initiating the transaction
   const tx_ref = randomStringGenerator();
   const customerId = req.user._id;
+  // TODO: Change redirectUrl to your website url
+  // const nodeEnv = process.env.NODE_ENV;
+  // const clientDevUrl = process.env.CLIENT_DEV_URL;
+  // const clientStagingUrl = process.env.CLIENT_STAGING_URL;
+  // const clientProductionUrl = process.env.CLIENT_PRODUCTION_URL;
+  // const redirect_url = nodeEnv === 'development' ? 'http://localhost:3000' : 'https://yourwebsite.com';
 
   // Payment Payload
   const payload = {
     ...req.body.payment_payload,
     enckey: process.env.FLW_ECRYPTION_KEY,
+    redirect_url: process.env.CLIENT_URL,
     tx_ref: tx_ref,
   };
 
@@ -380,7 +387,11 @@ export const flw_card = async (req, res, next) => {
             mode: response?.meta?.authorization.mode,
             fields: response?.meta?.authorization.fields,
           },
-          payment_payload: payload,
+          // TODO STORE IT IN A SESSION OR REDIS
+          payment_payload: {
+            ...payload,
+            enckey: undefined,
+          },
         },
       });
     }
