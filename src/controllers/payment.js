@@ -369,8 +369,10 @@ export const flw_card = async (req, res, next) => {
         });
       });
 
+      await session.endSession();
+
       // Respond with payload that will be sent to /authorize with pin
-      return res.status(100).json({
+      return res.status(200).json({
         status: 'success',
         message: response.message,
         data: {
@@ -386,7 +388,6 @@ export const flw_card = async (req, res, next) => {
     // For 3DS or VBV transactions, redirect users to their issue to authorize the transaction
     if (response?.meta?.authorization.mode === 'redirect') {
       //  Order Data
-
       const orderData = {
         ...req.body,
         payload: undefined,
@@ -465,7 +466,7 @@ export const authorizeFlwOtpTransaction = async (req, res, next) => {
   });
 
   // Return FLW_REF and send it together with OTP to /validate
-  return res.status(100).json({
+  return res.status(200).json({
     status: 'success',
     message: 'Provide OTP to validate transaction',
     data: {
@@ -484,6 +485,6 @@ export const validateFlwOtpTransaction = async (req, res, next) => {
 
   res.status(200).json({
     status: 'success',
-    message: 'Order was paid successful',
+    message: 'Your order is successful payed.',
   });
 };
