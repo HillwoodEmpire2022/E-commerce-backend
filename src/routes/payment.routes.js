@@ -26,8 +26,6 @@ const router = express.Router();
 
 router.post('/flw-webhook', flw_webhook);
 
-router.post('/', isLoggedIn, checkout);
-
 /**
  * @swagger
  * /payments/checkout/card:
@@ -102,7 +100,7 @@ router.post('/', isLoggedIn, checkout);
  *                payment_payload:
  *                  $ref: '#/components/schemas/CardPayload'
  *      responses:
- *        100:
+ *        200:
  *          description: Card payment/charge initiated with PIN authorization
  *          content:
  *            application/json:
@@ -166,7 +164,7 @@ router.post('/', isLoggedIn, checkout);
  *                      fullname: "John Doe"
  *                      email: "john@example.com"
  *                      phone_number: "1234567890"
- *        102:
+ *        201:
  *          description: Card payment/charge initiated with AVS authorization
  *          content:
  *            application/json:
@@ -234,7 +232,7 @@ router.post('/', isLoggedIn, checkout);
  *         description: Card payment/charge initiated with 3DS authorization (redirect to 3DS page)
  *
  */
-router.post('/checkout/card', flw_card);
+router.post('/checkout/card', isLoggedIn, flw_card);
 /**
  * @swagger
  * components:
@@ -354,7 +352,7 @@ router.post('/checkout/card', flw_card);
 
 /**
  * @swagger
- * /payments/checkout/authorize-card:
+ * /payments/authorize-card:
  *   post:
  *     summary: Authorize card payment with PIN or AVS
  *     tags: [Checkout]
@@ -367,7 +365,7 @@ router.post('/checkout/card', flw_card);
  *               - $ref: '#/components/schemas/PinAuthBody'
  *               - $ref: '#/components/schemas/AvsNoAuthBody'
  *     responses:
- *       100:
+ *       200:
  *         description: Provide OTP to validate transaction
  *         content:
  *           application/json:
@@ -390,11 +388,11 @@ router.post('/checkout/card', flw_card);
  *                       type: string
  *                       example: "api/v1/payments/validate-card"
  */
-router.post('/authorize-card', authorizeFlwOtpTransaction);
+router.post('/authorize-card', isLoggedIn, authorizeFlwOtpTransaction);
 
 /**
  * @swagger
- * /payments/checkout/validate-card:
+ * /payments/validate-card:
  *   post:
  *     summary: Provide OTP to validate transaction
  *     tags: [Checkout]
@@ -427,7 +425,7 @@ router.post('/authorize-card', authorizeFlwOtpTransaction);
  *                   type: string
  *                   example: "Order was paid successful"
  */
-router.post('/validate-card', validateFlwOtpTransaction);
+router.post('/validate-card', isLoggedIn, validateFlwOtpTransaction);
 
 /**
  * @swagger
@@ -532,6 +530,5 @@ router.post('/validate-card', validateFlwOtpTransaction);
  */
 router.post('/checkout/momo', isLoggedIn, rw_mobile_money);
 router.post('/cashout', isLoggedIn, restrictTo('admin'), cashout);
-router.post('/webhook', webhook);
 
 export default router;

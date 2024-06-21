@@ -333,11 +333,18 @@ export const flw_card = async (req, res, next) => {
   // Initiating the transaction
   const tx_ref = randomStringGenerator();
   const customerId = req.user._id;
+  // TODO: Change redirectUrl to your website url
+  // const nodeEnv = process.env.NODE_ENV;
+  // const clientDevUrl = process.env.CLIENT_DEV_URL;
+  // const clientStagingUrl = process.env.CLIENT_STAGING_URL;
+  // const clientProductionUrl = process.env.CLIENT_PRODUCTION_URL;
+  // const redirect_url = nodeEnv === 'development' ? 'http://localhost:3000' : 'https://yourwebsite.com';
 
   // Payment Payload
   const payload = {
     ...req.body.payment_payload,
     enckey: process.env.FLW_ECRYPTION_KEY,
+    redirect_url: process.env.CLIENT_URL,
     tx_ref: tx_ref,
   };
 
@@ -369,8 +376,10 @@ export const flw_card = async (req, res, next) => {
         });
       });
 
+      await session.endSession();
+
       // Respond with payload that will be sent to /authorize with pin
-      return res.status(100).json({
+      return res.status(200).json({
         status: 'success',
         message: response.message,
         data: {
@@ -378,7 +387,11 @@ export const flw_card = async (req, res, next) => {
             mode: response?.meta?.authorization.mode,
             fields: response?.meta?.authorization.fields,
           },
-          payment_payload: payload,
+          // TODO STORE IT IN A SESSION OR REDIS
+          payment_payload: {
+            ...payload,
+            enckey: undefined,
+          },
         },
       });
     }
@@ -386,7 +399,6 @@ export const flw_card = async (req, res, next) => {
     // For 3DS or VBV transactions, redirect users to their issue to authorize the transaction
     if (response?.meta?.authorization.mode === 'redirect') {
       //  Order Data
-
       const orderData = {
         ...req.body,
         payload: undefined,
@@ -465,7 +477,7 @@ export const authorizeFlwOtpTransaction = async (req, res, next) => {
   });
 
   // Return FLW_REF and send it together with OTP to /validate
-  return res.status(100).json({
+  return res.status(200).json({
     status: 'success',
     message: 'Provide OTP to validate transaction',
     data: {
@@ -484,6 +496,6 @@ export const validateFlwOtpTransaction = async (req, res, next) => {
 
   res.status(200).json({
     status: 'success',
-    message: 'Order was paid successful',
+    message: 'Your order is successful payed.',
   });
 };
