@@ -4,26 +4,29 @@ import app from './app.js';
 const PORT = process.env.PORT || 3000;
 
 async function init() {
-  if (
-    !process.env.PRODUCTION_MONGODB_URI ||
-    !process.env.DEVELOPMENT_MONGODB_URI
-  ) {
-    throw new Error('DATABASE URI missing!');
+  const nodeEnv = process.env.NODE_ENV;
+  const devDb = process.env.DEVELOPMENT_MONGODB_URI;
+  const prodDb = process.env.PRODUCTION_MONGODB_URI;
+  const stagingDb = process.env.DEVELOPMENT_MONGODB_URI;
+
+  // Node_ENV = dev and no devDb
+  if (nodeEnv === 'development' && !devDb) {
+    throw new Error('Development DATABASE URI missing!');
   }
 
-  if (!process.env.JWT_SECRET_KEY) {
-    throw new Error('JWT Secret missing');
+  // Node_ENV = prod and no prodDb
+  if (nodeEnv === 'production' && !prodDb) {
+    throw new Error('Production DATABASE URI missing!');
   }
+
+  // Node_ENV = staging and no stagingDb
+  if (nodeEnv === 'staging' && !stagingDb) {
+    throw new Error('Staging DATABASE URI missing!');
+  }
+
   try {
-    const nodeEnv = process.env.NODE_ENV;
-    const devDb = process.env.DEVELOPMENT_MONGODB_URI;
-    const prodDb = process.env.PRODUCTION_MONGODB_URI;
-
-    let databaseUrl =
-      nodeEnv === 'development' ? devDb : prodDb;
-
+    let databaseUrl = nodeEnv === 'development' ? devDb : nodeEnv === 'production' ? prodDb : stagingDb;
     await mongoose.connect(databaseUrl);
-
     app.listen(PORT, () => {
       console.log('🔢 Database connection successful!');
       console.log(`🚀 Server running on port ${PORT}...`);
