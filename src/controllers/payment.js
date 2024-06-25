@@ -333,18 +333,20 @@ export const flw_card = async (req, res, next) => {
   // Initiating the transaction
   const tx_ref = randomStringGenerator();
   const customerId = req.user._id;
-  // TODO: Change redirectUrl to your website url
-  // const nodeEnv = process.env.NODE_ENV;
-  // const clientDevUrl = process.env.CLIENT_DEV_URL;
-  // const clientStagingUrl = process.env.CLIENT_STAGING_URL;
-  // const clientProductionUrl = process.env.CLIENT_PRODUCTION_URL;
-  // const redirect_url = nodeEnv === 'development' ? 'http://localhost:3000' : 'https://yourwebsite.com';
+
+  // Determine redirect url based on environment
+  const nodeEnv = process.env.NODE_ENV;
+  const clientDevUrl = process.env.CLIENT_DEV_URL;
+  const clientStagingUrl = process.env.CLIENT_STAGING_URL;
+  const clientProductionUrl = process.env.CLIENT_PRODUCTION_URL;
+  const redirect_url =
+    nodeEnv === 'development' ? clientDevUrl : nodeEnv === 'staging' ? clientStagingUrl : clientProductionUrl;
 
   // Payment Payload
   const payload = {
     ...req.body.payment_payload,
     enckey: process.env.FLW_ECRYPTION_KEY,
-    redirect_url: process.env.CLIENT_URL,
+    redirect_url,
     tx_ref: tx_ref,
   };
 
@@ -447,8 +449,11 @@ export const flw_card = async (req, res, next) => {
 };
 
 // For PIN and AVS transactions: Authorize
-export const authorizeFlwOtpTransaction = async (req, res, next) => {
-  const authorizationPayload = req.body.payment_payload;
+export const authorizeFlwOtpAndAvsTransaction = async (req, res, next) => {
+  const authorizationPayload = {
+    ...req.body.payment_payload,
+    enckey: process.env.FLW_ECRYPTION_KEY,
+  };
 
   // Auth Mode
   const authMode = req.body.auth_mode;
