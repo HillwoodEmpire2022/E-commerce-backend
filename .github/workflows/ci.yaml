@@ -41,4 +41,7 @@ jobs:
           echo "FLW_SECRET_KEY=${{ secrets.FLW_SECRET_KEY }}" >> $GITHUB_ENV
           echo "FLW_PUBLIC_KEY=${{ secrets.FLW_PUBLIC_KEY }}" >> $GITHUB_ENV
           echo "FLW_ECRYPTION_KEY=${{ secrets.FLW_ECRYPTION_KEY }}" >> $GITHUB_ENV
+          echo "CLIENT_DEV_URL=${{ secrets.CLIENT_DEV_URL }}" >> $GITHUB_ENV
+          echo "CLIENT_STAGING_URL=${{ secrets.CLIENT_STAGING_URL }}" >> $GITHUB_ENV
+          echo "CLIENT_PRODUCTION_URL=${{ secrets.CLIENT_PRODUCTION_URL }}" >> $GITHUB_ENV
       - run: npm test

@@ -1,17 +1,15 @@
-import express from 'express';
 import dotenv from 'dotenv';
+import express from 'express';
 
-import { isLoggedIn } from '../middlewares/authentication.js';
 import {
+  authorizeFlwOtpAndAvsTransaction,
   cashout,
-  checkout,
+  flw_card,
   flw_webhook,
   rw_mobile_money,
-  webhook,
-  flw_card,
-  authorizeFlwOtpTransaction,
   validateFlwOtpTransaction,
 } from '../controllers/payment.js';
+import { isLoggedIn } from '../middlewares/authentication.js';
 import { restrictTo } from '../middlewares/authorization.js';
 
 dotenv.config();
@@ -388,7 +386,7 @@ router.post('/checkout/card', isLoggedIn, flw_card);
  *                       type: string
  *                       example: "api/v1/payments/validate-card"
  */
-router.post('/authorize-card', isLoggedIn, authorizeFlwOtpTransaction);
+router.post('/authorize-card', isLoggedIn, authorizeFlwOtpAndAvsTransaction);
 
 /**
  * @swagger
