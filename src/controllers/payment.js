@@ -12,6 +12,8 @@ import cashoutValidator from '../validations/cashoutValidation.js';
 import { randomStringGenerator } from '../utils/randomStringGenerator.js';
 
 import flw from '../services/flutterwave.js';
+import { response } from 'express';
+import AppError from '../utils/AppError.js';
 const paypack = new PaypackJs.default({
   client_id: process.env.PAYPACK_APP_ID,
   client_secret: process.env.PAYPACK_APP_SECRET,
@@ -433,74 +435,113 @@ export const flw_card = async (req, res, next) => {
       });
     }
 
-    // TODO: Handle other responses including errors
-    // console.log(response);
-    res.status(200).json({
-      status: 'success',
-      test: 'Here',
-      response,
-    });
+    // Card payment intialization errors
+    if (response?.status === 'error') {
+      return next(new AppError(response.message, 400));
+    }
+
+    return next(new AppError('An error occured. Please try again', 500));
   } catch (error) {
-    res.status(500).json({
-      status: 'fail',
-      message: error.message,
-    });
+    next(error);
   }
 };
 
 // For PIN and AVS transactions: Authorize
 export const authorizeFlwOtpAndAvsTransaction = async (req, res, next) => {
-  const authorizationPayload = {
-    ...req.body.payment_payload,
-    enckey: process.env.FLW_ECRYPTION_KEY,
-  };
+  try {
+    const authorizationPayload = {
+      ...req.body.payment_payload,
+      enckey: process.env.FLW_ECRYPTION_KEY,
+    };
 
-  // Auth Mode
-  const authMode = req.body.auth_mode;
+    // Auth Mode
+    const authMode = req.body.auth_mode;
 
-  // Create new Payload
-  // Country Must be 2Characters
-  authorizationPayload.authorization = {
-    mode: authMode,
-    ...(authMode === 'pin' ? { pin: req.body.pin } : { ...req.body.address }),
-  };
+    // Create new Payload
+    // Country Must be 2Characters
+    authorizationPayload.authorization = {
+      mode: authMode,
+      ...(authMode === 'pin' ? { pin: req.body.pin } : { ...req.body.address }),
+    };
 
-  const charge = await flw.Charge.card(authorizationPayload);
+    const charge = await flw.Charge.card(authorizationPayload);
 
-  // Update order with PAYMENT_TYPE Card
-  const order = await Order.findOne({
-    tx_ref: charge.data.tx_ref,
-  });
+    // Charge message == 'Charge authorization data required'
+    if (charge.message === 'Charge authorization data required') {
+      return res.status(400).json({
+        status: 'fail',
+        message: 'Charge authorization is required.',
+        data: {
+          authorization: {
+            mode: charge?.meta?.authorization.mode,
+            fields: charge?.meta?.authorization.fields,
+          },
+          // TODO STORE IT IN A SESSION OR REDIS
+          payment_payload: {
+            ...authorizationPayload,
+            authorization: undefined,
+            enckey: undefined,
+          },
+        },
+      });
+    }
 
-  order.payment_type = {
-    type: 'card',
-    card: JSON.parse(JSON.stringify(charge.data.card)),
-  };
+    // Authorization Error
+    if (charge.status === 'error') {
+      return next(new AppError(charge.message, 400));
+    }
 
-  await order.save({
-    validateBeforeSave: false,
-  });
+    // Update order with PAYMENT_TYPE Card
+    const order = await Order.findOne({
+      tx_ref: charge?.data?.tx_ref,
+    });
 
-  // Return FLW_REF and send it together with OTP to /validate
-  return res.status(200).json({
-    status: 'success',
-    message: 'Provide OTP to validate transaction',
-    data: {
-      flw_ref: charge.data.flw_ref,
-      validateUrl: 'api/v1/payments/validate-card',
-    },
-  });
+    // Update Order
+    order.payment_type = {
+      type: 'card',
+      card: JSON.parse(JSON.stringify(charge.data.card)),
+    };
+
+    await order.save({
+      validateBeforeSave: false,
+    });
+
+    // Return FLW_REF to send it together with OTP to /validate
+    return res.status(200).json({
+      status: 'success',
+      message: 'Provide OTP to validate transaction',
+      data: {
+        flw_ref: charge.data.flw_ref,
+        validateUrl: 'api/v1/payments/validate-card',
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
 };
 
 // For PIN and AVS Validate with OTP
 export const validateFlwOtpTransaction = async (req, res, next) => {
-  const response = await flw.Charge.validate({
-    otp: req.body.otp,
-    flw_ref: req.body.flw_ref,
-  });
+  try {
+    const response = await flw.Charge.validate({
+      otp: req.body.otp,
+      flw_ref: req.body.flw_ref,
+    });
 
-  res.status(200).json({
-    status: 'success',
-    message: 'Your order is successful payed.',
-  });
+    if (response.status === 'error') {
+      return next(new AppError(response.message, 400));
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Your order is successful payed.',
+    });
+  } catch (error) {
+    // FLutterwave Validation error
+    if (error.name === 'validationError') {
+      return next(new AppError(error.message, 400));
+    }
+
+    return next(error);
+  }
 };
