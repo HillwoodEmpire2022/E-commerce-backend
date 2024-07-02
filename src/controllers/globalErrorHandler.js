@@ -1,11 +1,5 @@
-export default function globalErrorHandler(
-  err,
-  req,
-  res,
-  next
-) {
-  if (process.env.NODE_ENV !== 'test')
-    console.error('🔥Error: ', err);
+export default function globalErrorHandler(err, req, res, next) {
+  console.log('🔥Error: ', err);
 
   // JWT Errors
   if (err.name === 'TokenExpiredError') {
@@ -33,7 +27,6 @@ export default function globalErrorHandler(
   // Unexpected Errors
   res.status(500).json({
     status: 'error',
-    message:
-      'Internal server error! Please try again later.',
+    message: 'Internal server error! Please try again later.',
   });
 }
