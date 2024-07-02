@@ -49,6 +49,7 @@
     "passport-oauth": "^1.0.0",
     "path": "^0.12.7",
     "paypack-js": "^0.2.1",
+    "resend": "^3.4.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
     "uuid": "^10.0.0"

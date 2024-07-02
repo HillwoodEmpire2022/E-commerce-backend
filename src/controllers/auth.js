@@ -4,6 +4,7 @@ import { base64FileStringGenerator } from '../utils/base64Converter.js';
 
 import User from '../models/user.js';
 import SellerProfile from '../models/sellerProfile.js';
+
 import {
   signupValidationSchema,
   loginValidationSchema,
@@ -11,10 +12,10 @@ import {
   passwordValidation,
 } from '../validations/authValidations.js';
 import { generateJWToken } from '../utils/jsonWebToken.js';
-import { sendActivationEmail } from '../utils/activationEmail.js';
-import { sendEmail } from '../utils/sendEmail.js';
 import { uploadProfileImageToCloudinary } from '../utils/cloudinary.js';
 import { mongoIdValidator } from '../validations/mongoidValidator.js';
+import sendEmail from '../utils/email.js';
+import AppError from '../utils/AppError.js';
 
 const activationTokenGenerator = (email) => {
   return jwt.sign({ email }, process.env.JWT_SECRET_KEY);
@@ -25,17 +26,12 @@ export const userRegister = async (req, res, next) => {
   const { email } = req.body;
   try {
     // 1) Validate user data
-    const { error } = signupValidationSchema.validate(
-      req.body,
-      {
-        errors: { label: 'key', wrap: { label: false } },
-      }
-    );
+    const { error } = signupValidationSchema.validate(req.body, {
+      errors: { label: 'key', wrap: { label: false } },
+    });
 
     if (error) {
-      return res
-        .status(400)
-        .json({ status: 'fail', message: error.message });
+      return res.status(400).json({ status: 'fail', message: error.message });
     }
     // Generate verification token
     const activationToken = activationTokenGenerator(email);
@@ -54,50 +50,36 @@ export const userRegister = async (req, res, next) => {
     // 3) Send Verification Email
     // Frontend Url
     const url = `${
-      process.env.CLIENT_URL ||
-      'https://e-commerce-frontend-pi-seven.vercel.app'
+      process.env.CLIENT_URL || 'https://e-commerce-frontend-pi-seven.vercel.app'
     }/activate-account/${activationToken}`;
 
     // Email Obtions
     const emailOptions = {
       to: newUser.email,
-      subject: 'Email activation Link',
-      text: `Hello ${newUser.firstName}, Welcome! to hill group!`,
+      subject: 'Email Verification Link',
+      firstName: newUser.firstName,
       url,
     };
 
     try {
-      await sendActivationEmail(emailOptions);
+      await sendEmail(emailOptions.to, emailOptions.subject, emailOptions.url, emailOptions.firstName);
     } catch (error) {
-      console.log(error);
-      // TODO: Delete user or use transaction.
-      return res.status(500).json({
-        status: 'fail',
-        message:
-          'there was an error sending email! Please try again.',
-      });
+      console.error(error);
+      return next(new AppError('There was an error sending email! Please try again.', 500));
     }
 
     // 4) Send Successful response
     res.status(201).json({
       status: 'success',
-      activationToken:
-        process.env.NODE_ENV === 'test'
-          ? activationToken
-          : undefined,
+      activationToken: process.env.NODE_ENV === 'test' ? activationToken : undefined,
       data: 'Email to activate your account was sent to your email.',
     });
   } catch (error) {
     if (error.code === 11000) {
-      return res.status(400).json({
-        status: 'fail',
-        message: `Email (${email}) already in use.`,
-      });
+      next(new AppError(`Email (${email}) already in use.`, 400));
     }
-    res.status(500).json({
-      status: 'error',
-      message: 'Internal server error.',
-    });
+
+    next(error);
   }
 };
 
@@ -105,10 +87,7 @@ export const userRegister = async (req, res, next) => {
 export const activateAccount = async (req, res) => {
   const { activationToken } = req.params;
   try {
-    const decodeToken = jwt.verify(
-      activationToken,
-      process.env.JWT_SECRET_KEY
-    );
+    const decodeToken = jwt.verify(activationToken, process.env.JWT_SECRET_KEY);
     const { email } = decodeToken;
 
     const user = await User.findOne({ email });
@@ -139,9 +118,7 @@ export const activateAccount = async (req, res) => {
       message: 'Account Activated successfully.',
     });
   } catch (err) {
-    return res
-      .status(400)
-      .json({ message: 'Invalid token.' });
+    return res.status(400).json({ message: 'Invalid token.' });
   }
 };
 
@@ -170,16 +147,11 @@ export const userLogin = async (req, res) => {
     let { email, password } = req.body;
 
     // Validate user information with joi.
-    const { error } = loginValidationSchema.validate(
-      req.body,
-      {
-        errors: { label: 'key', wrap: { label: false } },
-      }
-    );
+    const { error } = loginValidationSchema.validate(req.body, {
+      errors: { label: 'key', wrap: { label: false } },
+    });
     if (error) {
-      return res
-        .status(400)
-        .json({ status: 'fail', message: error.message });
+      return res.status(400).json({ status: 'fail', message: error.message });
     }
 
     const user = await User.findOne({
@@ -198,16 +170,14 @@ export const userLogin = async (req, res) => {
     if (!user.verified)
       return res.status(401).json({
         status: 'fail',
-        message:
-          'Account not activated! Check your email to activate your account.',
+        message: 'Account not activated! Check your email to activate your account.',
       });
 
     // Check if user account is active
     if (!user.active)
       return res.status(403).json({
         status: 'fail',
-        message:
-          'Your account has been temporarily closed! Contact customer support for help.',
+        message: 'Your account has been temporarily closed! Contact customer support for help.',
       });
 
     // Check password
@@ -233,8 +203,7 @@ export const userLogin = async (req, res) => {
 
 // Get Account info of user (email, names, role)
 export const getMe = async (req, res) => {
-  const { email, role, id, firstName, lastName, photo } =
-    req.user;
+  const { email, role, id, firstName, lastName, photo } = req.user;
 
   res.status(200).json({
     status: 'success',
@@ -268,19 +237,13 @@ export const forgotPassword = async (req, res, user) => {
     });
 
     if (!checkUserEmail) {
-      return res
-        .status(404)
-        .json({ message: 'email does not exist' });
+      return res.status(404).json({ message: 'email does not exist' });
     }
 
     const resetUserToken = encodeURIComponent(
-      jwt.sign(
-        { email: email },
-        process.env.JWT_SECRET_KEY,
-        {
-          expiresIn: '1h',
-        }
-      )
+      jwt.sign({ email: email }, process.env.JWT_SECRET_KEY, {
+        expiresIn: '1h',
+      })
     );
 
     const url = `${process.env.CLIENT_URL}/reset-password/${resetUserToken}`;
@@ -296,28 +259,21 @@ export const forgotPassword = async (req, res, user) => {
       message: 'check your email to reset password',
     });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: 'failed to  reset password' });
+    return res.status(500).json({ message: 'failed to  reset password' });
   }
 };
 
 export const resetUserPassword = async (req, res) => {
   const { resetUserToken } = req.params;
   try {
-    const verifyToken = jwt.verify(
-      resetUserToken,
-      process.env.JWT_SECRET_KEY
-    );
+    const verifyToken = jwt.verify(resetUserToken, process.env.JWT_SECRET_KEY);
 
     const { email } = verifyToken;
 
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res
-        .status(404)
-        .json({ message: 'user  not found' });
+      return res.status(404).json({ message: 'user  not found' });
     }
 
     const { newPassword, confirmPassword } = req.body;
@@ -328,28 +284,20 @@ export const resetUserPassword = async (req, res) => {
         confirmPassword,
       });
     } catch (validationError) {
-      return res
-        .status(400)
-        .json({ message: validationError.message });
+      return res.status(400).json({ message: validationError.message });
     }
 
     if (newPassword != confirmPassword) {
-      return res
-        .status(400)
-        .json({ message: 'password does not match' });
+      return res.status(400).json({ message: 'password does not match' });
     }
 
     user.password = newPassword;
     await user.save();
 
-    return res
-      .status(201)
-      .json({ message: 'password reset successfully' });
+    return res.status(201).json({ message: 'password reset successfully' });
   } catch (error) {
     console.log(error);
-    return res
-      .status(500)
-      .json({ message: 'failed to reset user password' });
+    return res.status(500).json({ message: 'failed to reset user password' });
   }
 };
 
@@ -357,20 +305,14 @@ export const updatePassword = async (req, res) => {
   try {
     //  find user by Id
     const userId = req.user._id;
-    const user = await User.findById(userId).select(
-      '+password'
-    );
+    const user = await User.findById(userId).select('+password');
 
     if (!user) {
       return res.status(404).json({
         message: 'user not found',
       });
     }
-    const {
-      currentPassword,
-      newPassword,
-      confirmPassword,
-    } = req.body;
+    const { currentPassword, newPassword, confirmPassword } = req.body;
 
     // validate password
     try {
@@ -385,10 +327,7 @@ export const updatePassword = async (req, res) => {
     }
 
     // compare currentPassword and password
-    const comparePassword = await bcrypt.compare(
-      currentPassword,
-      user.password
-    );
+    const comparePassword = await bcrypt.compare(currentPassword, user.password);
 
     if (!comparePassword) {
       return res.status(404).json({
@@ -404,11 +343,7 @@ export const updatePassword = async (req, res) => {
 
     //  update password with newPassword
     const hashPassword = await bcrypt.hash(newPassword, 12);
-    await User.findOneAndUpdate(
-      { _id: userId },
-      { $set: { password: hashPassword } },
-      { new: true }
-    );
+    await User.findOneAndUpdate({ _id: userId }, { $set: { password: hashPassword } }, { new: true });
 
     return res.status(201).json({
       message: 'password updated succesfully',
@@ -426,30 +361,18 @@ export const userUpdatePhoto = async (req, res) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      return res
-        .status(404)
-        .json({ message: 'User not found' });
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    const allowedImageTypes = [
-      'image/jpeg',
-      'image/png',
-      'image/jpg',
-    ];
+    const allowedImageTypes = ['image/jpeg', 'image/png', 'image/jpg'];
 
-    if (
-      !req.file ||
-      !allowedImageTypes.includes(req.file.mimetype)
-    ) {
+    if (!req.file || !allowedImageTypes.includes(req.file.mimetype)) {
       return res.status(400).json({
-        message:
-          'Invalid image format. Allowed formats: JPEG, PNG, JPG',
+        message: 'Invalid image format. Allowed formats: JPEG, PNG, JPG',
       });
     }
 
-    let profileImageString = base64FileStringGenerator(
-      req.file
-    ).content;
+    let profileImageString = base64FileStringGenerator(req.file).content;
 
     if (!profileImageString) {
       return res.status(400).json({
@@ -457,11 +380,7 @@ export const userUpdatePhoto = async (req, res) => {
       });
     }
 
-    const uploadedProfileImage =
-      await uploadProfileImageToCloudinary(
-        profileImageString,
-        user.userName
-      );
+    const uploadedProfileImage = await uploadProfileImageToCloudinary(profileImageString, user.userName);
 
     user.photo = uploadedProfileImage.url;
     await user.save();
@@ -486,26 +405,18 @@ export const userUpdateProfile = async (req, res) => {
     const user = await User.findById({ _id: userId });
 
     if (!user) {
-      return res
-        .status(400)
-        .json({ message: 'user not found' });
+      return res.status(400).json({ message: 'user not found' });
     }
     const { firstName, lastName } = req.body;
 
-    const newUser = await User.findOneAndUpdate(
-      { _id: userId },
-      { firstName, lastName },
-      { new: true }
-    );
+    const newUser = await User.findOneAndUpdate({ _id: userId }, { firstName, lastName }, { new: true });
 
     return res.status(201).json({
       message: 'successfull to update profile',
       newUser,
     });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: 'failed to update profile' });
+    return res.status(500).json({ message: 'failed to update profile' });
   }
 };
 
@@ -513,8 +424,7 @@ export const userUpdateProfile = async (req, res) => {
 export const deleteAccount = async (req, res) => {
   try {
     const userRole = req.user.role;
-    const userId =
-      userRole === 'admin' ? req.params.id : req.user._id;
+    const userId = userRole === 'admin' ? req.params.id : req.user._id;
 
     const user = await User.findByIdAndDelete(userId);
 
@@ -538,21 +448,14 @@ export const deleteAccount = async (req, res) => {
 };
 
 // Request for activation email
-export const requestVerificationEmail = async (
-  req,
-  res
-) => {
+export const requestVerificationEmail = async (req, res) => {
   try {
     const { email } = req.body;
 
     // Check if user with provided email exists
     const user = await User.findOne({ email });
 
-    if (!user)
-      return res.status(404).json({
-        status: 'fail',
-        message: 'user with provided email does not exist.',
-      });
+    if (!user) return next(new AppError('User with provided email does not exist.', 404));
 
     // Create activation token
     const activationToken = activationTokenGenerator(email);
@@ -565,36 +468,28 @@ export const requestVerificationEmail = async (
 
     // Send Verification Email
     const url = `${
-      process.env.CLIENT_URL ||
-      'https://e-commerce-frontend-pi-seven.vercel.app'
+      process.env.CLIENT_URL || 'https://e-commerce-frontend-pi-seven.vercel.app'
     }/activate-account/${activationToken}`;
 
     // Email Obtions
     const emailOptions = {
       to: user.email,
-      subject: 'Email activation Link',
-      text: `Hello ${user.firstName}, Welcome! to FeliExpress!`,
+      subject: 'Email Verification Link',
+      firstName: user.firstName,
       url,
     };
 
     try {
-      await sendActivationEmail(emailOptions);
+      await sendEmail(emailOptions.to, emailOptions.subject, emailOptions.url, emailOptions.firstName);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({
-        status: 'fail',
-        message:
-          'there was an error sending email! Please try again.',
-      });
+      return next(new AppError('There was an error sending email! Please try again.', 500));
     }
 
     // 4) Send Successful response
     res.status(200).json({
       status: 'success',
-      activationToken:
-        process.env.NODE_ENV === 'test'
-          ? activationToken
-          : undefined,
+      activationToken: process.env.NODE_ENV === 'test' ? activationToken : undefined,
       data: 'Email to activate your account was sent to your email.',
     });
   } catch (error) {
@@ -608,12 +503,9 @@ export const requestVerificationEmail = async (
 
 export const deactivateAccount = async (req, res, nex) => {
   try {
-    const { error } = mongoIdValidator.validate(
-      req.params,
-      {
-        errors: { label: 'key', wrap: { label: false } },
-      }
-    );
+    const { error } = mongoIdValidator.validate(req.params, {
+      errors: { label: 'key', wrap: { label: false } },
+    });
 
     if (error) {
       return res.status(400).json({
