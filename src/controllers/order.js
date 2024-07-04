@@ -2,9 +2,7 @@ import mongoose from 'mongoose';
 import Order from '../models/order.js';
 import APIFeatures from '../utils/APIFeatures.js';
 import { mongoIdValidator } from '../validations/mongoidValidator.js';
-import orderJoiSchema, {
-  updateOrderJoiSchema,
-} from '../validations/orderValidation.js';
+import orderJoiSchema, { updateOrderJoiSchema } from '../validations/orderValidation.js';
 
 const fetchSellerOrders = async (sellerId, query) => {
   // Pagination
@@ -75,8 +73,7 @@ const fetchSellerOrders = async (sellerId, query) => {
                     description: '$$detail.description',
                     price: '$$detail.price',
                     seller: '$$detail.seller',
-                    thumbnail:
-                      '$$detail.productImages.productThumbnail.url',
+                    thumbnail: '$$detail.productImages.productThumbnail.url',
                   },
                 },
               },
@@ -88,9 +85,7 @@ const fetchSellerOrders = async (sellerId, query) => {
 
       {
         $match: {
-          'itemDetails.seller': new mongoose.Types.ObjectId(
-            sellerId
-          ),
+          'itemDetails.seller': new mongoose.Types.ObjectId(sellerId),
         },
       },
 
@@ -156,9 +151,7 @@ export const getOrders = async (req, res, next) => {
     // Req.params.sellerId: Means request is by admin on GET: '/users/:sellerId/orders
     // No Req.params.sellerId but role === seller: Means request by seller on GET: /orders
     if (req.params.sellerId || role === 'seller') {
-      const sellerId = !req.params.sellerId
-        ? _id
-        : req.params.sellerId;
+      const sellerId = !req.params.sellerId ? _id : req.params.sellerId;
       orders = await fetchSellerOrders(sellerId, req.query);
       return res.status(200).json({
         status: 'success',
@@ -174,14 +167,7 @@ export const getOrders = async (req, res, next) => {
     if (role === 'customer') filter.customer = _id;
 
     // EXECUTE QUERY
-    const features = new APIFeatures(
-      Order.find(filter),
-      req.query
-    )
-      .filter()
-      .sort()
-      .limitFields()
-      .paginate();
+    const features = new APIFeatures(Order.find(filter), req.query).filter().sort().limitFields().paginate();
 
     if (role === 'customer') orders = await features.query;
     if (role === 'admin')
@@ -206,6 +192,7 @@ export const getOrders = async (req, res, next) => {
   }
 };
 
+// TODO: QUerying Order by seller
 export const getOrder = async (req, res) => {
   try {
     const filter = {
@@ -215,17 +202,12 @@ export const getOrder = async (req, res) => {
     let order;
     const { role, _id } = req.user;
 
-    const { error } = mongoIdValidator.validate(
-      req.params,
-      {
-        errors: { label: 'key', wrap: { label: false } },
-      }
-    );
+    const { error } = mongoIdValidator.validate(req.params, {
+      errors: { label: 'key', wrap: { label: false } },
+    });
 
     if (error) {
-      return res
-        .status(400)
-        .json({ status: 'fail', message: error.message });
+      return res.status(400).json({ status: 'fail', message: error.message });
     }
 
     if (role === 'customer') filter.customer = _id;
@@ -255,30 +237,20 @@ export const getOrder = async (req, res) => {
 
 export const updateOrder = async (req, res) => {
   try {
-    const { error } = updateOrderJoiSchema.validate(
-      req.body,
-      {
-        errors: { label: 'key', wrap: { label: false } },
-      }
-    );
+    const { error } = updateOrderJoiSchema.validate(req.body, {
+      errors: { label: 'key', wrap: { label: false } },
+    });
     if (error) {
-      return res
-        .status(400)
-        .json({ status: 'fail', message: error.message });
+      return res.status(400).json({ status: 'fail', message: error.message });
     }
 
     if (req.body?.items)
-      return res
-        .status(400)
-        .json({
-          status: 'fail',
-          message: 'you cannot update order items',
-        });
+      return res.status(400).json({
+        status: 'fail',
+        message: 'you cannot update order items',
+      });
 
-    const order = await Order.findByIdAndUpdate(
-      req.params.id,
-      req.body
-    );
+    const order = await Order.findByIdAndUpdate(req.params.id, req.body);
 
     if (!order)
       return res.status(404).json({
