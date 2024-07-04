@@ -6,9 +6,8 @@ import { restrictTo } from '../middlewares/authorization.js';
 const router = express.Router({ mergeParams: true });
 
 router.get('/', isLoggedIn, getOrders);
-// Todo
+
+router.get('/:id', isLoggedIn, getOrder);
 router.patch('/:id', isLoggedIn, restrictTo('admin'), updateOrder);
-// Todo
-router.get('/:id', isLoggedIn, restrictTo('admin'), getOrder);
 
 export default router;
