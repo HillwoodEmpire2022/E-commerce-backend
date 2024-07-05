@@ -2,9 +2,9 @@ import mongoose from 'mongoose';
 import Order from '../models/order.js';
 import APIFeatures from '../utils/APIFeatures.js';
 import { mongoIdValidator } from '../validations/mongoidValidator.js';
-import orderJoiSchema, { updateOrderJoiSchema } from '../validations/orderValidation.js';
+import { updateOrderJoiSchema } from '../validations/orderValidation.js';
 
-const fetchSellerOrders = async (sellerId, query) => {
+const fetchSellerOrders = async (sellerId, role, query) => {
   // Pagination
   const page = Number(query.page) || 1;
   const limit = Number(query.limit) || 20;
@@ -23,11 +23,12 @@ const fetchSellerOrders = async (sellerId, query) => {
     : {
         customer: 1,
         tx_ref: 1,
-        transId: 1,
+        transactionId: 1,
         items: 1,
         amount: 1,
         status: 1,
         shippingAddress: 1,
+        createdAt: 1,
       };
 
   try {
@@ -37,7 +38,7 @@ const fetchSellerOrders = async (sellerId, query) => {
       },
 
       {
-        $match: filter,
+        $match: { ...filter, 'items.seller': String(sellerId) },
       },
 
       {
@@ -84,12 +85,6 @@ const fetchSellerOrders = async (sellerId, query) => {
       },
 
       {
-        $match: {
-          'itemDetails.seller': new mongoose.Types.ObjectId(sellerId),
-        },
-      },
-
-      {
         $group: {
           _id: '$_id',
           items: {
@@ -101,13 +96,12 @@ const fetchSellerOrders = async (sellerId, query) => {
           },
           amount: { $first: '$amount' },
           createdAt: { $first: '$createdAt' },
-          shippingAddress: { $first: '$shippingAddress' },
-          transactionId: { $first: '$transId' },
+          transactionId: { $first: '$transactionId' },
           status: { $first: '$status' },
-          customer: { $first: '$customer' },
-          deliveryPreference: {
-            $first: '$deliveryPreference',
-          },
+          ...(role === 'admin' && { shippingAddress: { $first: '$shippingAddress' } }),
+          ...(role === 'admin' && { customer: { $first: '$customer' } }),
+          ...(role === 'admin' && { deliveryPreference: { $first: '$deliveryPreference' } }),
+
           tx_ref: { $first: '$tx_ref' },
         },
       },
@@ -140,6 +134,110 @@ const fetchSellerOrders = async (sellerId, query) => {
   }
 };
 
+const fetchSellerOrderByOrderId = async (orderId, sellerId, query) => {
+  //  Filtering by status
+  const filter = {
+    ...(query.status && { status: query.status }),
+  };
+
+  // Selecting certain fields (projection)
+  const projection = query.fields
+    ? query.fields.split(',').reduce((acc, field) => {
+        return { ...acc, [field]: 1 };
+      }, {})
+    : {
+        tx_ref: 1,
+        transactionId: 1,
+        items: 1,
+        status: 1,
+      };
+
+  try {
+    const order = await Order.aggregate([
+      {
+        $unwind: '$items',
+      },
+
+      {
+        $match: {
+          ...filter,
+          _id: new mongoose.Types.ObjectId(orderId),
+          'items.seller': String(sellerId),
+        },
+      },
+
+      {
+        $lookup: {
+          from: 'products',
+          foreignField: '_id',
+          localField: 'items.product',
+          as: 'itemDetails',
+        },
+      },
+
+      {
+        $project: {
+          amount: 1,
+          createdAt: 1,
+          tx_ref: 1,
+          status: 1,
+          quantity: '$items.quantity',
+          variation: 1,
+          sellerPaymentStatus: '$items.sellerPaymentStatus',
+          itemDetails: {
+            $arrayElemAt: [
+              {
+                $map: {
+                  input: '$itemDetails',
+                  as: 'detail',
+                  in: {
+                    id: '$$detail._id',
+                    name: '$$detail.name',
+                    description: '$$detail.description',
+                    price: '$$detail.price',
+                    seller: '$$detail.seller',
+                    thumbnail: '$$detail.productImages.productThumbnail.url',
+                  },
+                },
+              },
+              0,
+            ],
+          },
+        },
+      },
+
+      {
+        $group: {
+          _id: '$_id',
+          items: {
+            $push: {
+              itemDetails: '$itemDetails',
+              quantity: '$quantity',
+              sellerPaymentStatus: '$sellerPaymentStatus',
+            },
+          },
+          createdAt: { $first: '$createdAt' },
+          transactionId: { $first: '$transactionId' },
+          status: { $first: '$status' },
+          tx_ref: { $first: '$tx_ref' },
+        },
+      },
+
+      {
+        $project: {
+          ...projection,
+          createdAt: '$createdAt',
+          tx_ref: '$tx_ref',
+        },
+      },
+    ]);
+
+    return order;
+  } catch (error) {
+    return error;
+  }
+};
+
 export const getOrders = async (req, res, next) => {
   try {
     // Create Query Object
@@ -152,7 +250,7 @@ export const getOrders = async (req, res, next) => {
     // No Req.params.sellerId but role === seller: Means request by seller on GET: /orders
     if (req.params.sellerId || role === 'seller') {
       const sellerId = !req.params.sellerId ? _id : req.params.sellerId;
-      orders = await fetchSellerOrders(sellerId, req.query);
+      orders = await fetchSellerOrders(sellerId, role, req.query);
       return res.status(200).json({
         status: 'success',
         count: orders?.length,
@@ -168,13 +266,7 @@ export const getOrders = async (req, res, next) => {
 
     // EXECUTE QUERY
     const features = new APIFeatures(Order.find(filter), req.query).filter().sort().limitFields().paginate();
-
-    if (role === 'customer') orders = await features.query;
-    if (role === 'admin')
-      orders = await features.query.populate({
-        path: 'customer',
-        select: 'firstName lastName email id',
-      });
+    orders = await features.query;
 
     res.status(200).json({
       status: 'success',
@@ -211,6 +303,17 @@ export const getOrder = async (req, res) => {
     }
 
     if (role === 'customer') filter.customer = _id;
+    if (role === 'seller') {
+      const sellerId = _id;
+      order = await fetchSellerOrderByOrderId(req.params.id, sellerId, req.query);
+      return res.status(200).json({
+        status: 'success',
+        data: {
+          order,
+        },
+      });
+    }
+    // Aggregate query to fetch order by seller
 
     order = await Order.findOne(filter);
 
