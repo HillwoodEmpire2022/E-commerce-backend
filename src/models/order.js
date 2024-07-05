@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 const orderSchema = new mongoose.Schema(
   {
     // User who placed the order
+    // Hidden From seller
     customer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -11,6 +12,7 @@ const orderSchema = new mongoose.Schema(
 
     // In Case user is not Signed in
     // Will be added after user has payed from the flutterwave
+    // Hidden From seller
     customerDetails: {
       id: Number,
       name: String,
@@ -21,6 +23,7 @@ const orderSchema = new mongoose.Schema(
     // Transaction Reference
     tx_ref: String,
 
+    // Hidden From seller
     payment_type: {
       type: {
         type: String,
@@ -31,6 +34,7 @@ const orderSchema = new mongoose.Schema(
       mobile_number: String,
 
       // If Card: contains card details: first 6 and last 4 digits
+      // Hidden From seller
       card: {
         first_6digits: {
           type: String,
@@ -53,6 +57,7 @@ const orderSchema = new mongoose.Schema(
       },
     },
 
+    // Hidden From seller
     transactionId: Number,
 
     // Items in the order
@@ -89,6 +94,8 @@ const orderSchema = new mongoose.Schema(
       required: true,
     },
 
+    // Hidden From seller
+    // From Flutterwave payload
     email: {
       type: String,
       required: true,
@@ -96,15 +103,7 @@ const orderSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: [
-        'awaits payment',
-        'pending',
-        'processing',
-        'shipped',
-        'delivered',
-        'cancelled',
-        'transaction failed',
-      ],
+      enum: ['awaits payment', 'pending', 'processing', 'shipped', 'delivered', 'cancelled', 'transaction failed'],
       default: 'awaits payment',
     },
 
