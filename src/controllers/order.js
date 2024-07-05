@@ -34,11 +34,10 @@ const fetchSellerOrders = async (sellerId, role, query) => {
   try {
     const orders = await Order.aggregate([
       {
-        $unwind: '$items',
-      },
-
-      {
         $match: { ...filter, 'items.seller': String(sellerId) },
+      },
+      {
+        $unwind: '$items',
       },
 
       {
@@ -155,15 +154,14 @@ const fetchSellerOrderByOrderId = async (orderId, sellerId, query) => {
   try {
     const order = await Order.aggregate([
       {
-        $unwind: '$items',
-      },
-
-      {
         $match: {
           ...filter,
           _id: new mongoose.Types.ObjectId(orderId),
           'items.seller': String(sellerId),
         },
+      },
+      {
+        $unwind: '$items',
       },
 
       {
@@ -284,7 +282,6 @@ export const getOrders = async (req, res, next) => {
   }
 };
 
-// TODO: QUerying Order by seller
 export const getOrder = async (req, res) => {
   try {
     const filter = {
