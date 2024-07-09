@@ -41,6 +41,10 @@ const fetchSellerOrders = async (sellerId, role, query) => {
       },
 
       {
+        $match: { ...filter, 'items.seller': String(sellerId) },
+      },
+
+      {
         $lookup: {
           from: 'products',
           foreignField: '_id',
