@@ -6,6 +6,7 @@ import {
   cashout,
   flw_card,
   flw_webhook,
+  retry_momo_payment,
   rw_mobile_money,
   validateFlwOtpTransaction,
 } from '../controllers/payment.js';
@@ -23,6 +24,9 @@ dotenv.config();
 const router = express.Router();
 
 router.post('/flw-webhook', flw_webhook);
+
+// Retry momo payment
+router.post('/retry-momo', isLoggedIn, retry_momo_payment);
 
 /**
  * @swagger
