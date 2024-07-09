@@ -1,18 +1,17 @@
 import crypto from 'crypto';
-import open from 'open';
 import dotenv from 'dotenv';
-dotenv.config();
 import mongoose from 'mongoose';
-import Order from '../models/order.js';
+import open from 'open';
 import PaypackJs from 'paypack-js';
-import removeEmptySpaces from '../utils/removeEmptySpaces.js';
+import Order from '../models/order.js';
 import Product from '../models/product.js';
-import orderJoiSchema from '../validations/orderValidation.js';
-import cashoutValidator from '../validations/cashoutValidation.js';
 import { randomStringGenerator } from '../utils/randomStringGenerator.js';
+import removeEmptySpaces from '../utils/removeEmptySpaces.js';
+import cashoutValidator from '../validations/cashoutValidation.js';
+import orderJoiSchema from '../validations/orderValidation.js';
+dotenv.config();
 
 import flw from '../services/flutterwave.js';
-import { response } from 'express';
 import AppError from '../utils/AppError.js';
 const paypack = new PaypackJs.default({
   client_id: process.env.PAYPACK_APP_ID,
@@ -261,6 +260,10 @@ export const rw_mobile_money = async (req, res, next) => {
         fullname: `${req.user.firstName} ${req.user.lastName}`,
       };
 
+      // Save Payload to Order in case of delayed payment so customer can pay later
+      order[0].momo_payload = payload;
+      await order[0].save();
+
       // Initiate Payment
       paymentLink = await flw.MobileMoney.rwanda(payload);
     });
@@ -297,7 +300,7 @@ export const flw_webhook = async (req, res, next) => {
   });
 
   // Verify Transaction
-  const response = await verifyTransaction(payload.data.id, order.amount);
+  const response = await verifyTransaction(payload.data.id);
 
   if (response?.message && response.message === 'No transaction was found for this id') {
     // Transaction Not found
@@ -429,6 +432,7 @@ export const flw_card = async (req, res, next) => {
         // Redirect User to the authorization page to enter OTP
         open(url);
       });
+
       return res.status(302).json({
         status: 'success',
         message: 'Redirecting to authorize transaction',
@@ -544,4 +548,41 @@ export const validateFlwOtpTransaction = async (req, res, next) => {
 
     return next(error);
   }
+};
+
+// For Momo delayed payments
+export const retry_momo_payment = async (req, res, next) => {
+  // Find Order
+  const order = await Order.findOne({ _id: req.body.momo_payload.order_id, customer: req.user._id });
+
+  if (!order) return next(new AppError('Order not found', 404));
+
+  // Check if it has been payed: Does it have transactionId? Verify the transaction
+  if (!order.transactionId || order.status === 'awaits payment') {
+    // Initiate Payment
+    const response = await flw.MobileMoney.rwanda(req.body.momo_payload);
+
+    // Redirect User to the authorization page to enter OTP
+    open(response.meta.authorization.redirect);
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Redirecting to otp page',
+      data: {
+        redirect: response.meta.authorization.redirect,
+      },
+    });
+  }
+
+  // If there is a transactionId, verify it
+  if (order.transactionId) {
+    const response = await verifyTransaction(order.transactionId);
+    if (response.data.status === 'successful')
+      return res.status(200).json({ status: 'success', message: 'Order has already been payed.' });
+  }
+
+  return res.status(400).json({
+    status: 'fail',
+    message: 'Order has already been payed.',
+  });
 };
