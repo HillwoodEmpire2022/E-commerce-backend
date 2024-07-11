@@ -46,25 +46,7 @@ export const getSingleProduct = async (req, res, next) => {
 
     const product = await Product.findOne({
       _id: req.params.productId,
-    })
-      .populate({
-        path: 'seller',
-        select: 'email',
-        populate: {
-          path: 'profile',
-          select: 'locations companyName logo website',
-          strictPopulate: false,
-        },
-      })
-      .populate({
-        path: 'category',
-        select: 'name',
-      })
-      .populate({
-        path: 'subCategory',
-        select: 'name',
-      })
-      .exec();
+    }).exec();
 
     if (!product) {
       return next(new AppError('Product not found', 404));
