@@ -18,6 +18,18 @@ const paypack = new PaypackJs.default({
   client_secret: process.env.PAYPACK_APP_SECRET,
 });
 
+const generateRedirectUrl = () => {
+  // Determine redirect url based on environment
+  const nodeEnv = process.env.NODE_ENV;
+  const clientDevUrl = process.env.CLIENT_DEV_URL;
+  const clientStagingUrl = process.env.CLIENT_STAGING_URL;
+  const clientProductionUrl = process.env.CLIENT_PRODUCTION_URL;
+  const redirect_url =
+    nodeEnv === 'development' ? clientDevUrl : nodeEnv === 'staging' ? clientStagingUrl : clientProductionUrl;
+
+  return redirect_url;
+};
+
 async function updateOrderAndProducts(order, customerDetails, transactionId) {
   // Payment was successfull
   // Update order status to pending
@@ -340,12 +352,7 @@ export const flw_card = async (req, res, next) => {
   const customerId = req.user._id;
 
   // Determine redirect url based on environment
-  const nodeEnv = process.env.NODE_ENV;
-  const clientDevUrl = process.env.CLIENT_DEV_URL;
-  const clientStagingUrl = process.env.CLIENT_STAGING_URL;
-  const clientProductionUrl = process.env.CLIENT_PRODUCTION_URL;
-  const redirect_url =
-    nodeEnv === 'development' ? clientDevUrl : nodeEnv === 'staging' ? clientStagingUrl : clientProductionUrl;
+  const redirect_url = generateRedirectUrl();
 
   // Payment Payload
   const payload = {
@@ -354,8 +361,6 @@ export const flw_card = async (req, res, next) => {
     redirect_url,
     tx_ref: tx_ref,
   };
-
-  const session = await mongoose.startSession();
 
   try {
     const response = await flw.Charge.card(payload);
@@ -375,15 +380,8 @@ export const flw_card = async (req, res, next) => {
         customer: customerId,
       };
 
-      // Create a transaction in your database
-      await session.withTransaction(async () => {
-        // Create order
-        await Order.create([orderData], {
-          session,
-        });
-      });
-
-      await session.endSession();
+      // Create order
+      await Order.create(orderData);
 
       // Respond with payload that will be sent to /authorize with pin
       return res.status(200).json({
@@ -394,7 +392,6 @@ export const flw_card = async (req, res, next) => {
             mode: response?.meta?.authorization.mode,
             fields: response?.meta?.authorization.fields,
           },
-          // TODO STORE IT IN A SESSION OR REDIS
           payment_payload: {
             ...payload,
             enckey: undefined,
@@ -419,19 +416,14 @@ export const flw_card = async (req, res, next) => {
         transactionId: response.data.id,
       };
 
-      // Create a transaction in your database
-      await session.withTransaction(async () => {
-        // Create order
-        await Order.create([orderData], {
-          session,
-        });
+      // Create order
+      await Order.create(orderData);
 
-        // Initiate payment
-        const url = response.meta.authorization.redirect;
+      // Extract the redirect url
+      const url = response.meta.authorization.redirect;
 
-        // Redirect User to the authorization page to enter OTP
-        open(url);
-      });
+      // Redirect User to the authorization page to enter OTP
+      open(url);
 
       return res.status(302).json({
         status: 'success',
@@ -585,4 +577,87 @@ export const retry_momo_payment = async (req, res, next) => {
     status: 'fail',
     message: 'Order has already been payed.',
   });
+};
+
+export const retry_card_payment = async (req, res, next) => {
+  try {
+    let verify;
+    // A user should be able to pay an order that was not payed
+    // Find Order
+    const order = await Order.findOne({ _id: req.body.order_id, customer: req.user._id });
+
+    if (!order) return next(new AppError('Order not found', 404));
+
+    if (order.transactionId) verify = await verifyTransaction(order.transactionId);
+
+    if (verify && verify?.data?.status !== 'pending') {
+      return res.status(400).json({
+        status: 'fail',
+        message: 'Order has already been payed.',
+      });
+    }
+
+    if (order.status !== 'awaits payment') {
+      // Check if it has been payed by its transactionId or status
+      return res.status(400).json({
+        status: 'fail',
+        message: 'Order has already been payed.',
+      });
+    }
+
+    // If not paid Construct Card Payload
+    const tx_ref = randomStringGenerator();
+    const redirect_url = generateRedirectUrl();
+    const payload = {
+      ...req.body.payload,
+      enckey: process.env.FLW_ECRYPTION_KEY,
+      redirect_url,
+      tx_ref: tx_ref,
+    };
+
+    // Initialize Payment
+    const response = await flw.Charge.card(payload);
+
+    // Card payment intialization errors
+    if (response?.status === 'error') {
+      return next(new AppError(response.message, 400));
+    }
+
+    // Determine the authorization method
+    // If it is PIN, return the payload to the user to enter the pin
+    // If it is AVS, return the payload to the user to enter the address
+    if (response?.meta?.authorization.mode === 'pin' || response?.meta?.authorization.mode === 'avs_noauth') {
+      // Respond with payload that will be sent to /authorize with pin
+      return res.status(200).json({
+        status: 'success',
+        message: response.message,
+        data: {
+          authorization: {
+            mode: response?.meta?.authorization.mode,
+            fields: response?.meta?.authorization.fields,
+          },
+          payment_payload: {
+            ...payload,
+            enckey: undefined,
+          },
+        },
+      });
+    }
+
+    // For 3DS or VBV transactions, redirect users to their issue to authorize the transaction
+    if (response?.meta?.authorization.mode === 'redirect') {
+      const url = response.meta.authorization.redirect;
+      // Redirect User to the authorization page to enter OTP
+      open(url);
+
+      return res.status(302).json({
+        status: 'success',
+        message: 'Redirecting to authorize transaction',
+      });
+    }
+
+    return next(new AppError('An error occured. Please try again', 500));
+  } catch (error) {
+    return next(error);
+  }
 };
