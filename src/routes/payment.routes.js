@@ -6,6 +6,7 @@ import {
   cashout,
   flw_card,
   flw_webhook,
+  retry_card_payment,
   retry_momo_payment,
   rw_mobile_money,
   validateFlwOtpTransaction,
@@ -27,6 +28,189 @@ router.post('/flw-webhook', flw_webhook);
 
 // Retry momo payment
 router.post('/retry-momo', isLoggedIn, retry_momo_payment);
+
+// Retry card payment
+/**
+ * @swagger
+ * /payments/retry-card:
+ *    post:
+ *      summary: Retry Card Payment
+ *      tags: [Checkout]
+ *      security:
+ *        - bearerAuth: []
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                order_id:
+ *                  type: string
+ *                payload:
+ *                  type: object
+ *                  properties:
+ *                    card_number:
+ *                      type: string
+ *                      example: "1234567890123456"
+ *                    cvv:
+ *                      type: string
+ *                      example: "123"
+ *                    expiry_month:
+ *                      type: string
+ *                      example: "12"
+ *                    expiry_year:
+ *                      type: string
+ *                      example: "2023"
+ *                    currency:
+ *                      type: string
+ *                      example: "USD"
+ *                    amount:
+ *                      type: string
+ *                      example: "100"
+ *                    fullname:
+ *                      type: string
+ *                      example: "John Doe"
+ *                    email:
+ *                      type: string
+ *                      example: "john@example.com"
+ *                    phone_number:
+ *                      type: string
+ *                      example: "1234567890"
+ *      responses:
+ *        200:
+ *          description: Card payment/charge initiated with PIN authorization
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                  message:
+ *                   type: string
+ *                  data:
+ *                    type: object
+ *                    properties:
+ *                      authorization:
+ *                        type: object
+ *                        properties:
+ *                          mode:
+ *                            type: string
+ *                          fields:
+ *                            type: array
+ *                            items:
+ *                              type: string
+ *                      payment_payload:
+ *                        type: object
+ *                        properties:
+ *                          card_number:
+ *                            type: string
+ *                          cvv:
+ *                            type: string
+ *                          expiry_month:
+ *                            type: string
+ *                          expiry_year:
+ *                            type: string
+ *                          currency:
+ *                            type: string
+ *                          amount:
+ *                            type: string
+ *                          redirect_url:
+ *                            type: string
+ *                          fullname:
+ *                            type: string
+ *                          email:
+ *                            type: string
+ *                          phone_number:
+ *                            type: string
+ *                example:
+ *                  status: "success"
+ *                  message: "Charge authorization data required"
+ *                  data:
+ *                    authorization:
+ *                      mode: "pin"
+ *                      fields: ["pin"]
+ *                    payment_payload:
+ *                      card_number: "1234567890"
+ *                      cvv: "123"
+ *                      expiry_month: "12"
+ *                      expiry_year: "2023"
+ *                      currency: "USD"
+ *                      amount: "100"
+ *                      redirect_url: "https://example.com"
+ *                      fullname: "John Doe"
+ *                      email: "john@example.com"
+ *                      phone_number: "1234567890"
+ *        201:
+ *          description: Card payment/charge initiated with AVS authorization
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                  message:
+ *                  type: string
+ *                  data:
+ *                    type: object
+ *                    properties:
+ *                      authorization:
+ *                        type: object
+ *                        properties:
+ *                          mode:
+ *                            type: string
+ *                          fields:
+ *                            type: array
+ *                            items:
+ *                              type: string
+ *                      payment_payload:
+ *                        type: object
+ *                        properties:
+ *                          card_number:
+ *                            type: string
+ *                          cvv:
+ *                            type: string
+ *                          expiry_month:
+ *                            type: string
+ *                          expiry_year:
+ *                            type: string
+ *                          currency:
+ *                            type: string
+ *                          amount:
+ *                            type: string
+ *                          redirect_url:
+ *                            type: string
+ *                          fullname:
+ *                            type: string
+ *                          email:
+ *                            type: string
+ *                          phone_number:
+ *                            type: string
+ *                example:
+ *                  status: "success"
+ *                  message: "Charge authorization data required"
+ *                  data:
+ *                    authorization:
+ *                      mode: "avs_noauth"
+ *                      fields: ["city", "address", "state", "country", "zipcode"]
+ *                    payment_payload:
+ *                      card_number: "1234567890"
+ *                      cvv: "123"
+ *                      expiry_month: "12"
+ *                      expiry_year: "2023"
+ *                      currency: "USD"
+ *                      amount: "100"
+ *                      redirect_url: "https://example.com"
+ *                      fullname: "John Doe"
+ *                      email: "john@example.com"
+ *                      phone_number: "1234567890"
+ *        302:
+ *         description: Card payment/charge initiated with 3DS authorization (redirect to 3DS page)
+ *
+ */
+router.post('/payments/retry-card', isLoggedIn, retry_card_payment);
 
 /**
  * @swagger
