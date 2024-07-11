@@ -273,7 +273,7 @@ export const rw_mobile_money = async (req, res, next) => {
       };
 
       // Save Payload to Order in case of delayed payment so customer can pay later
-      order[0].momo_payload = payload;
+      order[0].momo_payload = { ...payload, order_id: undefined };
       await order[0].save();
 
       // Initiate Payment

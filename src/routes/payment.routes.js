@@ -27,6 +27,64 @@ const router = express.Router();
 router.post('/flw-webhook', flw_webhook);
 
 // Retry momo payment
+/**
+ * @swagger
+ * /payments/retry-momo:
+ *   post:
+ *     summary: Retry momo payment
+ *     tags: [Checkout]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               momo_payload:
+ *                 type: object
+ *                 properties:
+ *                   tx_ref:
+ *                     type: string
+ *                     example: "012ddcfd-3c9e-471c-a437-07c87a3d777d"
+ *                   order_id:
+ *                     type: string
+ *                     example: "668f816cf6c62f9f42beb7ab"
+ *                   amount:
+ *                     type: number
+ *                     example: 197
+ *                   currency:
+ *                     type: string
+ *                     example: "RWF"
+ *                   email:
+ *                     type: string
+ *                     example: "dav.ndungutse@gmail.com"
+ *                   phone_number:
+ *                     type: string
+ *                     example: "0785283007"
+ *                   fullname:
+ *                     type: string
+ *                     example: "Eric NDUNGUTSE"
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: "success"
+ *                 message:
+ *                   type: string
+ *                   example: "Redirecting to otp page"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     redirect:
+ *                       type: string
+ *                       example: "https://ravemodal-dev.herokuapp.com/captcha/verify/lang-en/127515:6a21b3f5c457ea1e5c0da415aa929a53"
+ */
 router.post('/retry-momo', isLoggedIn, retry_momo_payment);
 
 // Retry card payment

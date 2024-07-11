@@ -27,7 +27,6 @@ const orderSchema = new mongoose.Schema(
     // Mobile Money payload for delayed payments
     momo_payload: {
       tx_ref: String,
-      order_id: String,
       amount: Number,
       currency: String,
       email: String,
