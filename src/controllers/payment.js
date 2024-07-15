@@ -422,12 +422,12 @@ export const flw_card = async (req, res, next) => {
       // Extract the redirect url
       const url = response.meta.authorization.redirect;
 
-      // Redirect User to the authorization page to enter OTP
-      open(url);
-
-      return res.status(302).json({
+      return res.status(200).json({
         status: 'success',
         message: 'Redirecting to authorize transaction',
+        data: {
+          redirect_url: url,
+        },
       });
     }
 
