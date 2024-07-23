@@ -34,6 +34,16 @@ const ProductSchema = new mongoose.Schema(
       ref: 'SubCategory',
     },
 
+    seller_commission: {
+      type: Number,
+      default: 0.03,
+    },
+
+    customer_commission: {
+      type: Number,
+      default: 0.04,
+    },
+
     // Should Belong in Product Class
     brand: {
       type: mongoose.Schema.Types.ObjectId,
@@ -124,6 +134,10 @@ const ProductSchema = new mongoose.Schema(
       virtuals: true,
       transform(doc, ret) {
         delete ret._id;
+        ret.price = ret.price + ret.price * ret.customer_commission;
+        delete ret.seller_commission;
+        delete ret.customer_commission;
+        return ret;
       },
     },
     timestamps: true,
@@ -131,10 +145,7 @@ const ProductSchema = new mongoose.Schema(
   }
 );
 
-ProductSchema.index(
-  { name: 1, seller: 1 },
-  { unique: true }
-);
+ProductSchema.index({ name: 1, seller: 1 }, { unique: true });
 
 const Product = mongoose.model('Product', ProductSchema);
 export default Product;

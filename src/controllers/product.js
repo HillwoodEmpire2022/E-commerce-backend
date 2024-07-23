@@ -14,10 +14,14 @@ import { strictTransportSecurity } from 'helmet';
 export const getAllProducts = async (req, res, next) => {
   try {
     const queryObj = {};
+    let reqQuery = { ...req.query };
     if (req?.user?.role === 'seller') queryObj.seller = req.user._id;
 
+    if (req?.query.fields)
+      reqQuery = { ...reqQuery, fields: `${req.query.fields},seller_commission,customer_commission` };
+
     // EXECUTE QUERY
-    let features = new APIFeatures(Product.find(queryObj), req.query).filter().sort().limitFields().paginate();
+    let features = new APIFeatures(Product.find(queryObj), reqQuery).filter().sort().limitFields().paginate();
 
     const products = await features.query;
 
@@ -271,7 +275,7 @@ export const createProduct = async (req, res, next) => {
       productClass: req.body.productClass,
       hasColors: req.body.hasColors || false,
       hasMeasurements: req.body.hasMeasurements || false,
-      price: calculatePriceWithMarkup(req.body.price),
+      price: req.body.price,
       quantityParameter: removeEmptySpaces(req.body.quantityParameter),
       discountPercentage: req.body.discountPercentage,
       stockQuantity: req.body.stockQuantity,
@@ -347,9 +351,3 @@ export const createProduct = async (req, res, next) => {
     next(error);
   }
 };
-
-function calculatePriceWithMarkup(price) {
-  const markupPercentage = 0.05; // 5% markup
-  const markupAmount = price * markupPercentage;
-  return price + markupAmount;
-}
