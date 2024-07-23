@@ -14,10 +14,14 @@ import { strictTransportSecurity } from 'helmet';
 export const getAllProducts = async (req, res, next) => {
   try {
     const queryObj = {};
+    let reqQuery = { ...req.query };
     if (req?.user?.role === 'seller') queryObj.seller = req.user._id;
 
+    if (req?.query.fields)
+      reqQuery = { ...reqQuery, fields: `${req.query.fields},seller_commission,customer_commission` };
+
     // EXECUTE QUERY
-    let features = new APIFeatures(Product.find(queryObj), req.query).filter().sort().limitFields().paginate();
+    let features = new APIFeatures(Product.find(queryObj), reqQuery).filter().sort().limitFields().paginate();
 
     const products = await features.query;
 

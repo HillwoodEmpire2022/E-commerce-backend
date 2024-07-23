@@ -36,12 +36,12 @@ const ProductSchema = new mongoose.Schema(
 
     seller_commission: {
       type: Number,
-      default: 0.3,
+      default: 0.03,
     },
 
     customer_commission: {
       type: Number,
-      default: 0.4,
+      default: 0.04,
     },
 
     // Should Belong in Product Class
@@ -134,6 +134,10 @@ const ProductSchema = new mongoose.Schema(
       virtuals: true,
       transform(doc, ret) {
         delete ret._id;
+        ret.price = ret.price + ret.price * ret.customer_commission;
+        delete ret.seller_commission;
+        delete ret.customer_commission;
+        return ret;
       },
     },
     timestamps: true,
