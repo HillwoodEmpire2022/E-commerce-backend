@@ -87,6 +87,8 @@ const ProductSchema = new mongoose.Schema(
       type: String,
     },
 
+    attributes: [{ key: String, value: String }],
+
     colorMeasurementVariations: {
       measurementType: {
         type: String,
