@@ -108,12 +108,14 @@ describe('Create Products', () => {
       .set('Authorization', `Bearer ${token}`)
       .send(newProduct);
 
+    console.log('*************************8', response.body);
+
     expect(response.status).toBe(201);
     expect(response.body.data.product).toMatchObject({
       name: newProduct.name,
       description: 'Description',
       stockQuantity: 400,
-      price: 1050,
+      price: newProduct.price + newProduct.price * 0.04,
       currency: 'RWF',
       hasColors: false,
     });
@@ -150,7 +152,7 @@ describe('Create Products', () => {
       description: 'Description',
       description: 'Description',
       stockQuantity: 400,
-      price: 1050,
+      price: newProduct.price + newProduct.price * 0.04,
       currency: 'RWF',
       hasColors: false,
     });
@@ -216,8 +218,7 @@ describe('Create Products', () => {
     expect(response.status).toBe(404);
     expect(response.body).toMatchObject({
       status: 'fail',
-      message:
-        'There is no seller that matches the provided seller Id.',
+      message: 'There is no seller that matches the provided seller Id.',
     });
   });
 
@@ -249,8 +250,7 @@ describe('Create Products', () => {
     expect(response.status).toBe(403);
     expect(response.body).toMatchObject({
       status: 'fail',
-      message:
-        'You are not allowed to create products for other sellers',
+      message: 'You are not allowed to create products for other sellers',
     });
   });
 
@@ -282,8 +282,7 @@ describe('Create Products', () => {
     expect(response.status).toBe(403);
     expect(response.body).toMatchObject({
       status: 'fail',
-      message:
-        'Access denied! You are not allowed to perform this operation.',
+      message: 'Access denied! You are not allowed to perform this operation.',
     });
   });
 
@@ -433,10 +432,7 @@ describe('Create Products', () => {
       },
     };
 
-    await request(app)
-      .post('/api/v1/products')
-      .set('Authorization', `Bearer ${token}`)
-      .send(newProduct);
+    await request(app).post('/api/v1/products').set('Authorization', `Bearer ${token}`).send(newProduct);
 
     const duplicate = await request(app)
       .post('/api/v1/products')
@@ -467,15 +463,10 @@ describe('Create Products', () => {
       },
     };
 
-    const res = await request(app)
-      .post('/api/v1/products')
-      .set('Authorization', `Bearer ${token}`)
-      .send(newProduct);
+    const res = await request(app).post('/api/v1/products').set('Authorization', `Bearer ${token}`).send(newProduct);
 
     expect(res.statusCode).toBe(400);
-    expect(res.body.message).toBe(
-      'ProductClass or category or subcategory not found'
-    );
+    expect(res.body.message).toBe('ProductClass or category or subcategory not found');
   });
 
   it('should return 400 if category is not found', async () => {
@@ -498,15 +489,10 @@ describe('Create Products', () => {
       },
     };
 
-    const res = await request(app)
-      .post('/api/v1/products')
-      .set('Authorization', `Bearer ${token}`)
-      .send(newProduct);
+    const res = await request(app).post('/api/v1/products').set('Authorization', `Bearer ${token}`).send(newProduct);
 
     expect(res.statusCode).toBe(400);
-    expect(res.body.message).toBe(
-      'ProductClass or category or subcategory not found'
-    );
+    expect(res.body.message).toBe('ProductClass or category or subcategory not found');
   });
 
   it('should return 400 if subcategory is not found', async () => {
@@ -530,15 +516,10 @@ describe('Create Products', () => {
       },
     };
 
-    const res = await request(app)
-      .post('/api/v1/products')
-      .set('Authorization', `Bearer ${token}`)
-      .send(newProduct);
+    const res = await request(app).post('/api/v1/products').set('Authorization', `Bearer ${token}`).send(newProduct);
 
     expect(res.statusCode).toBe(400);
-    expect(res.body.message).toBe(
-      'ProductClass or category or subcategory not found'
-    );
+    expect(res.body.message).toBe('ProductClass or category or subcategory not found');
   });
 
   it('should return 400 if brand is not found', async () => {
@@ -563,15 +544,10 @@ describe('Create Products', () => {
       },
     };
 
-    const res = await request(app)
-      .post('/api/v1/products')
-      .set('Authorization', `Bearer ${token}`)
-      .send(newProduct);
+    const res = await request(app).post('/api/v1/products').set('Authorization', `Bearer ${token}`).send(newProduct);
 
     expect(res.statusCode).toBe(400);
-    expect(res.body.message).toBe(
-      'ProductClass or category or subcategory not found'
-    );
+    expect(res.body.message).toBe('ProductClass or category or subcategory not found');
   });
 });
 
@@ -667,9 +643,7 @@ describe('Update Products', () => {
       .send(newProduct);
 
     const res = await request(app)
-      .patch(
-        `/api/v1/products/${response.body.data.product.id}`
-      )
+      .patch(`/api/v1/products/${response.body.data.product.id}`)
       .set('Authorization', `Bearer ${token}`)
       .send({
         name: 'new name',
@@ -706,9 +680,7 @@ describe('Update Products', () => {
       .send(newProduct);
 
     const res = await request(app)
-      .patch(
-        `/api/v1/products/${response.body.data.product.id}`
-      )
+      .patch(`/api/v1/products/${response.body.data.product.id}`)
       .set('Authorization', `Bearer ${token}`)
       .send({
         seller: sellerUSer2._id,
@@ -746,9 +718,7 @@ describe('Update Products', () => {
       .send(newProduct);
 
     const res = await request(app)
-      .patch(
-        `/api/v1/products/${response.body.data.product.id}`
-      )
+      .patch(`/api/v1/products/${response.body.data.product.id}`)
       .set('Authorization', `Bearer ${seller2Totoken}`)
       .send({
         name: 'new name',
@@ -832,9 +802,7 @@ describe('Update Products', () => {
       .send(newProduct);
 
     const res = await request(app)
-      .patch(
-        `/api/v1/products/${response.body.data.product.id}`
-      )
+      .patch(`/api/v1/products/${response.body.data.product.id}`)
       .set('Authorization', `Bearer ${seller2Totoken}`)
       .send({
         seller: sellerUSer._id,
@@ -843,8 +811,7 @@ describe('Update Products', () => {
     expect(res.status).toBe(403);
     expect(res.body).toMatchObject({
       status: 'fail',
-      message:
-        'Access denied! You are not allowed to perform this operation.',
+      message: 'Access denied! You are not allowed to perform this operation.',
     });
   });
 
@@ -875,9 +842,7 @@ describe('Update Products', () => {
       .send(newProduct);
 
     const res = await request(app)
-      .patch(
-        `/api/v1/products/${response.body.data.product.id}`
-      )
+      .patch(`/api/v1/products/${response.body.data.product.id}`)
       .set('Authorization', `Bearer ${seller2Totoken}`)
       .send({
         name: 'new name',
@@ -889,8 +854,7 @@ describe('Update Products', () => {
     expect(res.status).toBe(403);
     expect(res.body).toMatchObject({
       status: 'fail',
-      message:
-        'Access denied! You cannot update a product that does not belong to you.',
+      message: 'Access denied! You cannot update a product that does not belong to you.',
     });
   });
 });

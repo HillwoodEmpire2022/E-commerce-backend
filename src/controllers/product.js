@@ -275,7 +275,7 @@ export const createProduct = async (req, res, next) => {
       productClass: req.body.productClass,
       hasColors: req.body.hasColors || false,
       hasMeasurements: req.body.hasMeasurements || false,
-      price: calculatePriceWithMarkup(req.body.price),
+      price: req.body.price,
       quantityParameter: removeEmptySpaces(req.body.quantityParameter),
       discountPercentage: req.body.discountPercentage,
       stockQuantity: req.body.stockQuantity,
@@ -351,9 +351,3 @@ export const createProduct = async (req, res, next) => {
     next(error);
   }
 };
-
-function calculatePriceWithMarkup(price) {
-  const markupPercentage = 0.05; // 5% markup
-  const markupAmount = price * markupPercentage;
-  return price + markupAmount;
-}
