@@ -48,7 +48,7 @@ export const activationEmailTemplate = (url, firstName) => {
             padding: 10px 20px;
             margin-top: 20px;
             background-color: #1D6F2B;
-            color: white;
+            color: white !important;
             text-decoration: none;
             border-radius: 5px;
             font-size: 16px;
@@ -86,7 +86,7 @@ export const activationEmailTemplate = (url, firstName) => {
         <div class="content">
             <h2>Welcome, ${firstName}!</h2>
             <p>Thank you for signing up with us. Please verify your email address by clicking the button below:</p>
-            <a href=${url} class="button" styles="color: white">Verify Email</a>
+            <a href=${url} class="button" styles="color: white !important">Verify Email</a>
             <p>If the button doesn't work, please copy and paste the following URL into your browser:</p>
             <p>${url}</p>
             <p>If you didn't sign up, please ignore this email.</p>

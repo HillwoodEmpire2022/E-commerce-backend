@@ -16,6 +16,8 @@ import { checkUser } from '../middlewares/checkUser.js';
 
 const Router = express.Router();
 
+Router.use(checkUser);
+
 /**
  * @swagger
  * tags:
@@ -79,12 +81,7 @@ const Router = express.Router();
  *                type: object
  */
 
-Router.post(
-  '/',
-  isLoggedIn,
-  restrictTo('admin', 'seller'),
-  createProduct
-);
+Router.post('/', isLoggedIn, restrictTo('admin', 'seller'), createProduct);
 
 /**
  * @swagger
@@ -125,7 +122,7 @@ Router.post(
  *                type: array
  *
  */
-Router.get('/', checkUser, getAllProducts);
+Router.get('/', getAllProducts);
 
 /**
  * @swagger
@@ -210,12 +207,7 @@ Router.get('/:productId', getSingleProduct);
  *              schema:
  *                type: object
  */
-Router.patch(
-  '/:productId',
-  isLoggedIn,
-  restrictTo('admin', 'seller'),
-  updateProductData
-);
+Router.patch('/:productId', isLoggedIn, restrictTo('admin', 'seller'), updateProductData);
 
 /**
  * @swagger
@@ -261,16 +253,8 @@ Router.get('/category/:categoryId', getProductsByCategory);
  *              schema:
  *                type: array
  */
-Router.get(
-  '/subcategory/:subcategoryId',
-  getProductsBySubCategory
-);
-Router.delete(
-  '/:productId',
-  isLoggedIn,
-  restrictTo('admin', 'seller'),
-  deleteProduct
-);
+Router.get('/subcategory/:subcategoryId', getProductsBySubCategory);
+Router.delete('/:productId', isLoggedIn, restrictTo('admin', 'seller'), deleteProduct);
 Router.post('/search', searchProduct);
 
 export default Router;

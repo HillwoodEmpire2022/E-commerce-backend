@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { customer_commission } from '../utils/variables.js';
 
 const ProductSchema = new mongoose.Schema(
   {
@@ -37,11 +38,7 @@ const ProductSchema = new mongoose.Schema(
     seller_commission: {
       type: Number,
       default: 0.03,
-    },
-
-    customer_commission: {
-      type: Number,
-      default: 0.04,
+      select: false,
     },
 
     // Should Belong in Product Class
@@ -136,9 +133,7 @@ const ProductSchema = new mongoose.Schema(
       virtuals: true,
       transform(doc, ret) {
         delete ret._id;
-        ret.price = ret.price + ret.price * ret.customer_commission;
-        delete ret.seller_commission;
-        delete ret.customer_commission;
+        ret.price = ret.price + ret.price * customer_commission;
         return ret;
       },
     },
