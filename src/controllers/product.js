@@ -13,17 +13,22 @@ import { strictTransportSecurity } from 'helmet';
 
 export const getAllProducts = async (req, res, next) => {
   try {
+    const isAdmin = req.user && req.user.role === 'admin' ? true : false;
     const queryObj = {};
-    let reqQuery = { ...req.query };
+    let products;
     if (req?.user?.role === 'seller') queryObj.seller = req.user._id;
 
-    if (req?.query.fields)
-      reqQuery = { ...reqQuery, fields: `${req.query.fields},seller_commission,customer_commission` };
-
     // EXECUTE QUERY
-    let features = new APIFeatures(Product.find(queryObj), reqQuery).filter().sort().limitFields().paginate();
+    let features = new APIFeatures(
+      isAdmin ? Product.find(queryObj).select('+seller_commission') : Product.find(queryObj),
+      req.query
+    )
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
 
-    const products = await features.query;
+    products = await features.query;
 
     res.status(200).json({
       status: 'success',
@@ -39,6 +44,8 @@ export const getAllProducts = async (req, res, next) => {
 
 export const getSingleProduct = async (req, res, next) => {
   try {
+    let product;
+    const isAdmin = req.user && req.user.role === 'admin' ? true : false;
     // 1) Validate user data
     const { error } = MongoIDValidator.validate(req.params, {
       errors: { label: 'key', wrap: { label: false } },
@@ -48,9 +55,11 @@ export const getSingleProduct = async (req, res, next) => {
       return next(new AppError(error.message, 400));
     }
 
-    const product = await Product.findOne({
-      _id: req.params.productId,
-    }).exec();
+    product = isAdmin
+      ? await Product.findOne({
+          _id: req.params.productId,
+        }).select('+seller_commission')
+      : await Product.findOne({ _id: req.params.productId });
 
     if (!product) {
       return next(new AppError('Product not found', 404));
@@ -149,6 +158,11 @@ export const updateProductData = async (req, res, next) => {
 
     // If Update include seller, require admin to perform operation
     if (req.body.seller && !isUserAdmin) {
+      return next(new AppError('Access denied! You are not allowed to perform this operation.', 403));
+    }
+
+    // If Update include customer_commission and seller_commission require admin to perform operation
+    if (req.body.seller_commission && !isUserAdmin) {
       return next(new AppError('Access denied! You are not allowed to perform this operation.', 403));
     }
 

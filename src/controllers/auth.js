@@ -23,6 +23,7 @@ const activationTokenGenerator = (email) => {
 
 // ********* Register ************
 export const userRegister = async (req, res, next) => {
+  let sellerProfile;
   const { email } = req.body;
   try {
     // 1) Validate user data
@@ -44,7 +45,7 @@ export const userRegister = async (req, res, next) => {
 
     // If user is seller create seller profile
     if (req.body.role === 'seller') {
-      await SellerProfile.create({ user: newUser._id });
+      sellerProfile = await SellerProfile.create({ user: newUser._id });
     }
 
     // 3) Send Verification Email
@@ -64,7 +65,8 @@ export const userRegister = async (req, res, next) => {
     try {
       await sendEmail(emailOptions.to, emailOptions.subject, emailOptions.url, emailOptions.firstName);
     } catch (error) {
-      console.error(error);
+      await User.findByIdAndDelete(newUser._id);
+      await SellerProfile.findByIdAndDelete(sellerProfile?._id);
       return next(new AppError('There was an error sending email! Please try again.', 500));
     }
 
