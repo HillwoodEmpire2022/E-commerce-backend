@@ -222,7 +222,7 @@ export const getMe = async (req, res) => {
   });
 };
 
-export const forgotPassword = async (req, res, user) => {
+export const forgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
 
@@ -256,12 +256,12 @@ export const forgotPassword = async (req, res, user) => {
       text: `Hello ${email}, Welcome! to hill group! request has been recieved to reset password.`,
       url,
     };
-    await sendEmail(emailOptions);
+    await sendEmail(emailOptions.to, emailOptions.subject, emailOptions.url, emailOptions.text);
     return res.status(201).json({
       message: 'check your email to reset password',
     });
   } catch (error) {
-    return res.status(500).json({ message: 'failed to  reset password' });
+    next(error);
   }
 };
 
