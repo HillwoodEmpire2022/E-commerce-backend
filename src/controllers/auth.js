@@ -63,7 +63,13 @@ export const userRegister = async (req, res, next) => {
     };
 
     try {
-      await sendEmail(emailOptions.to, emailOptions.subject, emailOptions.url, emailOptions.firstName);
+      await sendEmail(
+        emailOptions.to,
+        emailOptions.subject,
+        emailOptions.url,
+        emailOptions.firstName,
+        'account-activation'
+      );
     } catch (error) {
       await User.findByIdAndDelete(newUser._id);
       await SellerProfile.findByIdAndDelete(sellerProfile?._id);
@@ -244,7 +250,7 @@ export const forgotPassword = async (req, res, next) => {
 
     const resetUserToken = encodeURIComponent(
       jwt.sign({ email: email }, process.env.JWT_SECRET_KEY, {
-        expiresIn: '1h',
+        expiresIn: '15m',
       })
     );
 
@@ -252,11 +258,11 @@ export const forgotPassword = async (req, res, next) => {
 
     const emailOptions = {
       to: email,
-      subject: 'Email reset password Link',
-      text: `Hello ${email}, Welcome! to hill group! request has been recieved to reset password.`,
+      subject: 'Reset password Link (Expires in 15 Minutes)',
+      firstName: checkUserEmail.firstName,
       url,
     };
-    await sendEmail(emailOptions.to, emailOptions.subject, emailOptions.url, emailOptions.text);
+    await sendEmail(emailOptions.to, emailOptions.subject, emailOptions.url, emailOptions.firstName, 'forgot-password');
     return res.status(201).json({
       message: 'check your email to reset password',
     });
