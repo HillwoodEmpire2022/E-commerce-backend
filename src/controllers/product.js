@@ -14,6 +14,13 @@ import { strictTransportSecurity } from 'helmet';
 export const getAllProducts = async (req, res, next) => {
   try {
     const isAdmin = req.user && req.user.role === 'admin' ? true : false;
+
+    const query = {
+      ...req.query,
+      ...(req?.query?.fields &&
+        !req.query.fields.includes('absorbCustomerCharge') && { fields: `${req.query.fields},absorbCustomerCharge` }),
+    };
+
     const queryObj = {};
     let products;
     if (req?.user?.role === 'seller') queryObj.seller = req.user._id;
@@ -21,7 +28,7 @@ export const getAllProducts = async (req, res, next) => {
     // EXECUTE QUERY
     let features = new APIFeatures(
       isAdmin ? Product.find(queryObj).select('+seller_commission') : Product.find(queryObj),
-      req.query
+      query
     )
       .filter()
       .sort()
@@ -295,8 +302,14 @@ export const createProduct = async (req, res, next) => {
       stockQuantity: req.body.stockQuantity,
       brand: req.body.brand,
       productImages: req.body.productImages,
+      ...(req.body.seller_commission && {
+        seller_commission: req.body.seller_commission,
+      }),
       ...(req.body.currency && {
         currency: removeEmptySpaces(req.body.currency),
+      }),
+      ...(req.body.absorbCustomerCharge && {
+        absorbCustomerCharge: true,
       }),
       colorMeasurementVariations: req.body.colorMeasurementVariations,
     };
