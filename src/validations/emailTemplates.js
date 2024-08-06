@@ -30,7 +30,7 @@ export const forgotPasswordEmailTemplate = (url, firstName) => {
         </div>
         
         <div style="padding: 0px 30px 20px 30px">
-            <h2 style="color:blue"> Hi ${firstName},</h2>
+            <h2> Hi ${firstName},</h2>
             <p>Click the button below to reset your password. If you didn't ask for this, just ignore this email</p>
             <a href=${url}  style="cursor: pointer;display:inline-block;padding:10px 20px;background-color: #1D6F2B;color:white;text-decoration: none;border-radius: 5px;font-size: 16px;">Reset password</a> 
         </div>

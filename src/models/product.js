@@ -76,6 +76,11 @@ const ProductSchema = new mongoose.Schema(
       type: Boolean,
     },
 
+    featured: {
+      type: Boolean,
+      default: false,
+    },
+
     hasMeasurements: {
       type: Boolean,
     },
