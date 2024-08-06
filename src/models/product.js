@@ -89,6 +89,11 @@ const ProductSchema = new mongoose.Schema(
       type: String,
     },
 
+    absorbCustomerCharge: {
+      type: Boolean,
+      default: true,
+    },
+
     attributes: [{ key: String, value: String }],
 
     colorMeasurementVariations: {
@@ -138,7 +143,7 @@ const ProductSchema = new mongoose.Schema(
       virtuals: true,
       transform(doc, ret) {
         delete ret._id;
-        ret.price = ret.price + ret.price * customer_commission;
+        if (!ret.absorbCustomerCharge) ret.price = ret.price + ret.price * customer_commission;
         return ret;
       },
     },

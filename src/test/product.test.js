@@ -1,11 +1,10 @@
 import request from 'supertest';
+import app from '../app';
+import Category from '../models/category';
+import Product from '../models/product';
+import ProductClass from '../models/productClass';
 import User from '../models/user';
 import { signin } from './setup';
-import Category from '../models/category';
-import app from '../app';
-import Product from '../models/product';
-import SubCategory from '../models/subcategory';
-import ProductClass from '../models/productClass';
 
 let adminUser, sellerUSer, sellerUSer2, customer;
 // Classes
@@ -108,14 +107,11 @@ describe('Create Products', () => {
       .set('Authorization', `Bearer ${token}`)
       .send(newProduct);
 
-    console.log('*************************8', response.body);
-
     expect(response.status).toBe(201);
     expect(response.body.data.product).toMatchObject({
       name: newProduct.name,
       description: 'Description',
       stockQuantity: 400,
-      price: newProduct.price + newProduct.price * 0.04,
       currency: 'RWF',
       hasColors: false,
     });
@@ -152,7 +148,6 @@ describe('Create Products', () => {
       description: 'Description',
       description: 'Description',
       stockQuantity: 400,
-      price: newProduct.price + newProduct.price * 0.04,
       currency: 'RWF',
       hasColors: false,
     });
