@@ -13,6 +13,8 @@ dotenv.config();
 
 import flw from '../services/flutterwave.js';
 import AppError from '../utils/AppError.js';
+import User from '../models/user.js';
+import { send_order_notification_email } from '../utils/email.js';
 const paypack = new PaypackJs.default({
   client_id: process.env.PAYPACK_APP_ID,
   client_secret: process.env.PAYPACK_APP_SECRET,
@@ -309,7 +311,7 @@ export const flw_webhook = async (req, res, next) => {
   // Find Order
   const order = await Order.findOne({
     tx_ref: payload.data.tx_ref,
-  });
+  }).populate({ path: 'items.product', select: 'name' });
 
   // Verify Transaction
   const response = await verifyTransaction(payload.data.id);
@@ -327,6 +329,24 @@ export const flw_webhook = async (req, res, next) => {
 
   // Update Order
   await updateOrderAndProducts(order, response.data.customer, response.data.id);
+
+  // Send Email to Customer
+  const order_url = `${process.env.CLIENT_URL}/user/order/${order._id}`;
+  const customer = await User.findById(order.customer);
+
+  // Email Obtions
+  const emailOptions = {
+    to: order.email,
+    subject: `Feli Express - Your Order (#${order._id}) Has Been Received!`,
+    firstName: customer.firstName,
+    order_url,
+  };
+
+  try {
+    await send_order_notification_email(emailOptions, order);
+  } catch (error) {
+    return res.status(500).end();
+  }
 
   res.status(200).end();
 };
