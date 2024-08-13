@@ -200,80 +200,45 @@ export const updateProductData = async (req, res, next) => {
 };
 
 // user search product
-export const searchProduct = async (req, res) => {
-  try {
-    const searchItem = req.body.searchItem;
+export const searchProduct = async (req, res, next) => {
+  const query = req.query;
+  const searchItem = req.query.name;
 
-    const searchConditions = [
+  // Selecting certain fields (projection)
+  const projection = query.fields
+    ? query.fields.split(',').reduce((acc, field) => {
+        return { ...acc, [field]: 1 };
+      }, {})
+    : null;
+
+  try {
+    const aggregationPipeline = [
       {
-        name: {
-          $regex: '^' + searchItem + '$',
-          $options: 'i',
+        $search: {
+          index: 'product_full_text_search',
+          text: {
+            query: searchItem,
+            path: ['name'],
+            fuzzy: {
+              maxEdits: 2,
+            },
+          },
         },
       },
     ];
 
-    if (searchItem) {
-      const category = await Category.findOne({
-        name: {
-          $regex: '^' + searchItem + '$',
-          $options: 'i',
-        },
-      });
+    // If there is rq.query.fields, add a projection stage to the pipeline
+    if (projection) aggregationPipeline.push({ $project: projection });
 
-      const subcategory = await SubCategory.findOne({
-        name: {
-          $regex: '^' + searchItem + '$',
-          $options: 'i',
-        },
-      });
-
-      if (category) {
-        searchConditions.push({ category: category._id });
-      }
-
-      if (subcategory) {
-        searchConditions.push({
-          subCategory: subcategory._id,
-        });
-      }
-    }
-
-    if (!isNaN(searchItem)) {
-      searchConditions.push({
-        price: parseFloat(searchItem),
-      });
-    }
-
-    const products = await Product.find({
-      $or: searchConditions,
-    })
-      .populate({
-        path: 'category',
-        select: 'name',
-      })
-      .populate({
-        path: 'subCategory',
-        select: 'name',
-      })
-      .exec();
-
-    if (products.length === 0) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'No items found',
-      });
-    }
+    const products = await Product.aggregate(aggregationPipeline);
 
     return res.status(200).json({
       status: 'success',
+      results: products.length,
       data: { products },
     });
   } catch (error) {
-    return res.status(500).json({
-      status: 'error',
-      message: 'Failed to search products',
-    });
+    next(error);
   }
 };
 

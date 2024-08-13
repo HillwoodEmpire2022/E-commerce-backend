@@ -85,6 +85,54 @@ Router.post('/', isLoggedIn, restrictTo('admin', 'seller'), createProduct);
 
 /**
  * @swagger
+ * /products/search:
+ *   get:
+ *     summary: Search for products
+ *     tags: [Products]
+ *     description: Search for products by name and optionally select specific fields.
+ *     parameters:
+ *       - name: name
+ *         in: query
+ *         description: Name of the product to search for
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: fields
+ *         in: query
+ *         description: Comma-separated list of fields to include in the response
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response with the product search results
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 products:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                       price:
+ *                         type: number
+ *                       description:
+ *                         type: string
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal server error
+ */
+
+Router.get('/search', searchProduct);
+
+/**
+ * @swagger
  * /products:
  *    get:
  *      summary: Get all products.
@@ -254,7 +302,7 @@ Router.get('/category/:categoryId', getProductsByCategory);
  *                type: array
  */
 Router.get('/subcategory/:subcategoryId', getProductsBySubCategory);
+
 Router.delete('/:productId', isLoggedIn, restrictTo('admin', 'seller'), deleteProduct);
-Router.post('/search', searchProduct);
 
 export default Router;
