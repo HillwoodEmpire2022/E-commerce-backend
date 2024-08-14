@@ -626,7 +626,7 @@ export const retry_card_payment = async (req, res, next) => {
     }
 
     // If not paid Construct Card Payload
-    const tx_ref = randomStringGenerator();
+    const tx_ref = order.tx_ref;
     const redirect_url = generateRedirectUrl();
     const payload = {
       ...req.body.payload,
