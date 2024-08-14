@@ -268,7 +268,7 @@ router.post('/retry-momo', isLoggedIn, retry_momo_payment);
  *         description: Card payment/charge initiated with 3DS authorization (redirect to 3DS page)
  *
  */
-router.post('/payments/retry-card', isLoggedIn, retry_card_payment);
+router.post('/retry-card', isLoggedIn, retry_card_payment);
 
 /**
  * @swagger
