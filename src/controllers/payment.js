@@ -667,12 +667,11 @@ export const retry_card_payment = async (req, res, next) => {
     // For 3DS or VBV transactions, redirect users to their issue to authorize the transaction
     if (response?.meta?.authorization.mode === 'redirect') {
       const url = response.meta.authorization.redirect;
-      // Redirect User to the authorization page to enter OTP
-      open(url);
 
       return res.status(302).json({
         status: 'success',
         message: 'Redirecting to authorize transaction',
+        url,
       });
     }
 
