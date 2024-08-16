@@ -668,7 +668,7 @@ export const retry_card_payment = async (req, res, next) => {
     if (response?.meta?.authorization.mode === 'redirect') {
       const url = response.meta.authorization.redirect;
 
-      return res.status(302).json({
+      return res.status(200).json({
         status: 'success',
         message: 'Redirecting to authorize transaction',
         url,
