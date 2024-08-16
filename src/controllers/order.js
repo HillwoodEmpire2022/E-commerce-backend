@@ -373,3 +373,52 @@ export const updateOrder = async (req, res) => {
     });
   }
 };
+
+export const searchOrder = async (req, res, next) => {
+  const { query } = req.query;
+  const role = req.user.role;
+  const match = {};
+
+  // Role = admin can search all orders
+  // Role = seller can search only his/her orders
+  // Role = customer can search only his/her orders
+  if (role === 'customer') {
+    match.customer = req.user._id;
+  }
+
+  if (role === 'seller') {
+    match['items.seller'] = req.user._id;
+  }
+
+  try {
+    const aggregationPipeline = [
+      {
+        $search: {
+          index: 'orders_fulltext_search',
+          text: {
+            query,
+            path: {
+              wildcard: '*',
+            },
+            fuzzy: {
+              maxEdits: 2,
+            },
+          },
+        },
+      },
+      {
+        $match: match,
+      },
+    ];
+
+    const orders = await Order.aggregate(aggregationPipeline);
+
+    return res.status(200).json({
+      status: 'success',
+      results: orders.length,
+      data: { orders },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
