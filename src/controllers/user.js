@@ -6,11 +6,7 @@ import { updateUserSchema } from '../validations/userUpdateValidation.js';
 export const getUsers = async (req, res) => {
   try {
     // EXECUTE QUERY
-    const features = new APIFeatures(User.find(), req.query)
-      .filter()
-      .sort()
-      .limitFields()
-      .paginate();
+    const features = new APIFeatures(User.find(), req.query).filter().sort().limitFields().paginate();
 
     const users = await features.query;
 
@@ -49,9 +45,7 @@ export const updateUserRole = async (req, res) => {
     });
 
     if (!user) {
-      return res
-        .status(404)
-        .json({ status: 'fail', message: 'User not found' });
+      return res.status(404).json({ status: 'fail', message: 'User not found' });
     }
 
     res.status(200).json({ status: 'success', data: user });
@@ -73,10 +67,7 @@ export const getUser = async (req, res) => {
     }
 
     // EXECUTE QUERY
-    const features = new APIFeatures(
-      User.findById(req.params.id).populate('profile'),
-      req.query
-    )
+    const features = new APIFeatures(User.findById(req.params.id).populate('profile'), req.query)
       .filter()
       .sort()
       .limitFields()
@@ -84,10 +75,7 @@ export const getUser = async (req, res) => {
 
     const user = await features.query;
 
-    if (!user)
-      return res
-        .status(404)
-        .json({ status: 'fail', message: 'User not found.' });
+    if (!user) return res.status(404).json({ status: 'fail', message: 'User not found.' });
 
     res.status(200).json({
       status: 'success',
@@ -97,5 +85,48 @@ export const getUser = async (req, res) => {
     });
   } catch (error) {
     res.status(500).send({ error: error.message });
+  }
+};
+
+export const searchUser = async (req, res, next) => {
+  const { query } = req.query;
+
+  try {
+    const aggregationPipeline = [
+      {
+        $search: {
+          index: 'users_fulltext_search',
+          text: {
+            query,
+            path: {
+              wildcard: '*',
+            },
+            fuzzy: {
+              maxEdits: 2,
+            },
+          },
+        },
+      },
+
+      {
+        $project: {
+          _id: 1,
+          firstName: 1,
+          lastName: 1,
+          email: 1,
+          role: 1,
+        },
+      },
+    ];
+
+    const users = await User.aggregate(aggregationPipeline);
+
+    return res.status(200).json({
+      status: 'success',
+      results: users.length,
+      data: { users },
+    });
+  } catch (error) {
+    next(error);
   }
 };
