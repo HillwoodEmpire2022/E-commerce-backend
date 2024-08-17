@@ -25,14 +25,14 @@ const orderSchema = new mongoose.Schema(
     tx_ref: String,
 
     // Mobile Money payload for delayed payments
-    // momo_payload: {
-    //   tx_ref: String,
-    //   amount: Number,
-    //   currency: String,
-    //   email: String,
-    //   phone_number: String,
-    //   fullname: String,
-    // },
+    momo_payload: {
+      tx_ref: String,
+      amount: Number,
+      currency: String,
+      email: String,
+      phone_number: String,
+      fullname: String,
+    },
 
     // Hidden From seller
     payment_type: {
