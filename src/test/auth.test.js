@@ -20,9 +20,7 @@ describe('User Registration', () => {
       role: 'customer',
     };
 
-    const response = await request(app)
-      .post('/api/v1/auth/register')
-      .send(userData);
+    const response = await request(app).post('/api/v1/auth/register').send(userData);
 
     expect(response.body).toMatchObject({
       status: 'success',
@@ -43,9 +41,7 @@ describe('User Registration', () => {
       email: 'invalid', // Missing required fields
     };
 
-    const response = await request(app)
-      .post('/api/v1/auth/register')
-      .send(invalidUserData);
+    const response = await request(app).post('/api/v1/auth/register').send(invalidUserData);
 
     expect(response.status).toBe(400);
   });
@@ -60,9 +56,7 @@ describe('User Registration', () => {
       role: 'customer',
     };
 
-    await request(app)
-      .post('/api/v1/auth/register')
-      .send(user1data);
+    await request(app).post('/api/v1/auth/register').send(user1data);
 
     const user2data = {
       email: 'duplicate@example.com',
@@ -73,15 +67,12 @@ describe('User Registration', () => {
       role: 'customer',
     };
 
-    const response2 = await request(app)
-      .post('/api/v1/auth/register')
-      .send(user2data);
+    const response2 = await request(app).post('/api/v1/auth/register').send(user2data);
 
     expect(response2.status).toBe(400);
     expect(response2.body).toMatchObject({
       status: 'fail',
-      message:
-        'Email (duplicate@example.com) already in use.',
+      message: 'Email (duplicate@example.com) already in use.',
     });
   });
 });
@@ -92,7 +83,7 @@ describe('Account Activation', () => {
   });
   it('should activate an account with a valid token', async () => {
     const userData = {
-      email: 'test@example.com',
+      email: 'test2@example.com',
       firstName: 'John',
       lastName: 'Doe',
       password: 'test1234',
@@ -100,17 +91,13 @@ describe('Account Activation', () => {
       role: 'customer',
     };
 
-    const res = await request(app)
-      .post('/api/v1/auth/register')
-      .send(userData);
+    const res = await request(app).post('/api/v1/auth/register').send(userData);
 
     const createUser = await User.findOne({
       email: userData.email,
     });
 
-    const response = await request(app).get(
-      `/api/v1/auth/activate-account/${createUser.activationToken}`
-    );
+    const response = await request(app).get(`/api/v1/auth/activate-account/${res.body.activationToken}`);
 
     expect(response.status).toBe(200);
 
@@ -126,14 +113,9 @@ describe('Account Activation', () => {
   });
 
   it('should return a 404 error if the user is not found', async () => {
-    const token = jwt.sign(
-      { email: 'nonexistent@user.com' },
-      process.env.JWT_SECRET_KEY
-    );
+    const token = jwt.sign({ email: 'nonexistent@user.com' }, process.env.JWT_SECRET_KEY);
 
-    const response = await request(app)
-      .get(`/api/v1/auth/activate-account/${token}`)
-      .expect(404);
+    const response = await request(app).get(`/api/v1/auth/activate-account/${token}`).expect(404);
 
     expect(response.body).toEqual({
       status: 'fail',
@@ -143,7 +125,7 @@ describe('Account Activation', () => {
 
   it('should return a 400 error if the account is already verified', async () => {
     const userData = {
-      email: 'test@example.com',
+      email: 'test1@example.com',
       firstName: 'John',
       lastName: 'Doe',
       password: 'test1234',
@@ -151,26 +133,18 @@ describe('Account Activation', () => {
       role: 'customer',
     };
 
-    await request(app)
-      .post('/api/v1/auth/register')
-      .send(userData);
+    const res = await request(app).post('/api/v1/auth/register').send(userData);
 
-    const createUser = await User.findOne({
-      email: userData.email,
-    });
-
-    await request(app).get(
-      `/api/v1/auth/activate-account/${createUser.activationToken}`
+    await User.findOneAndUpdate(
+      {
+        email: userData.email,
+      },
+      {
+        verified: true,
+      }
     );
 
-    const token = jwt.sign(
-      { email: 'test@example.com' },
-      process.env.JWT_SECRET_KEY
-    );
-
-    const response = await request(app).get(
-      `/api/v1/auth/activate-account/${token}`
-    );
+    const response = await request(app).get(`/api/v1/auth/activate-account/${res.body.activationToken}`);
 
     expect(response.body).toEqual({
       status: 'fail',
@@ -185,9 +159,7 @@ describe('userLogin', () => {
   });
 
   it('should return a 400 status code for invalid input', async () => {
-    const response = await request(app)
-      .post('/api/v1/auth/login')
-      .send({ email: 'invalid_email' });
+    const response = await request(app).post('/api/v1/auth/login').send({ email: 'invalid_email' });
 
     expect(response.status).toBe(400);
   });
@@ -198,12 +170,10 @@ describe('userLogin', () => {
       password: 'password',
     };
 
-    const response = await request(app)
-      .post('/api/v1/auth/login')
-      .send({
-        email: user.email,
-        password: 'wrong_password',
-      });
+    const response = await request(app).post('/api/v1/auth/login').send({
+      email: user.email,
+      password: 'wrong_password',
+    });
 
     expect(response.status).toBe(401);
     expect(response.body).toEqual({
@@ -222,28 +192,23 @@ describe('userLogin', () => {
       role: 'customer',
     };
 
-    await request(app)
-      .post('/api/v1/auth/register')
-      .send(userData);
+    await request(app).post('/api/v1/auth/register').send(userData);
 
-    const response = await request(app)
-      .post('/api/v1/auth/login')
-      .send({
-        email: userData.email,
-        password: userData.password,
-      });
+    const response = await request(app).post('/api/v1/auth/login').send({
+      email: userData.email,
+      password: userData.password,
+    });
 
     expect(response.status).toBe(401);
     expect(response.body).toEqual({
       status: 'fail',
-      message:
-        'Account not activated! Check your email to activate your account.',
+      message: 'Account not activated! Check your email to activate your account.',
     });
   });
 
   it('should return a 200 status code and user data for successful login', async () => {
     const userData = {
-      email: 'test@example.com',
+      email: 'test2@example.com',
       firstName: 'John',
       lastName: 'Doe',
       password: 'test1234',
@@ -251,30 +216,22 @@ describe('userLogin', () => {
       role: 'customer',
     };
 
-    await request(app)
-      .post('/api/v1/auth/register')
-      .send(userData);
+    const res = await request(app).post('/api/v1/auth/register').send(userData);
 
-    const createUser = await User.findOne({
+    await User.findOne({
       email: userData.email,
     });
 
-    await request(app).get(
-      `/api/v1/auth/activate-account/${createUser.activationToken}`
-    );
+    await request(app).get(`/api/v1/auth/activate-account/${res.body.activationToken}`);
 
-    const response = await request(app)
-      .post('/api/v1/auth/login')
-      .send({
-        email: userData.email,
-        password: userData.password,
-      });
+    const response = await request(app).post('/api/v1/auth/login').send({
+      email: userData.email,
+      password: userData.password,
+    });
 
     expect(response.status).toBe(200);
     expect(response.body.token).toBeDefined();
-    expect(response.body.data.user.email).toEqual(
-      'test@example.com'
-    );
+    expect(response.body.data.user.email).toEqual('test2@example.com');
   });
 });
 
@@ -285,31 +242,23 @@ describe('sendEmailToResetPassword', () => {
 
   it('should return a 404 status if the email does not exist', async () => {
     const invalidEmail = 'nonexistent@example.com';
-    const resetPasswordResponse = await request(app)
-      .post('/api/v1/auth/forgot-password')
-      .send({
-        email: invalidEmail,
-      });
+    const resetPasswordResponse = await request(app).post('/api/v1/auth/forgot-password').send({
+      email: invalidEmail,
+    });
 
     expect(resetPasswordResponse.status).toBe(404);
-    expect(resetPasswordResponse.body.message).toBe(
-      'email does not exist'
-    );
+    expect(resetPasswordResponse.body.message).toBe('email does not exist');
   });
 
   it('should return a 422 status if email validation fails', async () => {
     const invalidEmail = 'emailgmail.com';
 
-    const resetPasswordResponse = await request(app)
-      .post('/api/v1/auth/forgot-password')
-      .send({
-        email: invalidEmail,
-      });
+    const resetPasswordResponse = await request(app).post('/api/v1/auth/forgot-password').send({
+      email: invalidEmail,
+    });
 
     expect(resetPasswordResponse.status).toBe(422);
-    expect(
-      resetPasswordResponse.body.message
-    ).toBeDefined();
+    expect(resetPasswordResponse.body.message).toBeDefined();
   });
 });
 
@@ -324,10 +273,7 @@ describe('resetUserPassword', () => {
       password: 'oldPassword',
     };
 
-    const resetToken = jwt.sign(
-      { email: user.email },
-      process.env.JWT_SECRET_KEY
-    );
+    const resetToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET_KEY);
     await User.create(user);
 
     const newPassword = 'newPassword';
@@ -340,10 +286,7 @@ describe('resetUserPassword', () => {
     const updatedUser = await User.findOne({
       email: user.email,
     }).select('+password');
-    const isPasswordValid = await bcrypt.compare(
-      newPassword,
-      updatedUser.password
-    );
+    const isPasswordValid = await bcrypt.compare(newPassword, updatedUser.password);
     expect(isPasswordValid).toBe(true);
   });
 
@@ -353,10 +296,7 @@ describe('resetUserPassword', () => {
       password: 'oldPassword',
     };
 
-    const resetToken = jwt.sign(
-      { email: user.email },
-      process.env.JWT_SECRET_KEY
-    );
+    const resetToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET_KEY);
     await User.create(user);
 
     const newPassword = 'newPassword';
@@ -371,17 +311,12 @@ describe('resetUserPassword', () => {
 
   it('should return a 404 status if user not found', async () => {
     const nonExistentEmail = 'nonexistent@example.com';
-    const resetToken = jwt.sign(
-      { email: nonExistentEmail },
-      process.env.JWT_SECRET_KEY
-    );
+    const resetToken = jwt.sign({ email: nonExistentEmail }, process.env.JWT_SECRET_KEY);
 
-    const response = await request(app)
-      .patch(`/api/v1/auth/reset-password/${resetToken}`)
-      .send({
-        newPassword: 'newPassword',
-        confirmPassword: 'newPassword',
-      });
+    const response = await request(app).patch(`/api/v1/auth/reset-password/${resetToken}`).send({
+      newPassword: 'newPassword',
+      confirmPassword: 'newPassword',
+    });
 
     expect(response.status).toBe(404);
   });
@@ -389,17 +324,13 @@ describe('resetUserPassword', () => {
   it('should return a 500 status for invalid token', async () => {
     const invalidToken = 'invalidToken';
 
-    const response = await request(app)
-      .patch(`/api/v1/auth/reset-password/${invalidToken}`)
-      .send({
-        newPassword: 'newPassword',
-        confirmPassword: 'newPassword',
-      });
+    const response = await request(app).patch(`/api/v1/auth/reset-password/${invalidToken}`).send({
+      newPassword: 'newPassword',
+      confirmPassword: 'newPassword',
+    });
 
     expect(response.status).toBe(500);
-    expect(response.body.message).toBe(
-      'failed to reset user password'
-    );
+    expect(response.body.message).toBe('failed to reset user password');
   });
 });
 
@@ -408,39 +339,31 @@ describe('Testing update user password after login', () => {
     userId = '';
   beforeAll(async () => {
     // Register user
-    const response = await request(app)
-      .post('/api/v1/auth/register')
-      .send({
-        firstName: 'myfirstname',
-        lastName: 'mysecondname',
-        email: 'testemail1234@gmail.com',
-        password: 'testpass2345',
-      });
+    const response = await request(app).post('/api/v1/auth/register').send({
+      firstName: 'myfirstname',
+      lastName: 'mysecondname',
+      email: 'testemail1234@gmail.com',
+      password: 'testpass2345',
+    });
     token = await response.body.token;
   });
 
   beforeEach(async () => {
     // Login user
-    const response = await request(app)
-      .post('/api/v1/auth/login')
-      .send({
-        email: 'testemail1234@gmail.com',
-        password: 'testpass2345',
-      });
+    const response = await request(app).post('/api/v1/auth/login').send({
+      email: 'testemail1234@gmail.com',
+      password: 'testpass2345',
+    });
     token = signin({ id: response.id });
-    userId = response.body.user
-      ? response.body.user._id
-      : null;
+    userId = response.body.user ? response.body.user._id : null;
   });
 
   it('It should return 401 if user is not logged in', async () => {
-    const response = await request(app)
-      .patch('/api/v1/auth/update-password')
-      .send({
-        currentPassword: 'testpass2345',
-        newPassword: 'newtestpass2345',
-        confirmPassword: 'newtestpass2345',
-      });
+    const response = await request(app).patch('/api/v1/auth/update-password').send({
+      currentPassword: 'testpass2345',
+      newPassword: 'newtestpass2345',
+      confirmPassword: 'newtestpass2345',
+    });
     expect(response.statusCode).toBe(401);
   });
 
@@ -462,46 +385,35 @@ describe('user update profile data', () => {
     userId = '';
   beforeAll(async () => {
     // Register user
-    const response = await request(app)
-      .post('/api/v1/auth/register')
-      .send({
-        firstName: 'myfirstname1',
-        lastName: 'mysecondname2',
-        email: 'testemail1234@gmail.com',
-        password: 'testpass2345',
-      });
+    const response = await request(app).post('/api/v1/auth/register').send({
+      firstName: 'myfirstname1',
+      lastName: 'mysecondname2',
+      email: 'testemail1234@gmail.com',
+      password: 'testpass2345',
+    });
     token = await response.body.token;
   });
 
   beforeEach(async () => {
     // Login user
-    const response = await request(app)
-      .post('/api/v1/auth/login')
-      .send({
-        email: 'testemail1234@gmail.com',
-        password: 'testpass2345',
-      });
+    const response = await request(app).post('/api/v1/auth/login').send({
+      email: 'testemail1234@gmail.com',
+      password: 'testpass2345',
+    });
     token = signin({ id: response.id });
-    userId = response.body.user
-      ? response.body.user._id
-      : null;
+    userId = response.body.user ? response.body.user._id : null;
   });
 
   it('it should return 401 if user is not loged in', async () => {
-    const response = await request(app).patch(
-      '/api/v1/auth/profile-data'
-    );
+    const response = await request(app).patch('/api/v1/auth/profile-data');
     expect(response.status).toBe(401);
   });
 
   it('it should return 401 if user is not found', async () => {
-    const res = await request(app)
-      .patch('/api/v1/auth/profile-data')
-      .set('Authorization', `Bearer ${token}`)
-      .send({
-        firstName: 'ben',
-        lastName: 'big',
-      });
+    const res = await request(app).patch('/api/v1/auth/profile-data').set('Authorization', `Bearer ${token}`).send({
+      firstName: 'ben',
+      lastName: 'big',
+    });
     expect(res.statusCode).toBe(401);
   });
 });

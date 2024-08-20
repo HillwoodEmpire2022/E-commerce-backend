@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { base64FileStringGenerator } from '../utils/base64Converter.js';
 
@@ -23,7 +24,7 @@ const activationTokenGenerator = (email) => {
 
 // ********* Register ************
 export const userRegister = async (req, res, next) => {
-  let sellerProfile;
+  let sellerProfile, newUser;
   const { email } = req.body;
   try {
     // 1) Validate user data
@@ -34,13 +35,10 @@ export const userRegister = async (req, res, next) => {
     if (error) {
       return res.status(400).json({ status: 'fail', message: error.message });
     }
-    // Generate verification token
-    const activationToken = activationTokenGenerator(email);
 
     // 2) Create user
-    const newUser = await User.create({
+    newUser = await User.create({
       ...req.body,
-      activationToken,
     });
 
     // If user is seller create seller profile
@@ -48,11 +46,16 @@ export const userRegister = async (req, res, next) => {
       sellerProfile = await SellerProfile.create({ user: newUser._id });
     }
 
+    const verificationCode = newUser.generateSixDigitsCode('activation');
+
+    // 2) Save user verification code/token
+    await newUser.save({ validateBeforeSave: false });
+
     // 3) Send Verification Email
     // Frontend Url
     const url = `${
       process.env.CLIENT_URL || 'https://e-commerce-frontend-pi-seven.vercel.app'
-    }/activate-account/${activationToken}`;
+    }/activate-account/${verificationCode}`;
 
     // Email Obtions
     const emailOptions = {
@@ -60,16 +63,11 @@ export const userRegister = async (req, res, next) => {
       subject: 'Email Verification Link',
       firstName: newUser.firstName,
       url,
+      verificationCode,
     };
 
     try {
-      await sendEmail(
-        emailOptions.to,
-        emailOptions.subject,
-        emailOptions.url,
-        emailOptions.firstName,
-        'account-activation'
-      );
+      await sendEmail(emailOptions, 'account-activation');
     } catch (error) {
       await User.findByIdAndDelete(newUser._id);
       await SellerProfile.findByIdAndDelete(sellerProfile?._id);
@@ -79,10 +77,12 @@ export const userRegister = async (req, res, next) => {
     // 4) Send Successful response
     res.status(201).json({
       status: 'success',
-      activationToken: process.env.NODE_ENV === 'test' ? activationToken : undefined,
+      activationToken: process.env.NODE_ENV === 'test' ? verificationCode : undefined,
       data: 'Email to activate your account was sent to your email.',
     });
   } catch (error) {
+    await User.findByIdAndDelete(newUser?._id);
+    await SellerProfile.findByIdAndDelete(sellerProfile?._id);
     if (error.code === 11000) {
       next(new AppError(`Email (${email}) already in use.`, 400));
     }
@@ -95,10 +95,10 @@ export const userRegister = async (req, res, next) => {
 export const activateAccount = async (req, res) => {
   const { activationToken } = req.params;
   try {
-    const decodeToken = jwt.verify(activationToken, process.env.JWT_SECRET_KEY);
-    const { email } = decodeToken;
+    // 1) GET USER BASED ON TOKEN
+    const hashedToken = crypto.createHash('sha256').update(activationToken).digest('hex');
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ activationToken: hashedToken });
 
     if (!user) {
       return res.status(404).json({
@@ -126,7 +126,7 @@ export const activateAccount = async (req, res) => {
       message: 'Account Activated successfully.',
     });
   } catch (err) {
-    return res.status(400).json({ message: 'Invalid token.' });
+    next(err);
   }
 };
 
