@@ -49,7 +49,8 @@ const userSchema = new mongoose.Schema(
     activationToken: String,
 
     passwordResetToken: String,
-    passwordResetExpiresIn: Date,
+    passwordResetExpiresOn: Date,
+    passwordChangedAt: Date,
   },
   {
     toJSON: {
@@ -70,11 +71,11 @@ userSchema.methods.generateSixDigitsCode = function (option) {
   if (option === 'activation') {
     // Hash the code
     this.activationToken = crypto.createHash('sha256').update(code).digest('hex');
-  } else if (option === 'reset') {
+  } else if (option === 'resetPassword') {
     // Hash the code
     this.passwordResetToken = crypto.createHash('sha256').update(code).digest('hex');
     // Lasts for 15 mininutes
-    this.passwordResetExpiresIn = Date.now() + 15 * 60 * 1000;
+    this.passwordResetExpiresOn = Date.now() + 15 * 60 * 1000;
   }
 
   return code;

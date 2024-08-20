@@ -24,7 +24,7 @@ export const activationEmailTemplate = (url, firstName, verificationCode) => {
     `;
 };
 
-export const forgotPasswordEmailTemplate = (url, firstName) => {
+export const forgotPasswordEmailTemplate = (url, firstName, otp) => {
   return `
 <div style="background-color: #f4f4f4; height:100vh; padding-top: 50px">
 	   <div class="container" style="width:90%;max-width: 600px;margin: 0 auto;background-color:#ffffff; box-shadow:0 0 10px rgba(0, 0, 0, 0.1)">
@@ -37,6 +37,8 @@ export const forgotPasswordEmailTemplate = (url, firstName) => {
             <h2> Hi ${firstName},</h2>
             <p>Click the button below to reset your password. If you didn't ask for this, just ignore this email</p>
             <a href=${url}  style="cursor: pointer;display:inline-block;padding:10px 20px;background-color: #1D6F2B;color:white;text-decoration: none;border-radius: 5px;font-size: 16px;">Reset password</a> 
+
+            <p>If you are resetting password from a mobile app, enter the following code <span style="cursor: pointer;display:inline-block;padding: 2px 4px;background-color: #1D6F2B;color:white;text-decoration: none;border-radius: 5px;font-size: 14px;">${otp}</span> in the form provided.</p>
         </div>
         
     </div>
