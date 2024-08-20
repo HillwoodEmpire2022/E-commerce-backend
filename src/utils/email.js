@@ -14,7 +14,7 @@ async function sendEmail(options, kind) {
     kind === 'account-activation'
       ? activationEmailTemplate(options.url, options.firstName, options.verificationCode)
       : kind === 'forgot-password'
-      ? forgotPasswordEmailTemplate(options.url, options.firstName)
+      ? forgotPasswordEmailTemplate(options.url, options.firstName, options.otp)
       : '';
 
   try {
