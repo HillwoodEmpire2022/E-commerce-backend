@@ -1,6 +1,6 @@
-import dateFormatter from './dateFormatter.js';
+import dateFormatter from '../validations/dateFormatter.js';
 
-export const activationEmailTemplate = (url, firstName) => {
+export const activationEmailTemplate = (url, firstName, verificationCode) => {
   return `
 
 <div style="background-color: #f4f4f4; height:100vh; padding-top: 50px">
@@ -13,6 +13,8 @@ export const activationEmailTemplate = (url, firstName) => {
             <h2>Welcome, ${firstName}!</h2>
             <p>Thank you for signing up with us. Please verify your email address by clicking the button below:</p>
             <a href=${url}  style="cursor: pointer;display:inline-block;padding:10px 20px;background-color: #1D6F2B;color:white;text-decoration: none;border-radius: 5px;font-size: 16px;">Verify your email</a>
+            <p>If you are signing up with Mobile App, provide the following code <span style="cursor: pointer;display:inline-block;padding: 2px 4px;background-color: #1D6F2B;color:white;text-decoration: none;border-radius: 5px;font-size: 14px;">${verificationCode}</span> in the form provided while signing up</p>
+            
             <p>If the button doesn't work, please copy and paste the following URL into your browser:</p>
             <p>${url}</p>
             <p>If you didn't sign up, please ignore this email.</p>

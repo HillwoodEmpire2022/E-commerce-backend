@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 
 const userSchema = new mongoose.Schema(
   {
@@ -46,6 +47,9 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
     activationToken: String,
+
+    passwordResetToken: String,
+    passwordResetExpiresIn: Date,
   },
   {
     toJSON: {
@@ -58,6 +62,23 @@ const userSchema = new mongoose.Schema(
     versionKey: false,
   }
 );
+
+// Method for generating six digits code for password reset and account activation
+userSchema.methods.generateSixDigitsCode = function (option) {
+  const code = crypto.randomInt(100000, 1000000).toString();
+
+  if (option === 'activation') {
+    // Hash the code
+    this.activationToken = crypto.createHash('sha256').update(code).digest('hex');
+  } else if (option === 'reset') {
+    // Hash the code
+    this.passwordResetToken = crypto.createHash('sha256').update(code).digest('hex');
+    // Lasts for 15 mininutes
+    this.passwordResetExpiresIn = Date.now() + 15 * 60 * 1000;
+  }
+
+  return code;
+};
 
 // Hash Password
 userSchema.pre('save', async function (next) {
