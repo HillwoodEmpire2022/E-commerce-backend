@@ -9,20 +9,20 @@ import {
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-async function sendEmail(to, subject, url, firstName, kind) {
+async function sendEmail(options, kind) {
   const html =
     kind === 'account-activation'
-      ? activationEmailTemplate(url, firstName)
+      ? activationEmailTemplate(options.url, options.firstName, options.verificationCode)
       : kind === 'forgot-password'
-      ? forgotPasswordEmailTemplate(url, firstName)
+      ? forgotPasswordEmailTemplate(options.url, options.firstName)
       : '';
 
   try {
     const data = await resend.emails.send({
       from: `Feli Express <${process.env.RESEND_NO_REPLY_EMIL}>`,
       // from: process.env.RESEND_NO_REPLY_EMIL,
-      to: [to],
-      subject,
+      to: [options.to],
+      subject: options.subject,
       html,
     });
 
