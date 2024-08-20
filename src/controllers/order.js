@@ -268,7 +268,10 @@ export const getOrders = async (req, res, next) => {
 
     // EXECUTE QUERY
     const features = new APIFeatures(Order.find(filter), req.query).filter().sort().limitFields().paginate();
-    orders = await features.query;
+    orders = await features.query.populate({
+      path: 'items.product',
+      select: 'name',
+    });
 
     res.status(200).json({
       status: 'success',
@@ -314,9 +317,11 @@ export const getOrder = async (req, res) => {
         },
       });
     }
-    // Aggregate query to fetch order by seller
 
-    order = await Order.findOne(filter);
+    order = await Order.findOne(filter).populate({
+      path: 'items.product',
+      select: 'name',
+    });
 
     if (!order)
       return res.status(404).json({
