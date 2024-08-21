@@ -225,6 +225,12 @@ export const searchProduct = async (req, res, next) => {
           },
         },
       },
+
+      {
+        $addFields: {
+          id: '$_id',
+        },
+      },
     ];
 
     // If there is rq.query.fields, add a projection stage to the pipeline
