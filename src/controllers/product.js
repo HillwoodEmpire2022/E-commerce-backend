@@ -271,6 +271,7 @@ export const createProduct = async (req, res, next) => {
       discountPercentage: req.body.discountPercentage,
       stockQuantity: req.body.stockQuantity,
       brand: req.body.brand,
+      featured: req.body.featured || false,
       productImages: req.body.productImages,
       ...(req.body.seller_commission && {
         seller_commission: req.body.seller_commission,
