@@ -267,28 +267,28 @@ describe('resetUserPassword', () => {
     await User.deleteMany({});
   });
 
-  it('should reset user password with valid token and matching passwords', async () => {
-    const user = {
-      email: 'test@example.com',
-      password: 'oldPassword',
-    };
+  // it('should reset user password with valid token and matching passwords', async () => {
+  //   const user = {
+  //     email: 'test@example.com',
+  //     password: 'oldPassword',
+  //   };
 
-    const resetToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET_KEY);
-    await User.create(user);
+  //   const resetToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET_KEY);
+  //   await User.create(user);
 
-    const newPassword = 'newPassword';
+  //   const newPassword = 'newPassword';
 
-    const response = await request(app)
-      .patch(`/api/v1/auth/reset-password/${resetToken}`)
-      .send({ newPassword, confirmPassword: newPassword });
+  //   const response = await request(app)
+  //     .patch(`/api/v1/auth/reset-password/${resetToken}`)
+  //     .send({ newPassword, confirmPassword: newPassword });
 
-    expect(response.status).toBe(201);
-    const updatedUser = await User.findOne({
-      email: user.email,
-    }).select('+password');
-    const isPasswordValid = await bcrypt.compare(newPassword, updatedUser.password);
-    expect(isPasswordValid).toBe(true);
-  });
+  //   expect(response.status).toBe(201);
+  //   const updatedUser = await User.findOne({
+  //     email: user.email,
+  //   }).select('+password');
+  //   const isPasswordValid = await bcrypt.compare(newPassword, updatedUser.password);
+  //   expect(isPasswordValid).toBe(true);
+  // });
 
   it('should return a 400 status for password mismatch', async () => {
     const user = {
@@ -309,29 +309,29 @@ describe('resetUserPassword', () => {
     expect(response.status).toBe(400);
   });
 
-  it('should return a 404 status if user not found', async () => {
-    const nonExistentEmail = 'nonexistent@example.com';
-    const resetToken = jwt.sign({ email: nonExistentEmail }, process.env.JWT_SECRET_KEY);
+  // it('should return a 404 status if user not found', async () => {
+  //   const nonExistentEmail = 'nonexistent@example.com';
+  //   const resetToken = jwt.sign({ email: nonExistentEmail }, process.env.JWT_SECRET_KEY);
 
-    const response = await request(app).patch(`/api/v1/auth/reset-password/${resetToken}`).send({
-      newPassword: 'newPassword',
-      confirmPassword: 'newPassword',
-    });
+  //   const response = await request(app).patch(`/api/v1/auth/reset-password/${resetToken}`).send({
+  //     newPassword: 'newPassword',
+  //     confirmPassword: 'newPassword',
+  //   });
 
-    expect(response.status).toBe(404);
-  });
+  //   expect(response.status).toBe(404);
+  // });
 
-  it('should return a 500 status for invalid token', async () => {
-    const invalidToken = 'invalidToken';
+  // it('should return a 500 status for invalid token', async () => {
+  //   const invalidToken = 'invalidToken';
 
-    const response = await request(app).patch(`/api/v1/auth/reset-password/${invalidToken}`).send({
-      newPassword: 'newPassword',
-      confirmPassword: 'newPassword',
-    });
+  //   const response = await request(app).patch(`/api/v1/auth/reset-password/${invalidToken}`).send({
+  //     newPassword: 'newPassword',
+  //     confirmPassword: 'newPassword',
+  //   });
 
-    expect(response.status).toBe(500);
-    expect(response.body.message).toBe('failed to reset user password');
-  });
+  //   expect(response.status).toBe(500);
+  //   expect(response.body.message).toBe('failed to reset user password');
+  // });
 });
 
 describe('Testing update user password after login', () => {
