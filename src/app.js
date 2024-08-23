@@ -36,9 +36,7 @@ app.use(
   })
 );
 
-app.use(
-  express.urlencoded({ limit: '50mb', extended: true })
-);
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -48,12 +46,8 @@ app.use(
     },
   })
 );
-if (
-  process.env.NODE_ENV === 'development' ||
-  process.env.NODE_ENV === 'production'
-) {
-  app.use(morgan('dev'));
-}
+
+app.use(morgan('dev'));
 
 // Cors
 app.use(
@@ -71,11 +65,7 @@ app.use(
 );
 
 // Routing
-app.use(
-  '/api-docs',
-  swaggerUI.serve,
-  swaggerUI.setup(specs)
-);
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/products', productRouter);
 app.use('/api/v1/categories', categoryRouter);
@@ -89,9 +79,7 @@ app.use('/api/v1/product-classes', productClassRouter);
 app.use('/api/v1/brands', brandsRouter);
 
 app.use('*', (req, res, next) => {
-  next(
-    new AppError(`Route ${req.baseUrl} not found.`, 404)
-  );
+  next(new AppError(`Route ${req.baseUrl} not found.`, 404));
 });
 
 app.use(globalErrorHandler);
