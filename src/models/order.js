@@ -1,44 +1,16 @@
 import mongoose from 'mongoose';
 
-const orderSchema = new mongoose.Schema(
+const paymentDetails = new mongoose.Schema(
   {
-    // User who placed the order
-    // Hidden From seller
     customer: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
-
-    // In Case user is not Signed in
-    // Will be added after user has payed from the flutterwave
-    // Hidden From seller
-    customerDetails: {
-      id: Number,
+      id: String,
       name: String,
-      phone_number: String,
       email: String,
-      created_at: Date,
     },
-
-    // Transaction Reference
-    tx_ref: String,
-
-    // Mobile Money payload for delayed payments
-    momo_payload: {
-      tx_ref: String,
-      amount: Number,
-      currency: String,
-      email: String,
-      phone_number: String,
-      fullname: String,
-    },
-
-    // Hidden From seller
     payment_type: {
       type: {
         type: String,
-        enum: ['mobile_money', 'card'],
+        enum: ['mobilemoneyrw', 'card'],
         required: true,
       },
       // If Mobile money: contains number
@@ -67,6 +39,22 @@ const orderSchema = new mongoose.Schema(
         },
       },
     },
+  },
+  { _id: false }
+);
+
+const orderSchema = new mongoose.Schema(
+  {
+    // User who placed the order
+    // Hidden From seller
+    customer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+
+    // Transaction Reference
+    tx_ref: String,
 
     transactionId: Number,
 
@@ -98,16 +86,11 @@ const orderSchema = new mongoose.Schema(
       },
     ],
 
+    paymentDetails: paymentDetails,
+
     // Total price of the order
     amount: {
       type: Number,
-      required: true,
-    },
-
-    // Hidden From seller
-    // From Flutterwave payload
-    email: {
-      type: String,
       required: true,
     },
 
@@ -119,6 +102,7 @@ const orderSchema = new mongoose.Schema(
 
     shippingAddress: {
       phoneNumber: { type: String, required: true },
+      email: String,
       country: String,
       province: String,
       district: String,
