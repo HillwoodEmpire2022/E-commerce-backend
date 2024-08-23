@@ -1,5 +1,8 @@
 export default function globalErrorHandler(err, req, res, next) {
-  // if (process.env.NODE_ENV !== 'test') console.log('🔥Error: ', err);
+  if (process.env.NODE_ENV !== 'test') {
+    console.log('🔥 Axios Error: ', err?.response?.data);
+    console.log('🔥Error: ', err);
+  }
 
   // JWT Errors
   if (err.name === 'TokenExpiredError') {

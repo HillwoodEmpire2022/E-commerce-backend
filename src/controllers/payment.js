@@ -783,12 +783,6 @@ export const pay = async (req, res, next) => {
 
     res.status(200).json(response.data);
   } catch (err) {
-    console.log(Object.entries(err));
-    console.log(
-      'IN --------------------------------------------------------------------------------------------------------------',
-      err.response.data
-    );
-
     next(err);
   }
 };
