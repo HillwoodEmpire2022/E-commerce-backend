@@ -5,112 +5,112 @@ import app from '../app';
 import User from '../models/user';
 import { signin } from './setup';
 
-// describe('User Registration', () => {
-//   beforeAll(async () => {
-//     await User.deleteMany({});
-//   });
+describe('User Registration', () => {
+  beforeAll(async () => {
+    await User.deleteMany({});
+  });
 
-//   it('should register a new user with valid data and email for activation sent', async () => {
-//     const userData = {
-//       email: 'test@example.com',
-//       firstName: 'John',
-//       lastName: 'Doe',
-//       password: 'test1234',
-//       confirmPassword: 'test1234',
-//       role: 'customer',
-//     };
+  it('should register a new user with valid data and email for activation sent', async () => {
+    const userData = {
+      email: 'test@example.com',
+      firstName: 'John',
+      lastName: 'Doe',
+      password: 'test1234',
+      confirmPassword: 'test1234',
+      role: 'customer',
+    };
 
-//     const response = await request(app).post('/api/v1/auth/register').send(userData);
+    const response = await request(app).post('/api/v1/auth/register').send(userData);
 
-//     expect(response.body).toMatchObject({
-//       status: 'success',
-//       data: 'Email to activate your account was sent to your email.',
-//     });
-//     expect(response.status).toBe(201);
+    expect(response.body).toMatchObject({
+      status: 'success',
+      data: 'Email to activate your account was sent to your email.',
+    });
+    expect(response.status).toBe(201);
 
-//     const createdUser = await User.findOne({
-//       email: userData.email,
-//     });
+    const createdUser = await User.findOne({
+      email: userData.email,
+    });
 
-//     expect(createdUser).toBeDefined();
-//     expect(createdUser.activationToken).toBeDefined();
-//   });
+    expect(createdUser).toBeDefined();
+    expect(createdUser.activationToken).toBeDefined();
+  });
 
-//   it('should return a 400 error for invalid data', async () => {
-//     const invalidUserData = {
-//       email: 'invalid', // Missing required fields
-//     };
+  it('should return a 400 error for invalid data', async () => {
+    const invalidUserData = {
+      email: 'invalid', // Missing required fields
+    };
 
-//     const response = await request(app).post('/api/v1/auth/register').send(invalidUserData);
+    const response = await request(app).post('/api/v1/auth/register').send(invalidUserData);
 
-//     expect(response.status).toBe(400);
-//   });
+    expect(response.status).toBe(400);
+  });
 
-//   it('should return a 400 error for duplicate email', async () => {
-//     const user1data = {
-//       email: 'duplicate@example.com',
-//       firstName: 'John',
-//       lastName: 'Doe',
-//       password: 'test1234',
-//       confirmPassword: 'test1234',
-//       role: 'customer',
-//     };
+  it('should return a 400 error for duplicate email', async () => {
+    const user1data = {
+      email: 'duplicate@example.com',
+      firstName: 'John',
+      lastName: 'Doe',
+      password: 'test1234',
+      confirmPassword: 'test1234',
+      role: 'customer',
+    };
 
-//     await request(app).post('/api/v1/auth/register').send(user1data);
+    await request(app).post('/api/v1/auth/register').send(user1data);
 
-//     const user2data = {
-//       email: 'duplicate@example.com',
-//       firstName: 'John',
-//       lastName: 'Doe',
-//       password: 'test1234',
-//       confirmPassword: 'test1234',
-//       role: 'customer',
-//     };
+    const user2data = {
+      email: 'duplicate@example.com',
+      firstName: 'John',
+      lastName: 'Doe',
+      password: 'test1234',
+      confirmPassword: 'test1234',
+      role: 'customer',
+    };
 
-//     const response2 = await request(app).post('/api/v1/auth/register').send(user2data);
+    const response2 = await request(app).post('/api/v1/auth/register').send(user2data);
 
-//     expect(response2.status).toBe(400);
-//     expect(response2.body).toMatchObject({
-//       status: 'fail',
-//       message: 'Email (duplicate@example.com) already in use.',
-//     });
-//   });
-// });
+    expect(response2.status).toBe(400);
+    expect(response2.body).toMatchObject({
+      status: 'fail',
+      message: 'Email (duplicate@example.com) already in use.',
+    });
+  });
+});
 
 describe('Account Activation', () => {
   beforeAll(async () => {
     await User.deleteMany({});
   });
-  // it('should activate an account with a valid token', async () => {
-  //   const userData = {
-  //     email: 'test2@example.com',
-  //     firstName: 'John',
-  //     lastName: 'Doe',
-  //     password: 'test1234',
-  //     confirmPassword: 'test1234',
-  //     role: 'customer',
-  //   };
+  it('should activate an account with a valid token', async () => {
+    const userData = {
+      email: 'test2@example.com',
+      firstName: 'John',
+      lastName: 'Doe',
+      password: 'test1234',
+      confirmPassword: 'test1234',
+      role: 'customer',
+    };
 
-  //   const res = await request(app).post('/api/v1/auth/register').send(userData);
+    const res = await request(app).post('/api/v1/auth/register').send(userData);
 
-  //   const createUser = await User.findOne({
-  //     email: userData.email,
-  //   });
+    const createUser = await User.findOne({
+      email: userData.email,
+    });
 
-  //   const response = await request(app).get(`/api/v1/auth/activate-account/${res.body.activationToken}`);
+    const response = await request(app).get(`/api/v1/auth/activate-account/${res.body.activationToken}`);
 
-  //   expect(response.status).toBe(200);
+    expect(response.status).toBe(200);
 
-  //   expect(response.body).toEqual({
-  //     status: 'success',
-  //     message: 'Account Activated successfully.',
-  //   });
+    expect(response.body).toEqual({
+      status: 'success',
+      message: 'Account Activated successfully.',
+    });
 
-  //   const updatedUser = await User.findOne({
-  //     email: createUser.email,
-  //   });
-  //   expect(updatedUser.verified).toBe(true);
-  // });
+    const updatedUser = await User.findOne({
+      email: createUser.email,
+    });
+    expect(updatedUser.verified).toBe(true);
+  });
 
   it('should return a 404 error if the user is not found', async () => {
     const token = jwt.sign({ email: 'nonexistent@user.com' }, process.env.JWT_SECRET_KEY);
@@ -123,34 +123,34 @@ describe('Account Activation', () => {
     });
   });
 
-  // it('should return a 400 error if the account is already verified', async () => {
-  //   const userData = {
-  //     email: 'test1@example.com',
-  //     firstName: 'John',
-  //     lastName: 'Doe',
-  //     password: 'test1234',
-  //     confirmPassword: 'test1234',
-  //     role: 'customer',
-  //   };
+  it('should return a 400 error if the account is already verified', async () => {
+    const userData = {
+      email: 'test1@example.com',
+      firstName: 'John',
+      lastName: 'Doe',
+      password: 'test1234',
+      confirmPassword: 'test1234',
+      role: 'customer',
+    };
 
-  //   const res = await request(app).post('/api/v1/auth/register').send(userData);
+    const res = await request(app).post('/api/v1/auth/register').send(userData);
 
-  //   await User.findOneAndUpdate(
-  //     {
-  //       email: userData.email,
-  //     },
-  //     {
-  //       verified: true,
-  //     }
-  //   );
+    await User.findOneAndUpdate(
+      {
+        email: userData.email,
+      },
+      {
+        verified: true,
+      }
+    );
 
-  //   const response = await request(app).get(`/api/v1/auth/activate-account/${res.body.activationToken}`);
+    const response = await request(app).get(`/api/v1/auth/activate-account/${res.body.activationToken}`);
 
-  //   expect(response.body).toEqual({
-  //     status: 'fail',
-  //     message: 'Email already verified.',
-  //   });
-  // });
+    expect(response.body).toEqual({
+      status: 'fail',
+      message: 'Email already verified.',
+    });
+  });
 });
 
 describe('userLogin', () => {
