@@ -1,11 +1,13 @@
 import dotenv from 'dotenv';
 import express from 'express';
+import axios from 'axios';
 
 import {
   authorizeFlwOtpAndAvsTransaction,
   cashout,
   flw_card,
   flw_webhook,
+  pay,
   retry_card_payment,
   retry_momo_payment,
   rw_mobile_money,
@@ -13,6 +15,7 @@ import {
 } from '../controllers/payment.js';
 import { isLoggedIn } from '../middlewares/authentication.js';
 import { restrictTo } from '../middlewares/authorization.js';
+import { randomStringGenerator } from '../utils/randomStringGenerator.js';
 
 dotenv.config();
 /**
@@ -774,5 +777,7 @@ router.post('/validate-card', isLoggedIn, validateFlwOtpTransaction);
  */
 router.post('/checkout/momo', isLoggedIn, rw_mobile_money);
 router.post('/cashout', isLoggedIn, restrictTo('admin'), cashout);
+
+router.post('/pay', isLoggedIn, pay);
 
 export default router;

@@ -9,6 +9,7 @@ import { randomStringGenerator } from '../utils/randomStringGenerator.js';
 import removeEmptySpaces from '../utils/removeEmptySpaces.js';
 import cashoutValidator from '../validations/cashoutValidation.js';
 import orderJoiSchema from '../validations/orderValidation.js';
+import axios from 'axios';
 dotenv.config();
 
 import flw from '../services/flutterwave.js';
@@ -311,8 +312,44 @@ export const flw_webhook = async (req, res, next) => {
   // Find Order
   const order = await Order.findOne({
     tx_ref: payload.data.tx_ref,
-  }).populate({ path: 'items.product', select: 'name' });
+    status: 'awaits payment',
+  })
+    .populate({ path: 'items.product', select: 'name' })
+    .populate({ path: 'customer', select: 'firstName lastName email' });
 
+  // Update Order
+  const paymentType = payload.data.payment_type;
+  order.paymentDetails = {
+    customer: {
+      id: payload.data.customer.id,
+      name: payload.data.customer.name,
+      email: payload.data.customer.email,
+    },
+
+    payment_type: {
+      type: payload.data.payment_type,
+      ...(paymentType === 'card'
+        ? {
+            card: {
+              first_6digits: payload.data.card.first_6digits,
+              last_4digits: payload.data.card.last_4digits,
+              issuer: payload.data.card.issuer,
+              country: payload.data.card.country,
+              type: payload.data.card.type,
+              expiry: payload.data.card.expiry,
+            },
+          }
+        : { mobile_number: payload.data.customer.phone_number }),
+    },
+  };
+
+  order.transactionId = payload.data.id;
+
+  await order.save({
+    validateBeforeSave: false,
+  });
+
+  if (!order) return res.status(404).end();
   // Verify Transaction
   const response = await verifyTransaction(payload.data.id);
 
@@ -336,7 +373,7 @@ export const flw_webhook = async (req, res, next) => {
 
   // Email Obtions
   const emailOptions = {
-    to: order.email,
+    to: order.customer.email,
     subject: `Feli Express - Your Order (#${order._id}) Has Been Received!`,
     firstName: customer.firstName,
     order_url,
@@ -345,6 +382,8 @@ export const flw_webhook = async (req, res, next) => {
   try {
     await send_order_notification_email(emailOptions, order);
   } catch (error) {
+    console.log(error);
+
     return res.status(500).end();
   }
 
@@ -680,3 +719,148 @@ export const retry_card_payment = async (req, res, next) => {
     return next(error);
   }
 };
+
+// FLW Comphensive Payment
+export const pay = async (req, res, next) => {
+  let response, order;
+  const session = await mongoose.startSession();
+  const tx_ref = randomStringGenerator();
+  const customerId = req.user._id;
+
+  const { amount, email, phoneNumber, shippingAddress, items, name, deliveryPreference } = req.body;
+  const redirect_url = process.env.payment_redirect_url;
+
+  // Body
+  const payment_body = {
+    tx_ref,
+    amount,
+    currency: 'RWF',
+    redirect_url,
+    customer: {
+      email,
+      name,
+    },
+    customizations: {
+      title: 'Pay for items in cart',
+    },
+  };
+
+  // Order Body
+  const orderData = {
+    items,
+    amount,
+    shippingAddress: {
+      ...shippingAddress,
+      phoneNumber,
+      email,
+    },
+    tx_ref,
+    deliveryPreference: removeEmptySpaces(deliveryPreference),
+    customer: customerId,
+  };
+
+  try {
+    // Requesting Payment and creating order
+    await session.withTransaction(async () => {
+      // Request Payment Link
+      response = await axios.post(
+        'https://api.flutterwave.com/v3/payments',
+        {
+          ...payment_body,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      // Create Order
+      order = await Order.create([orderData], { session });
+    });
+
+    await session.endSession();
+
+    res.status(200).json(response.data);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Webhook card body
+// {
+//   "event": "charge.completed",
+//   "data": {
+//     "id": 6564750,
+//     "tx_ref": "901dfb30-6297-44b6-b5b6-3b4cc7cdb4af",
+//     "flw_ref": "FLW-MOCK-095e04e3116b7d205a5e05555e4229ed",
+//     "device_fingerprint": "57e0dc8ab027048e1005ef4bb5f39baa",
+//     "amount": 100,
+//     "currency": "RWF",
+//     "charged_amount": 100,
+//     "app_fee": 3.8,
+//     "merchant_fee": 0,
+//     "processor_response": "successful",
+//     "auth_model": "PIN",
+//     "ip": "54.75.161.64",
+//     "narration": "CARD Transaction ",
+//     "status": "successful",
+//     "payment_type": "card",
+//     "created_at": "2024-08-23T08:31:05.000Z",
+//     "account_id": 2413771,
+//     "customer": {
+//       "id": 2478973,
+//       "name": "John Doe",
+//       "phone_number": null,
+//       "email": "dav.ndungutse@gmail.com",
+//       "created_at": "2024-08-23T08:31:05.000Z"
+//     },
+//     "card": {
+//       "first_6digits": "553188",
+//       "last_4digits": "2950",
+//       "issuer": "MASTERCARD  CREDIT",
+//       "country": "NG",
+//       "type": "MASTERCARD",
+//       "expiry": "09/32"
+//     }
+//   },
+//   "event.type": "CARD_TRANSACTION"
+// }
+
+// MObile MOney
+// {
+//   "event": "charge.completed",
+//   "data": {
+//     "id": 6564810,
+//     "tx_ref": "62ebbb6b-c528-494e-a359-c87762225e51",
+//     "flw_ref": "flwm3s4m0c1724403596994",
+//     "device_fingerprint": "57e0dc8ab027048e1005ef4bb5f39baa",
+//     "amount": 100,
+//     "currency": "RWF",
+//     "charged_amount": 100,
+//     "app_fee": 2.9,
+//     "merchant_fee": 0,
+//     "processor_response": "Transaction Successful",
+//     "auth_model": "MOBILEMONEY",
+//     "ip": "52.209.154.143",
+//     "narration": "FELI TECHNOLOGY",
+//     "status": "successful",
+//     "payment_type": "mobilemoneyrw",
+//     "created_at": "2024-08-23T08:59:56.000Z",
+//     "account_id": 2413771,
+//     "customer": {
+//       "id": 2478985,
+//       "name": "John Doe",
+//       "phone_number": "250785283007",
+//       "email": "dav.ndungutse@gmail.com",
+//       "created_at": "2024-08-23T08:59:56.000Z"
+//     }
+//   },
+//   "event.type": "MOBILEMONEYRW_TRANSACTION"
+// }
+
+// Without Number, it comes when payment is mobile money
+// With Card, number in customer:  it is null
+
+// WIth NUmber: If mobile number,   the number in body is overriden in customer
+// With Card: REmains null even if provided

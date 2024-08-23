@@ -192,7 +192,9 @@ describe('userLogin', () => {
       role: 'customer',
     };
 
-    await request(app).post('/api/v1/auth/register').send(userData);
+    await User.create(userData);
+
+    // await request(app).post('/api/v1/auth/register').send(userData);
 
     const response = await request(app).post('/api/v1/auth/login').send({
       email: userData.email,
@@ -214,15 +216,18 @@ describe('userLogin', () => {
       password: 'test1234',
       confirmPassword: 'test1234',
       role: 'customer',
+      verified: true,
     };
 
-    const res = await request(app).post('/api/v1/auth/register').send(userData);
+    await User.create(userData);
+
+    // const res = await request(app).post('/api/v1/auth/register').send(userData);
 
     await User.findOne({
       email: userData.email,
     });
 
-    await request(app).get(`/api/v1/auth/activate-account/${res.body.activationToken}`);
+    // await request(app).get(`/api/v1/auth/activate-account/${res.body.activationToken}`);
 
     const response = await request(app).post('/api/v1/auth/login').send({
       email: userData.email,
