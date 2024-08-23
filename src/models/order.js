@@ -96,29 +96,16 @@ const orderSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ['awaits payment', 'pending', 'processing', 'shipped', 'delivered', 'cancelled', 'transaction failed'],
+      enum: ['awaits payment', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'],
       default: 'awaits payment',
     },
 
     shippingAddress: {
       phoneNumber: { type: String, required: true },
       email: String,
-      country: String,
-      province: String,
       district: String,
       sector: String,
-      cell: String,
-      village: String,
-      address: {
-        type: {
-          street: String,
-          coordinates: {
-            type: [Number],
-            index: '2dsphere',
-          },
-        },
-        geojson: true,
-      },
+      street: String,
     },
 
     deliveryPreference: {

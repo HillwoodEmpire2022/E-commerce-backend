@@ -1,6 +1,21 @@
 import mongoose from 'mongoose';
 import { customer_commission } from '../utils/variables.js';
 
+const featured = new mongoose.Schema(
+  {
+    featured: {
+      type: Boolean,
+      default: false,
+    },
+
+    image: {
+      type: String,
+      required: true,
+    },
+  },
+  { _id: false }
+);
+
 const ProductSchema = new mongoose.Schema(
   {
     name: {
@@ -76,11 +91,7 @@ const ProductSchema = new mongoose.Schema(
       type: Boolean,
     },
 
-    featured: {
-      type: Boolean,
-      default: false,
-    },
-
+    featured: featured,
     hasMeasurements: {
       type: Boolean,
     },
