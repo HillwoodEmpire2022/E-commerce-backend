@@ -71,7 +71,7 @@ export const userRegister = async (req, res, next) => {
     } catch (error) {
       await User.findByIdAndDelete(newUser._id);
       await SellerProfile.findByIdAndDelete(sellerProfile?._id);
-      return next(new AppError('There was an error sending email! Please try again.', 500));
+      return next(error);
     }
 
     // 4) Send Successful response

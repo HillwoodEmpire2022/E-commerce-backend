@@ -29,7 +29,7 @@ async function sendEmail(options, kind) {
     if (data.error) throw new Error(data.error.message);
     return data;
   } catch (error) {
-    throw new Error(error.message);
+    throw new Error(error);
   }
 }
 
