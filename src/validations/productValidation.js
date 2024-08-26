@@ -3,18 +3,18 @@ import Joi from 'joi';
 export const uploadProductValidation = Joi.object({
   name: Joi.string().required().min(2),
   description: Joi.string().required().min(6),
+  featured: Joi.object({
+    featured: Joi.boolean().required(),
+    image: Joi.string().uri().required(),
+  }),
   productClass: Joi.string()
     .required()
     .regex(/^[0-9a-fA-F]{24}$/)
-    .error(
-      new Error('productClass is Invalid or not provided')
-    ),
+    .error(new Error('productClass is Invalid or not provided')),
   category: Joi.string()
     .required()
     .regex(/^[0-9a-fA-F]{24}$/)
-    .error(
-      new Error('Category is Invalid or not provided')
-    ),
+    .error(new Error('Category is Invalid or not provided')),
   subCategory: Joi.string()
     .regex(/^[0-9a-fA-F]{24}$/)
     .error(new Error('SubCategory is Invalid')),
@@ -24,10 +24,7 @@ export const uploadProductValidation = Joi.object({
     .error(new Error('Seller is Invalid or not provided')),
   price: Joi.number().required().greater(0),
   Percentage: Joi.number().integer(),
-  stockQuantity: Joi.number()
-    .required()
-    .greater(0)
-    .integer(),
+  stockQuantity: Joi.number().required().greater(0).integer(),
   brand: Joi.string()
     .regex(/^[0-9a-fA-F]{24}$/)
     .error(new Error('Invalid brand Id')),
@@ -58,9 +55,7 @@ export const addCategoryValidation = Joi.object({
   productClass: Joi.string()
     .required()
     .regex(/^[0-9a-fA-F]{24}$/)
-    .error(
-      new Error('productClass is Invalid or not provided')
-    ),
+    .error(new Error('productClass is Invalid or not provided')),
 });
 
 export const SubCategoryValidation = Joi.object({
@@ -78,6 +73,10 @@ export const updateProductsValidation = Joi.object({
   subCategory: Joi.string(),
   seller: Joi.string(),
   price: Joi.number().greater(0),
+  featured: Joi.object({
+    featured: Joi.boolean().required(),
+    image: Joi.string().uri().required(),
+  }),
   discountPercentage: Joi.number().integer(),
   stockQuantity: Joi.number().greater(0).integer(),
   stockQuantity: Joi.number().greater(0).integer(),
@@ -86,7 +85,5 @@ export const updateProductsValidation = Joi.object({
     .error(new Error('Brand is Invalid or not provided')),
   productClass: Joi.string()
     .regex(/^[0-9a-fA-F]{24}$/)
-    .error(
-      new Error('productClass is Invalid or not provided')
-    ),
+    .error(new Error('productClass is Invalid or not provided')),
 });
