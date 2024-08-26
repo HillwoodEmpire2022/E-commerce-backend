@@ -20,6 +20,7 @@ import productClassRouter from './routes/productClass.routes.js';
 import brandsRouter from './routes/brand.routes.js';
 import { specs } from './utils/swaggerDocsSpecs.js';
 import globalErrorHandler from './controllers/globalErrorHandler.js';
+import userProfileRouter from './routes/userProfile.routes.js';
 import AppError from './utils/AppError.js';
 
 const app = express();
@@ -77,6 +78,7 @@ app.use('/api/v1/orders', orderRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/product-classes', productClassRouter);
 app.use('/api/v1/brands', brandsRouter);
+app.use('/api/v1/user-profiles', userProfileRouter);
 
 app.use('*', (req, res, next) => {
   next(new AppError(`Route ${req.baseUrl} not found.`, 404));

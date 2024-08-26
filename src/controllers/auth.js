@@ -17,6 +17,7 @@ import { uploadProfileImageToCloudinary } from '../utils/cloudinary.js';
 import { mongoIdValidator } from '../validations/mongoidValidator.js';
 import sendEmail from '../utils/email.js';
 import AppError from '../utils/AppError.js';
+import UserProfile from '../models/userProfile.js';
 
 const activationTokenGenerator = (email) => {
   return jwt.sign({ email }, process.env.JWT_SECRET_KEY);
@@ -24,7 +25,7 @@ const activationTokenGenerator = (email) => {
 
 // ********* Register ************
 export const userRegister = async (req, res, next) => {
-  let sellerProfile, newUser;
+  let sellerProfile, newUser, userProfile;
   const { email } = req.body;
   try {
     // 1) Validate user data
@@ -44,6 +45,8 @@ export const userRegister = async (req, res, next) => {
     // If user is seller create seller profile
     if (req.body.role === 'seller') {
       sellerProfile = await SellerProfile.create({ user: newUser._id });
+    } else {
+      userProfile = await UserProfile.create({ user: newUser._id });
     }
 
     const verificationCode = newUser.generateSixDigitsCode('activation');
@@ -71,6 +74,7 @@ export const userRegister = async (req, res, next) => {
     } catch (error) {
       await User.findByIdAndDelete(newUser._id);
       await SellerProfile.findByIdAndDelete(sellerProfile?._id);
+      await UserProfile.findByIdAndDelete(userProfile?._id);
       return next(error);
     }
 
@@ -83,6 +87,7 @@ export const userRegister = async (req, res, next) => {
   } catch (error) {
     await User.findByIdAndDelete(newUser?._id);
     await SellerProfile.findByIdAndDelete(sellerProfile?._id);
+    await UserProfile.findByIdAndDelete(userProfile?._id);
     if (error.code === 11000) {
       next(new AppError(`Email (${email}) already in use.`, 400));
     }
