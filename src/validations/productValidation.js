@@ -4,8 +4,8 @@ export const uploadProductValidation = Joi.object({
   name: Joi.string().required().min(2),
   description: Joi.string().required().min(6),
   featured: Joi.object({
-    featured: Joi.boolean().required(),
-    image: Joi.string().uri().required(),
+    isFeatured: Joi.boolean().required(),
+    featuredImage: Joi.string().uri().required(),
   }),
   productClass: Joi.string()
     .required()
@@ -74,8 +74,8 @@ export const updateProductsValidation = Joi.object({
   seller: Joi.string(),
   price: Joi.number().greater(0),
   featured: Joi.object({
-    featured: Joi.boolean().required(),
-    image: Joi.string().uri().required(),
+    isFeatured: Joi.boolean().required(),
+    featuredImage: Joi.string().uri().required(),
   }),
   discountPercentage: Joi.number().integer(),
   stockQuantity: Joi.number().greater(0).integer(),

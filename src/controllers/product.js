@@ -10,6 +10,7 @@ import ProductClass from '../models/productClass.js';
 import Brand from '../models/brand.model.js';
 import AppError from '../utils/AppError.js';
 import { strictTransportSecurity } from 'helmet';
+import mongoose from 'mongoose';
 
 export const getAllProducts = async (req, res, next) => {
   try {
@@ -271,7 +272,6 @@ export const createProduct = async (req, res, next) => {
       discountPercentage: req.body.discountPercentage,
       stockQuantity: req.body.stockQuantity,
       brand: req.body.brand,
-      ...(req.body.featured && { featured: { featured: req.body.featured, image: req.body.featuredImage } }),
       productImages: req.body.productImages,
       ...(req.body.seller_commission && {
         seller_commission: req.body.seller_commission,
@@ -284,6 +284,18 @@ export const createProduct = async (req, res, next) => {
       }),
       colorMeasurementVariations: req.body.colorMeasurementVariations,
     };
+
+    if (req.body.featured?.isFeatured) {
+      productObject.featured = {
+        isFeatured: req.body.featured.isFeatured,
+        image: req.body.featured.featuredImage,
+      };
+    } else {
+      productObject.featured = {
+        isFeatured: false,
+        image: '',
+      };
+    }
 
     const seller = await User.findOne({
       _id: req.body.seller,
@@ -303,8 +315,8 @@ export const createProduct = async (req, res, next) => {
 
     // Check if product exists in the database
     const existingProduct = await Product.find({
+      seller: new mongoose.Types.ObjectId(req.body.seller),
       name: req.body.name,
-      seller: req.body.seller,
     });
 
     if (existingProduct.length !== 0) {

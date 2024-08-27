@@ -3,14 +3,13 @@ import { customer_commission } from '../utils/variables.js';
 
 const featured = new mongoose.Schema(
   {
-    featured: {
+    isFeatured: {
       type: Boolean,
       default: false,
     },
 
     image: {
       type: String,
-      required: true,
     },
   },
   { _id: false }
@@ -92,6 +91,7 @@ const ProductSchema = new mongoose.Schema(
     },
 
     featured: featured,
+
     hasMeasurements: {
       type: Boolean,
     },
