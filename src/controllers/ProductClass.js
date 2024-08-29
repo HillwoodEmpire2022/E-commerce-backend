@@ -26,6 +26,7 @@ export const createProductClass = async (req, res) => {
 
     const productClass = await ProductClass.create({
       name: removeEmptySpaces(req.body.name),
+      icon: removeEmptySpaces(req.body.icon),
     });
 
     return res.status(201).json({
@@ -83,14 +84,17 @@ export const getProductClassById = async (req, res) => {
   }
 };
 
-export const updateProductClass = async (req, res) => {
+export const updateProductClass = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name } = req.body;
+    const { name, icon } = req.body;
 
     const updatedProductClass = await ProductClass.findByIdAndUpdate(
       id,
-      { name: removeEmptySpaces(name) },
+      {
+        ...(req.body.name && { name: removeEmptySpaces(name) }),
+        ...(req.body.icon && { icon: removeEmptySpaces(icon) }),
+      },
       { new: true }
     );
 
@@ -105,7 +109,7 @@ export const updateProductClass = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: 'Internal server error' });
+    next(error);
   }
 };
 

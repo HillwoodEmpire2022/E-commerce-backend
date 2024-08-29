@@ -72,6 +72,10 @@ Router.get('/:id', getProductClassById);
  *                 type: string
  *                 description: The email address to send the verification email to.
  *                 example: Clothing
+ *               icon:
+ *                type: string
+ *                description: Icon for the product class
+ *                example: fas fa-tshirt
  *     responses:
  *       201:
  *         description: Product class created successfully
@@ -80,12 +84,7 @@ Router.get('/:id', getProductClassById);
  *       401:
  *         description: Unauthorized
  */
-Router.post(
-  '/',
-  isLoggedIn,
-  restrictTo('admin'),
-  createProductClass
-);
+Router.post('/', isLoggedIn, restrictTo('admin'), createProductClass);
 
 /**
  * @swagger
@@ -114,6 +113,10 @@ Router.post(
  *                 type: string
  *                 description: The email address to send the verification email to.
  *                 example: Clothing
+ *               icon:
+ *                type: string
+ *                description: Icon for the product class
+ *                example: fas fa-tshirt
  *     responses:
  *       200:
  *         description: Product class updated successfully
@@ -124,12 +127,7 @@ Router.post(
  *       404:
  *         description: Product class not found
  */
-Router.patch(
-  '/:id',
-  isLoggedIn,
-  restrictTo('admin'),
-  updateProductClass
-);
+Router.patch('/:id', isLoggedIn, restrictTo('admin'), updateProductClass);
 
 /**
  * @swagger
@@ -154,11 +152,6 @@ Router.patch(
  *       404:
  *         description: Product class not found
  */
-Router.delete(
-  '/:id',
-  isLoggedIn,
-  restrictTo('admin'),
-  deleteProductClass
-);
+Router.delete('/:id', isLoggedIn, restrictTo('admin'), deleteProductClass);
 
 export default Router;
