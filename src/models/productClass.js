@@ -9,6 +9,10 @@ const productClassSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
+    icon: {
+      type: String,
+      required: true,
+    },
   },
   {
     timestamps: true,
@@ -35,9 +39,6 @@ productClassSchema.virtual('brands', {
   foreignField: 'productClass',
 });
 
-const ProductClass = mongoose.model(
-  'ProductClass',
-  productClassSchema
-);
+const ProductClass = mongoose.model('ProductClass', productClassSchema);
 
 export default ProductClass;

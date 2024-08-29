@@ -69,10 +69,12 @@ describe('Create Products', () => {
     // Create product using ProductClass model
     clothing = await ProductClass.create({
       name: 'Clothing',
+      icon: 'fa fa-test',
     });
 
     electronics = await ProductClass.create({
       name: 'Electronics',
+      icon: 'fa fa-test',
     });
 
     smartphones_and_accessories = await Category.create({
@@ -106,6 +108,8 @@ describe('Create Products', () => {
       .post('/api/v1/products')
       .set('Authorization', `Bearer ${token}`)
       .send(newProduct);
+
+    console.log('***************', response.body);
 
     expect(response.status).toBe(201);
     expect(response.body.data.product).toMatchObject({
@@ -600,10 +604,12 @@ describe('Update Products', () => {
     // Create product using ProductClass model
     clothing = await ProductClass.create({
       name: 'Clothing',
+      icon: 'fa fa-test',
     });
 
     electronics = await ProductClass.create({
       name: 'Electronics',
+      icon: 'fa fa-test',
     });
 
     smartphones_and_accessories = await Category.create({
