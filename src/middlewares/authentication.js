@@ -1,5 +1,6 @@
 import { verifyJWToken } from '../utils/jsonWebToken.js';
 import User from '../models/user.js';
+import AppError from '../utils/AppError.js';
 
 // Protect
 export const isLoggedIn = async (req, res, next) => {
@@ -7,14 +8,12 @@ export const isLoggedIn = async (req, res, next) => {
     let token;
 
     // 1) GET THE TOKEN AND CHECK IF IT EXIST
-    if (req.headers.authorization)
-      token = req.headers.authorization.split(' ')[1];
+    if (req.headers.authorization) token = req.headers.authorization.split(' ')[1];
 
     if (!token) {
       res.status(401).json({
         status: 'fail',
-        message:
-          'Access denied. Please signin again to continue.',
+        message: 'Access denied. Please signin again to continue.',
       });
       return;
     }
@@ -22,6 +21,7 @@ export const isLoggedIn = async (req, res, next) => {
     // 2) VELIFY THE TOKEN (VERIFY AND CHECK TIMESPAN)
     const {
       userInfo: { id },
+      iat,
     } = verifyJWToken(token);
 
     // 3) CHECK IF USER STILL EXIST
@@ -36,13 +36,14 @@ export const isLoggedIn = async (req, res, next) => {
     if (!currentUser.active)
       return res.status(403).json({
         status: 'fail',
-        message:
-          'Your account has been temporarily closed! Contact customer support for help.',
+        message: 'Your account has been temporarily closed! Contact customer support for help.',
       });
 
-    // TODO: USer Changed password resently
+    //  5) CHECK IF USER CHANGED PASSWORD AFTER THE TOKEN WAS ISSUED
+    if (currentUser.changedPasswordAfter(iat))
+      return next(new AppError('User recently changed password! Please signin again.', 401));
 
-    // 5) GRANT ACCESS (AUTHORIZE)
+    // 6) GRANT ACCESS (AUTHORIZE)
     req.user = currentUser;
     next();
   } catch (error) {

@@ -20,6 +20,7 @@ export const emailValidation = Joi.object({
 
 export const passwordValidation = Joi.object({
   password: Joi.string().required().min(8).error(new Error('Password must be at least 8 characters')),
+  confirmPassword: Joi.string().required().valid(Joi.ref('password')).error(new Error('Passwords do not match')),
 });
 
 export const uploadProfileValidation = Joi.object({
