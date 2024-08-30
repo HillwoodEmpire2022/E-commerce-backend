@@ -277,10 +277,10 @@ export const forgotPassword = async (req, res, next) => {
 
 export const resetUserPassword = async (req, res, next) => {
   const { resetUserToken } = req.params;
-  const { password, confirmPassword } = req.body;
+  const { newPassword, confirmPassword } = req.body;
 
   const { error } = passwordValidation.validate(
-    { password: req.body.password },
+    { password: newPassword, confirmPassword },
     {
       errors: { label: 'key', wrap: { label: false } },
       allowUnknown: true,
@@ -291,7 +291,7 @@ export const resetUserPassword = async (req, res, next) => {
     return next(new AppError(error.message, 400));
   }
 
-  if (password != confirmPassword) {
+  if (newPassword != confirmPassword) {
     return res.status(400).json({ message: 'passwords do not match' });
   }
 
@@ -305,7 +305,7 @@ export const resetUserPassword = async (req, res, next) => {
       return res.status(404).json({ message: 'Otp is invalid or has expired! Please request for a new otp.' });
     }
 
-    user.password = password;
+    user.password = newPassword;
     user.passwordChangedAt = Date.now();
     user.passwordResetToken = undefined;
     user.passwordResetExpiresOn = undefined;
@@ -360,7 +360,11 @@ export const updatePassword = async (req, res) => {
 
     //  update password with newPassword
     const hashPassword = await bcrypt.hash(newPassword, 12);
-    await User.findOneAndUpdate({ _id: userId }, { $set: { password: hashPassword } }, { new: true });
+    await User.findOneAndUpdate(
+      { _id: userId },
+      { $set: { password: hashPassword, passwordChangedAt: new Date() } },
+      { new: true }
+    );
 
     return res.status(201).json({
       message: 'password updated succesfully',
