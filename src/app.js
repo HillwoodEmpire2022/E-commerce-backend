@@ -8,6 +8,7 @@ import helmet from 'helmet';
 
 // Routes
 import authRouter from './routes/auth.routes.js';
+import activityLogsRouter from './routes/activitylogs.routes.js';
 import categoryRouter from './routes/category.routes.js';
 import productRouter from './routes/product.routes.js';
 import subCategoryRouter from './routes/subcategories.routes.js';
@@ -79,6 +80,7 @@ app.use('/api/v1/users', userRouter);
 app.use('/api/v1/product-classes', productClassRouter);
 app.use('/api/v1/brands', brandsRouter);
 app.use('/api/v1/user-profiles', userProfileRouter);
+app.use('/api/v1/activity-logs', activityLogsRouter);
 
 app.use('*', (req, res, next) => {
   next(new AppError(`Route ${req.baseUrl} not found.`, 404));

@@ -1,23 +1,25 @@
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
+import UAParser from 'ua-parser-js';
 import { base64FileStringGenerator } from '../utils/base64Converter.js';
 
-import User from '../models/user.js';
 import SellerProfile from '../models/sellerProfile.js';
+import User from '../models/user.js';
 
-import {
-  signupValidationSchema,
-  loginValidationSchema,
-  emailValidation,
-  passwordValidation,
-} from '../validations/authValidations.js';
-import { generateJWToken } from '../utils/jsonWebToken.js';
-import { uploadProfileImageToCloudinary } from '../utils/cloudinary.js';
-import { mongoIdValidator } from '../validations/mongoidValidator.js';
-import sendEmail from '../utils/email.js';
-import AppError from '../utils/AppError.js';
 import UserProfile from '../models/userProfile.js';
+import AppError from '../utils/AppError.js';
+import { uploadProfileImageToCloudinary } from '../utils/cloudinary.js';
+import { createdActivityLog } from '../utils/createActivityLog.js';
+import sendEmail from '../utils/email.js';
+import { generateJWToken } from '../utils/jsonWebToken.js';
+import {
+  emailValidation,
+  loginValidationSchema,
+  passwordValidation,
+  signupValidationSchema,
+} from '../validations/authValidations.js';
+import { mongoIdValidator } from '../validations/mongoidValidator.js';
 
 const activationTokenGenerator = (email) => {
   return jwt.sign({ email }, process.env.JWT_SECRET_KEY);
@@ -155,7 +157,7 @@ export const returnedUserInfo = (user) => {
   };
 };
 
-export const userLogin = async (req, res) => {
+export const userLogin = async (req, res, next) => {
   try {
     let { email, password } = req.body;
 
@@ -202,6 +204,50 @@ export const userLogin = async (req, res) => {
     }
     const response = returnedUserInfo(user);
 
+    // Create activity Log
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const ipAddress = ip?.split('::ffff:')[1];
+    const userAgent = req.headers['user-agent'];
+    const parsedUserAgent = new UAParser(userAgent);
+    const { browser, os } = parsedUserAgent.getResult();
+
+    await createdActivityLog({
+      userId: user._id,
+      action: 'login',
+      activity: {
+        type: 'security',
+        action: 'login',
+      },
+      deatils: 'New login',
+      status: 'success',
+      ipAddress,
+      userAgent: {
+        browser: `${browser.name} ${browser.version}`,
+        os: ` ${os.name} ${os.version}`,
+      },
+      status: 'success',
+    });
+
+    // Send Email
+    const emailOptions = {
+      to: user.email,
+      subject: 'Security Alert: New Sign-in',
+      text: {
+        heading: `A new sign-in on ${os.name} ${os.version}`,
+        message: `We noticed a new sign-in to your account on a ${os.name} ${os.version} device via ${browser?.name} ${browser.version}. If this was you, you don’t need to do anything. If not, click on the button below to secure your account.`,
+        button: {
+          text: 'Secure your account',
+          url: `${process.env.CLIENT_URL}/forgot-password`,
+        },
+      },
+    };
+
+    try {
+      await sendEmail(emailOptions, 'security-activity');
+    } catch (error) {
+      console.error(error);
+    }
+
     res.status(200).json({
       status: 'success',
       token: response.token,
@@ -210,7 +256,7 @@ export const userLogin = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 };
 

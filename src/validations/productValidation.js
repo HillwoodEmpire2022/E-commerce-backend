@@ -75,7 +75,7 @@ export const updateProductsValidation = Joi.object({
   price: Joi.number().greater(0),
   featured: Joi.object({
     isFeatured: Joi.boolean().required(),
-    featuredImage: Joi.string().uri().required(),
+    image: Joi.string().uri().required(),
   }),
   discountPercentage: Joi.number().integer(),
   stockQuantity: Joi.number().greater(0).integer(),

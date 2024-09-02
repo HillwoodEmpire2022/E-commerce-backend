@@ -197,7 +197,7 @@ Router.get('/:productId', getSingleProduct);
 
 /**
  * @swagger
- * /products/{id}:
+ * /products/{productId}:
  *    patch:
  *      summary: Update product data by its id
  *      tags: [Products]
