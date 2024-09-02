@@ -108,3 +108,20 @@ export const orderNotificationEmailTemplate = (firstName, orderId, orderDate, ur
   </div>
     `;
 };
+
+export const securityActivityEmailTemplate = (options) => {
+  return `
+  <div style="background-color: #f4f4f4; padding: 50px 0px; font-family: sans-serif; color: #444746;">
+	   <div class="container" style="width:90%;max-width: 600px;margin: 0 auto;background-color:#ffffff; box-shadow:0 0 10px rgba(0, 0, 0, 0.1)">
+        <div class="header" style="text-align:center;width:100%;padding:10px 0;background-color:#1D6F2B;color:white;">
+            <h1>Feli Express</h1>
+        </div>
+        <div style="padding: 0px 30px 20px 30px; text-align:center">
+            <h2>${options?.text?.heading}</h2>
+            <p style="line-height:20px">${options?.text?.message}<p>
+            <a href=${options?.text?.button?.url}  style="cursor: pointer;display:inline-block;padding:10px 20px;background-color: #1D6F2B;color:white;text-decoration: none;border-radius: 5px;font-size: 16px;">${options?.text?.button?.text}</a> 
+        </div>
+    </div>
+</div>
+    `;
+};

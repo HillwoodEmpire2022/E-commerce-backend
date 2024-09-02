@@ -288,7 +288,7 @@ export const createProduct = async (req, res, next) => {
     if (req.body.featured?.isFeatured) {
       productObject.featured = {
         isFeatured: req.body.featured.isFeatured,
-        image: req.body.featured.featuredImage,
+        image: req.body.featured.image,
       };
     } else {
       productObject.featured = {
