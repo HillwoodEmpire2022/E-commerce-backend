@@ -296,100 +296,6 @@ export const rw_mobile_money = async (req, res, next) => {
   }
 };
 
-export const flw_webhook = async (req, res, next) => {
-  // If you specified a secret hash, check for the signature
-  const secretHash = process.env.FLW_ECRYPTION_KEY;
-  const signature = req.headers['verif-hash'];
-
-  if (!signature || signature !== secretHash) {
-    // This request isn't from Flutterwave; discard
-    res.status(401).end();
-  }
-
-  const payload = req.body;
-  console.log('Flutterwave Event: 🚀🚀 ', payload?.['event.type']);
-
-  // Find Order
-  const order = await Order.findOne({
-    tx_ref: payload.data.tx_ref,
-    status: 'awaits payment',
-  })
-    .populate({ path: 'items.product', select: 'name' })
-    .populate({ path: 'customer', select: 'firstName lastName email' });
-
-  // Update Order
-  const paymentType = payload.data.payment_type;
-  order.paymentDetails = {
-    customer: {
-      id: payload.data.customer.id,
-      name: payload.data.customer.name,
-      email: payload.data.customer.email,
-    },
-
-    payment_type: {
-      type: payload.data.payment_type,
-      ...(paymentType === 'card'
-        ? {
-            card: {
-              first_6digits: payload.data.card.first_6digits,
-              last_4digits: payload.data.card.last_4digits,
-              issuer: payload.data.card.issuer,
-              country: payload.data.card.country,
-              type: payload.data.card.type,
-              expiry: payload.data.card.expiry,
-            },
-          }
-        : { mobile_number: payload.data.customer.phone_number }),
-    },
-  };
-
-  order.transactionId = payload.data.id;
-
-  await order.save({
-    validateBeforeSave: false,
-  });
-
-  if (!order) return res.status(404).end();
-  // Verify Transaction
-  const response = await verifyTransaction(payload.data.id);
-
-  if (response?.message && response.message === 'No transaction was found for this id') {
-    // Transaction Not found
-    return res.status(404).end();
-  }
-
-  // If Payment was unsucessfull
-  if (response && response.status !== 'successful' && response.data.status !== 'successful') {
-    // TODO: Handle failed payment: Notify user and admin
-    return res.status(404).end();
-  }
-
-  // Update Order
-  await updateOrderAndProducts(order, response.data.customer, response.data.id);
-
-  // Send Email to Customer
-  const order_url = `${process.env.CLIENT_URL}/user/order/${order._id}`;
-  const customer = await User.findById(order.customer);
-
-  // Email Obtions
-  const emailOptions = {
-    to: order.customer.email,
-    subject: `Feli Express - Your Order (#${order._id}) Has Been Received!`,
-    firstName: customer.firstName,
-    order_url,
-  };
-
-  try {
-    await send_order_notification_email(emailOptions, order);
-  } catch (error) {
-    console.log(error);
-
-    return res.status(500).end();
-  }
-
-  res.status(200).end();
-};
-
 async function verifyTransaction(transactionId) {
   try {
     const res = await flw.Transaction.verify({
@@ -720,6 +626,7 @@ export const retry_card_payment = async (req, res, next) => {
   }
 };
 
+// Current Implementation
 // FLW Comphensive Payment
 export const pay = async (req, res, next) => {
   let response, order;
@@ -785,4 +692,152 @@ export const pay = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+};
+
+export const retryPay = async (req, res, next) => {
+  try {
+    const tx_ref = randomStringGenerator();
+    const order = await Order.findOne({ _id: req.params.orderId, status: 'awaits payment' }).populate({
+      path: 'customer',
+      select: 'firstName lastName email',
+    });
+
+    if (!order) return next(new AppError('Order not found or is already payed', 404));
+
+    order.tx_ref = tx_ref;
+    await order.save({
+      validateBeforeSave: false,
+    });
+
+    const redirect_url = process.env.payment_redirect_url;
+
+    // Create payment payload
+    const payment_body = {
+      tx_ref,
+      amount: order.amount,
+      currency: 'RWF',
+      redirect_url,
+      customer: {
+        email: order.customer.email,
+        name: `${order.customer.firstName} ${order.customer.lastName}`,
+      },
+      customizations: {
+        title: 'Pay for items in cart',
+      },
+    };
+
+    // Request Payment Link
+    const response = await axios.post(
+      'https://api.flutterwave.com/v3/payments',
+      {
+        ...payment_body,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    res.status(200).json(response.data);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const flw_webhook = async (req, res, next) => {
+  // If you specified a secret hash, check for the signature
+  const secretHash = process.env.FLW_ECRYPTION_KEY;
+  const signature = req.headers['verif-hash'];
+
+  if (!signature || signature !== secretHash) {
+    // This request isn't from Flutterwave; discard
+    return res.status(401).end();
+  }
+
+  const payload = req.body;
+  console.log('Flutterwave Event: 🚀🚀 ', payload?.['event.type']);
+
+  // Find Order
+  const order = await Order.findOne({
+    tx_ref: payload.data.tx_ref,
+    status: 'awaits payment',
+  })
+    .populate({ path: 'items.product', select: 'name' })
+    .populate({ path: 'customer', select: 'firstName lastName email' });
+
+  // Update Order
+  const paymentType = payload.data.payment_type;
+  order.paymentDetails = {
+    customer: {
+      id: payload.data.customer.id,
+      name: payload.data.customer.name,
+      email: payload.data.customer.email,
+    },
+
+    payment_type: {
+      type: payload.data.payment_type,
+      ...(paymentType === 'card'
+        ? {
+            card: {
+              first_6digits: payload.data.card.first_6digits,
+              last_4digits: payload.data.card.last_4digits,
+              issuer: payload.data.card.issuer,
+              country: payload.data.card.country,
+              type: payload.data.card.type,
+              expiry: payload.data.card.expiry,
+            },
+          }
+        : { mobile_number: payload.data.customer.phone_number }),
+    },
+  };
+
+  order.transactionId = payload.data.id;
+
+  await order.save({
+    validateBeforeSave: false,
+  });
+
+  console.log('Order Updated: 🚀🚀 ', order);
+
+  if (!order) return res.status(404).end();
+  // Verify Transaction
+  const response = await verifyTransaction(payload.data.id);
+
+  if (response?.message && response.message === 'No transaction was found for this id') {
+    // Transaction Not found
+    return res.status(404).end();
+  }
+
+  // If Payment was unsucessfull
+  if (response && response.status !== 'successful' && response.data.status !== 'successful') {
+    // TODO: Handle failed payment: Notify user and admin
+    return res.status(404).end();
+  }
+
+  // Update Order
+  await updateOrderAndProducts(order, response.data.customer, response.data.id);
+
+  // Send Email to Customer
+  const order_url = `${process.env.CLIENT_URL}/user/order/${order._id}`;
+  const customer = await User.findById(order.customer);
+
+  // Email Obtions
+  const emailOptions = {
+    to: order.customer.email,
+    subject: `Feli Express - Your Order (#${order._id}) Has Been Received!`,
+    firstName: customer.firstName,
+    order_url,
+  };
+
+  try {
+    await send_order_notification_email(emailOptions, order);
+  } catch (error) {
+    console.log(error);
+
+    return res.status(500).end();
+  }
+
+  res.status(200).end();
 };
