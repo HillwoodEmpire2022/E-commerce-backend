@@ -30,6 +30,11 @@ const ProductSchema = new mongoose.Schema(
       required: true,
     },
 
+    visible: {
+      type: Boolean,
+      default: true,
+    },
+
     // Categorization
     productClass: {
       type: mongoose.Schema.Types.ObjectId,
