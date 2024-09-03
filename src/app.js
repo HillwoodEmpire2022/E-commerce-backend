@@ -1,28 +1,32 @@
-import dotenv from 'dotenv';
-dotenv.config();
-import express from 'express';
-import swaggerUI from 'swagger-ui-express';
-import morgan from 'morgan';
 import cors from 'cors';
+import dotenv from 'dotenv';
+import express from 'express';
+import mongoSanitizer from 'express-mongo-sanitize';
 import helmet from 'helmet';
+import morgan from 'morgan';
+import hpp from 'hpp';
+import swaggerUI from 'swagger-ui-express';
+dotenv.config();
+
+import rateLimiter from 'express-rate-limit';
 
 // Routes
-import authRouter from './routes/auth.routes.js';
+import globalErrorHandler from './controllers/globalErrorHandler.js';
 import activityLogsRouter from './routes/activitylogs.routes.js';
+import authRouter from './routes/auth.routes.js';
+import brandsRouter from './routes/brand.routes.js';
 import categoryRouter from './routes/category.routes.js';
+import orderRouter from './routes/order.routes.js';
+import paymentRouter from './routes/payment.routes.js';
 import productRouter from './routes/product.routes.js';
-import subCategoryRouter from './routes/subcategories.routes.js';
+import productClassRouter from './routes/productClass.routes.js';
 import sprofileRouter from './routes/profile.routes.js';
 import sellerRoute from './routes/seller.routes.js';
-import paymentRouter from './routes/payment.routes.js';
-import orderRouter from './routes/order.routes.js';
+import subCategoryRouter from './routes/subcategories.routes.js';
 import userRouter from './routes/user.routes.js';
-import productClassRouter from './routes/productClass.routes.js';
-import brandsRouter from './routes/brand.routes.js';
-import { specs } from './utils/swaggerDocsSpecs.js';
-import globalErrorHandler from './controllers/globalErrorHandler.js';
 import userProfileRouter from './routes/userProfile.routes.js';
 import AppError from './utils/AppError.js';
+import { specs } from './utils/swaggerDocsSpecs.js';
 
 const app = express();
 
@@ -30,24 +34,66 @@ const clientUrl = process.env.CLIENT_URL;
 const clientLocalhostUrl = process.env.CLIENT_LOCALHOST_URL;
 const adminClientUrl = process.env.ADMIN_CLIENT_URL;
 
+// Setting Http Security Headers
+app.use(helmet());
+
+// Rate Limitting
+const limiter = rateLimiter({
+  // 15(Minutes) * 60 seconds * 1000 milliseconds
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: {
+    status: 'error',
+    message: 'Too many requests from this IP, please try again later.',
+  },
+  standardHeaders: 'draft-7', // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
+  legacyHeaders: false, // `X-RateLimit-*` headers
+});
+app.use('/api', limiter);
+
+// Body parser, reading data from body into req.body
 app.use(
   express.json({
+    limit: '15kb',
     verify: (req, res, buf, encoding) => {
       req.rawBody = buf;
     },
   })
 );
 
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+// Data Sanitization against NoSQL query injection
+app.use(mongoSanitizer());
+
+// Prevent Parameter Polution
 app.use(
-  helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'", 'https:'], // Allow all https resources
-      },
-    },
+  hpp({
+    whitelist: [
+      'name',
+      'email',
+      'phone',
+      'address',
+      'city',
+      'country',
+      'status',
+      'stockQantity',
+      'user',
+      'product',
+      'category',
+      'subcategory',
+      'seller',
+      'payment',
+      'order',
+      'productClass',
+      'price',
+      'createdAt',
+      'updatedAt',
+      'amount',
+      'quantity',
+    ],
   })
 );
+
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 app.use(morgan('dev'));
 
