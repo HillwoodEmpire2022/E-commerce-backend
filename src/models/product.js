@@ -102,7 +102,7 @@ const ProductSchema = new mongoose.Schema(
 
     absorbCustomerCharge: {
       type: Boolean,
-      default: true,
+      default: false,
     },
 
     attributes: [{ key: String, value: String }],
