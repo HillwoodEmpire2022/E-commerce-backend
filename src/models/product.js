@@ -15,6 +15,14 @@ const featured = new mongoose.Schema(
   { _id: false }
 );
 
+const attributes = new mongoose.Schema(
+  {
+    key: String,
+    value: String,
+  },
+  { _id: false }
+);
+
 const ProductSchema = new mongoose.Schema(
   {
     name: {
@@ -110,7 +118,7 @@ const ProductSchema = new mongoose.Schema(
       default: false,
     },
 
-    attributes: [{ key: String, value: String }],
+    attributes: [attributes],
 
     colorMeasurementVariations: {
       measurementType: {

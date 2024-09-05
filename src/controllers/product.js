@@ -271,6 +271,9 @@ export const createProduct = async (req, res, next) => {
       quantityParameter: removeEmptySpaces(req.body.quantityParameter),
       discountPercentage: req.body.discountPercentage,
       stockQuantity: req.body.stockQuantity,
+      ...(req.body.attributes && {
+        attributes: req.body.attributes,
+      }),
       brand: req.body.brand,
       productImages: req.body.productImages,
       ...(req.body.seller_commission && {
