@@ -207,18 +207,22 @@ export const userLogin = async (req, res, next) => {
     // Create activity Log
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     const ipAddress = ip?.split('::ffff:')[1];
+
     const userAgent = req.headers['user-agent'];
     const parsedUserAgent = new UAParser(userAgent);
+
     const { browser, os } = parsedUserAgent.getResult();
+    const device = parsedUserAgent.getDevice();
+
+    console.log('Device:', device);
 
     await createdActivityLog({
       userId: user._id,
-      action: 'login',
       activity: {
         type: 'security',
         action: 'login',
       },
-      deatils: 'New login',
+      details: 'New login',
       status: 'success',
       ipAddress,
       userAgent: {
@@ -364,7 +368,7 @@ export const resetUserPassword = async (req, res, next) => {
   }
 };
 
-export const updatePassword = async (req, res) => {
+export const updatePassword = async (req, res, next) => {
   try {
     //  find user by Id
     const userId = req.user._id;
@@ -412,13 +416,38 @@ export const updatePassword = async (req, res) => {
       { new: true }
     );
 
+    // Create Activity Log
+
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const ipAddress = ip?.split('::ffff:')[1];
+    const userAgent = req.headers['user-agent'];
+    const parsedUserAgent = new UAParser(userAgent);
+
+    console.log(parsedUserAgent.getDevice());
+
+    const { browser, os } = parsedUserAgent.getResult();
+
+    await createdActivityLog({
+      userId,
+      activity: {
+        type: 'security',
+        action: 'password_change',
+      },
+      details: 'Password was changed',
+      status: 'success',
+      ipAddress,
+      userAgent: {
+        browser: `${browser.name} ${browser.version}`,
+        os: ` ${os.name} ${os.version}`,
+      },
+      status: 'success',
+    });
+
     return res.status(201).json({
       message: 'password updated succesfully',
     });
   } catch (error) {
-    return res.status(500).json({
-      massage: 'failed to update password',
-    });
+    next(error);
   }
 };
 

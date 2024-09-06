@@ -19,6 +19,7 @@ const activity = new Schema(
         'product_viewed',
         'profile_update',
         'password_change',
+        'password_reset',
         'product_viewed',
         'product_added',
         'product_updated',
