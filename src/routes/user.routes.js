@@ -8,7 +8,6 @@ import orderRoutes from '../routes/order.routes.js';
 const router = express.Router();
 
 router.use('/:id/user-profiles', userProfileRouter);
-router.use('/:id/user-profiles/:profileId', userProfileRouter);
 
 router.use(isLoggedIn, restrictTo('admin'));
 router.get('/', getUsers);
