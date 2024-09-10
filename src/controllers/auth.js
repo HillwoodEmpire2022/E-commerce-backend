@@ -212,9 +212,6 @@ export const userLogin = async (req, res, next) => {
     const parsedUserAgent = new UAParser(userAgent);
 
     const { browser, os } = parsedUserAgent.getResult();
-    const device = parsedUserAgent.getDevice();
-
-    console.log('Device:', device);
 
     await createdActivityLog({
       userId: user._id,
@@ -352,7 +349,7 @@ export const resetUserPassword = async (req, res, next) => {
     const user = await User.findOne({ passwordResetToken: hashedToken, passwordResetExpiresOn: { $gt: Date.now() } });
 
     if (!user) {
-      return res.status(404).json({ message: 'Otp is invalid or has expired! Please request for a new otp.' });
+      return next(new AppError('Otp is invalid or has expired! Please request for a new otp.', 404));
     }
 
     user.password = newPassword;
@@ -361,10 +358,38 @@ export const resetUserPassword = async (req, res, next) => {
     user.passwordResetExpiresOn = undefined;
     await user.save();
 
+    // Create Activity Log
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const ipAddress = ip?.split('::ffff:')[1];
+    const userAgent = req.headers['user-agent'];
+    const parsedUserAgent = new UAParser(userAgent);
+
+    const { browser, os } = parsedUserAgent.getResult();
+
+    try {
+      await createdActivityLog({
+        userId: user._id,
+        activity: {
+          type: 'security',
+          action: 'password_reset',
+        },
+        details: 'Password was reset',
+        status: 'success',
+        ipAddress,
+        userAgent: {
+          browser: `${browser.name} ${browser.version}`,
+          os: ` ${os.name} ${os.version}`,
+        },
+        status: 'success',
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(201).json({ message: 'password reset successfully' });
+    }
+
     return res.status(201).json({ message: 'password reset successfully' });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: 'failed to reset user password' });
+    next(error);
   }
 };
 
@@ -417,13 +442,10 @@ export const updatePassword = async (req, res, next) => {
     );
 
     // Create Activity Log
-
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     const ipAddress = ip?.split('::ffff:')[1];
     const userAgent = req.headers['user-agent'];
     const parsedUserAgent = new UAParser(userAgent);
-
-    console.log(parsedUserAgent.getDevice());
 
     const { browser, os } = parsedUserAgent.getResult();
 
