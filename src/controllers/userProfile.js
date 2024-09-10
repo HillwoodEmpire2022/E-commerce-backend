@@ -1,29 +1,9 @@
+import UAParser from 'ua-parser-js';
 import UserProfile from '../models/userProfile.js';
 import AppError from '../utils/AppError.js';
+
 import removeEmptySpaces from '../utils/removeEmptySpaces.js';
-
-export const getProfiles = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const filter = { ...(id && { user: id }) };
-    const userProfile = await UserProfile.find(filter);
-
-    if (!userProfile.length) {
-      return next(new AppError('Profile not found.', 404));
-    }
-
-    const response = userProfile.length > 1 ? userProfile : userProfile[0];
-
-    res.status(200).json({
-      status: 'success',
-      data: {
-        profile: response,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+import { createdActivityLog } from '../utils/createActivityLog.js';
 
 export const updateProfile = async (req, res, next) => {
   try {
@@ -63,6 +43,39 @@ export const updateProfile = async (req, res, next) => {
       });
     }
 
+    // Create Activity Log
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const ipAddress = ip?.split('::ffff:')[1];
+    const userAgent = req.headers['user-agent'];
+    const parsedUserAgent = new UAParser(userAgent);
+
+    const { browser, os } = parsedUserAgent.getResult();
+
+    try {
+      await createdActivityLog({
+        userId: loggedInUser.id,
+        activity: {
+          type: 'user',
+          action: 'profile_update',
+        },
+        details: 'Profile updated',
+        status: 'success',
+        ipAddress,
+        userAgent: {
+          browser: `${browser.name} ${browser.version}`,
+          os: ` ${os.name} ${os.version}`,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(200).json({
+        status: 'success',
+        data: {
+          profile: userProfile,
+        },
+      });
+    }
+
     res.status(200).json({
       status: 'success',
       data: {
@@ -76,8 +89,9 @@ export const updateProfile = async (req, res, next) => {
 
 export const getProfile = async (req, res, next) => {
   try {
-    const { id, profileId } = req.params;
-    const userProfile = await UserProfile.findOne({ user: id, _id: profileId });
+    const { id } = req.params;
+
+    const userProfile = await UserProfile.findOne({ user: id });
 
     if (!userProfile) {
       return next(new AppError('Profile not found.', 404));
