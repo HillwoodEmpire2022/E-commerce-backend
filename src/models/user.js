@@ -1,6 +1,22 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
+const recoveryEmail = new mongoose.Schema(
+  {
+    email: { type: String, required: true, lowercase: true, trim: true },
+    verified: { type: Boolean, default: false },
+  },
+  {
+    _id: false,
+  }
+);
+
+const recoveryOptions = new mongoose.Schema(
+  {
+    emails: [recoveryEmail],
+  },
+  { _id: false }
+);
 
 const userSchema = new mongoose.Schema(
   {
@@ -21,6 +37,13 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+
+    twoFactorAuthEnabled: {
+      type: Boolean,
+      default: false,
+    },
+
+    recoveryOptions: recoveryOptions,
 
     photo: { type: String, default: 'default.jpg' },
 

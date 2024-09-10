@@ -99,7 +99,7 @@ export const userRegister = async (req, res, next) => {
 };
 
 // ********* Verify Account **********
-export const activateAccount = async (req, res) => {
+export const verifyEmail = async (req, res) => {
   const { activationToken } = req.params;
   try {
     // 1) GET USER BASED ON TOKEN
@@ -661,3 +661,33 @@ export const deactivateAccount = async (req, res, nex) => {
     });
   }
 };
+
+// 2FA
+export const enableTwoFactorAuth = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return next(new AppError('User not found.', 404));
+    }
+
+    if (user.twoFactorAuthEnabled) {
+      return next(new AppError('Two factor authentication is already enabled.', 400));
+    }
+
+    user.twoFactorAuthEnabled = true;
+    user.recoveryOptions = { emails: [] };
+    user.recoveryOptions.emails.push({ email: user.email, verified: true });
+
+    await user.save();
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Two factor authentication enabled.',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Add More Recovery Options
