@@ -5,6 +5,7 @@ import {
   forgotPasswordEmailTemplate,
   orderNotificationEmailTemplate,
   securityActivityEmailTemplate,
+  signInOtpEmailTemplate,
 } from './emailTemplates.js';
 dotenv.config();
 
@@ -18,6 +19,8 @@ async function sendEmail(options, kind) {
       ? forgotPasswordEmailTemplate(options.url, options.firstName, options.otp)
       : kind === 'security-activity'
       ? securityActivityEmailTemplate(options)
+      : kind === 'sign-in-otp'
+      ? signInOtpEmailTemplate(options.otp)
       : '';
 
   try {

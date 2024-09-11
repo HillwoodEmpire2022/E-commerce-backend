@@ -144,6 +144,7 @@ export const returnedUserInfo = (user) => {
     lastName: user.lastName,
     role: user.role,
     email: user.email,
+    twoFactorAuthEnabled: user.twoFactorAuthEnabled,
     profileImageUrl: user.photo,
   };
 
@@ -158,6 +159,7 @@ export const returnedUserInfo = (user) => {
 };
 
 export const userLogin = async (req, res, next) => {
+  let otp;
   try {
     let { email, password } = req.body;
 
@@ -165,6 +167,7 @@ export const userLogin = async (req, res, next) => {
     const { error } = loginValidationSchema.validate(req.body, {
       errors: { label: 'key', wrap: { label: false } },
     });
+
     if (error) {
       return res.status(400).json({ status: 'fail', message: error.message });
     }
@@ -204,50 +207,73 @@ export const userLogin = async (req, res, next) => {
     }
     const response = returnedUserInfo(user);
 
-    // Create activity Log
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    const ipAddress = ip?.split('::ffff:')[1];
+    // Check if user set up 2FA and create otp
+    if (user.twoFactorAuthEnabled) {
+      otp = user.generateSixDigitsCode('otp');
+      await user.save({ validateBeforeSave: false });
 
-    const userAgent = req.headers['user-agent'];
-    const parsedUserAgent = new UAParser(userAgent);
+      // Send Email containing OTP
+      const emailOptions = {
+        to: user.email,
+        subject: 'Login OTP (Expires in 15 Minutes)',
+        otp,
+      };
 
-    const { browser, os } = parsedUserAgent.getResult();
+      try {
+        await sendEmail(emailOptions, 'sign-in-otp');
 
-    await createdActivityLog({
-      userId: user._id,
-      activity: {
-        type: 'security',
-        action: 'login',
-      },
-      details: 'New login',
-      status: 'success',
-      ipAddress,
-      userAgent: {
-        browser: `${browser.name} ${browser.version}`,
-        os: ` ${os.name} ${os.version}`,
-      },
-      status: 'success',
-    });
-
-    // Send Email
-    const emailOptions = {
-      to: user.email,
-      subject: 'Security Alert: New Sign-in',
-      text: {
-        heading: `A new sign-in on ${os.name} ${os.version}`,
-        message: `We noticed a new sign-in to your account on a ${os.name} ${os.version} device via ${browser?.name} ${browser.version}. If this was you, you don’t need to do anything. If not, click on the button below to secure your account.`,
-        button: {
-          text: 'Secure your account',
-          url: `${process.env.CLIENT_URL}/forgot-password`,
-        },
-      },
-    };
-
-    try {
-      await sendEmail(emailOptions, 'security-activity');
-    } catch (error) {
-      console.error(error);
+        return res.status(200).json({ status: 'success', message: 'OTP sent to your email' });
+      } catch (error) {
+        console.error(error);
+        return next(new AppError('There was an error sending email! Please try again.', 500));
+      }
     }
+
+    // // Create activity Log
+    // // TODO: SHIFT TO VERIFY OTP
+    // const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    // const ipAddress = ip?.split('::ffff:')[1];
+
+    // const userAgent = req.headers['user-agent'];
+    // const parsedUserAgent = new UAParser(userAgent);
+
+    // const { browser, os } = parsedUserAgent.getResult();
+
+    // await createdActivityLog({
+    //   userId: user._id,
+    //   activity: {
+    //     type: 'security',
+    //     action: 'login',
+    //   },
+    //   details: 'New login',
+    //   status: 'success',
+    //   ipAddress,
+    //   userAgent: {
+    //     browser: `${browser.name} ${browser.version}`,
+    //     os: ` ${os.name} ${os.version}`,
+    //   },
+    //   status: 'success',
+    // });
+
+    // // Send Email
+    // const emailOptions = {
+    //   to: user.email,
+    //   subject: 'Security Alert: New Sign-in',
+    //   text: {
+    //     heading: `A new sign-in on ${os.name} ${os.version}`,
+    //     message: `We noticed a new sign-in to your account on a ${os.name} ${os.version} device via ${browser?.name} ${browser.version}. If this was you, you don’t need to do anything. If not, click on the button below to secure your account.`,
+    //     button: {
+    //       text: 'Secure your account',
+    //       url: `${process.env.CLIENT_URL}/forgot-password`,
+    //     },
+    //   },
+    // };
+
+    // try {
+    //   await sendEmail(emailOptions, 'security-activity');
+    // } catch (error) {
+    //   console.error(error);
+    // }
 
     res.status(200).json({
       status: 'success',

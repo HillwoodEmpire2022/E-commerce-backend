@@ -43,6 +43,11 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
+    twoFactorAuthOtp: {
+      otp: { type: String },
+      expiresOn: { type: Date },
+    },
+
     recoveryOptions: recoveryOptions,
 
     photo: { type: String, default: 'default.jpg' },
@@ -99,6 +104,10 @@ userSchema.methods.generateSixDigitsCode = function (option) {
     this.passwordResetToken = crypto.createHash('sha256').update(code).digest('hex');
     // Lasts for 15 mininutes
     this.passwordResetExpiresOn = Date.now() + 15 * 60 * 1000;
+  } else if (option === 'otp') {
+    // TODO: INCRYPT THE OTP
+    this.twoFactorAuthOtp.otp = code;
+    this.twoFactorAuthOtp.expiresOn = Date.now() + 5 * 60 * 1000;
   }
 
   return code;
