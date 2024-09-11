@@ -1,6 +1,22 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
+const recoveryEmail = new mongoose.Schema(
+  {
+    email: { type: String, required: true, lowercase: true, trim: true },
+    verified: { type: Boolean, default: false },
+  },
+  {
+    _id: false,
+  }
+);
+
+const recoveryOptions = new mongoose.Schema(
+  {
+    emails: [recoveryEmail],
+  },
+  { _id: false }
+);
 
 const userSchema = new mongoose.Schema(
   {
@@ -21,6 +37,18 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+
+    twoFactorAuthEnabled: {
+      type: Boolean,
+      default: false,
+    },
+
+    twoFactorAuthOtp: {
+      otp: { type: String },
+      expiresOn: { type: Date },
+    },
+
+    recoveryOptions: recoveryOptions,
 
     photo: { type: String, default: 'default.jpg' },
 
@@ -76,6 +104,10 @@ userSchema.methods.generateSixDigitsCode = function (option) {
     this.passwordResetToken = crypto.createHash('sha256').update(code).digest('hex');
     // Lasts for 15 mininutes
     this.passwordResetExpiresOn = Date.now() + 15 * 60 * 1000;
+  } else if (option === 'otp') {
+    // TODO: INCRYPT THE OTP
+    this.twoFactorAuthOtp.otp = code;
+    this.twoFactorAuthOtp.expiresOn = Date.now() + 5 * 60 * 1000;
   }
 
   return code;

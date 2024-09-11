@@ -2,7 +2,6 @@ import express from 'express';
 import {
   userRegister,
   userLogin,
-  activateAccount,
   resetUserPassword,
   getMe,
   updatePassword,
@@ -12,6 +11,8 @@ import {
   deleteAccount,
   requestVerificationEmail,
   deactivateAccount,
+  enableTwoFactorAuth,
+  verifyEmail,
 } from '../controllers/auth.js';
 import { isLoggedIn } from '../middlewares/authentication.js';
 import { uploadProfilePicture } from '../utils/multer.js';
@@ -196,10 +197,7 @@ router.post('/login', userLogin);
  *                   description: Internal server error message.
  *                   example: "An error occurred while sending the verification email."
  */
-router.post(
-  '/request-account-verification-email',
-  requestVerificationEmail
-);
+router.post('/request-account-verification-email', requestVerificationEmail);
 
 /**
  * @swagger
@@ -230,12 +228,7 @@ router.post(
  *       '500':
  *         description: Internal Server Error - An error occurred while deactivating the account
  */
-router.patch(
-  '/deactivate-account/:id',
-  isLoggedIn,
-  restrictTo('admin'),
-  deactivateAccount
-);
+router.patch('/deactivate-account/:id', isLoggedIn, restrictTo('admin'), deactivateAccount);
 
 /**
  * @swagger
@@ -260,10 +253,7 @@ router.patch(
  *       '500':
  *         description: Internal Server Error - An error occurred while activating the account
  */
-router.get(
-  '/activate-account/:activationToken',
-  activateAccount
-);
+router.get('/activate-account/:activationToken', verifyEmail);
 
 /**
  * @swagger
@@ -414,10 +404,7 @@ router.post('/forgot-password', forgotPassword);
  *                   description: Internal server error message.
  *                   example: "An error occurred while resetting the password."
  */
-router.patch(
-  '/reset-password/:resetUserToken',
-  resetUserPassword
-);
+router.patch('/reset-password/:resetUserToken', resetUserPassword);
 
 /**
  * @swagger
@@ -487,11 +474,7 @@ router.patch(
  *                   description: Internal server error message.
  *                   example: "An error occurred while updating the password."
  */
-router.patch(
-  '/update-password',
-  isLoggedIn,
-  updatePassword
-);
+router.patch('/update-password', isLoggedIn, updatePassword);
 
 /**
  * @swagger
@@ -550,12 +533,7 @@ router.patch(
  *                   description: Internal server error message.
  *                   example: "An error occurred while updating the profile photo."
  */
-router.patch(
-  '/update-photo',
-  isLoggedIn,
-  uploadProfilePicture,
-  userUpdatePhoto
-);
+router.patch('/update-photo', isLoggedIn, uploadProfilePicture, userUpdatePhoto);
 
 /**
  * @swagger
@@ -620,11 +598,7 @@ router.patch(
  *                   description: Internal server error message.
  *                   example: "An error occurred while updating the profile data."
  */
-router.patch(
-  '/profile-data',
-  isLoggedIn,
-  userUpdateProfile
-);
+router.patch('/profile-data', isLoggedIn, userUpdateProfile);
 
 /**
  * @swagger
@@ -655,10 +629,26 @@ router.patch(
  *       '500':
  *         description: Internal Server Error - An error occurred while deleting the account
  */
-router.delete(
-  '/delete-account/:id',
-  isLoggedIn,
-  deleteAccount
-);
+router.delete('/delete-account/:id', isLoggedIn, deleteAccount);
+
+// 2FA
+// enable 2fa
+/**
+ * @swagger
+ * /auth/enable-2fa:
+ *   patch:
+ *     summary: Enable two factor authentication
+ *     tags:
+ *       - Authentication
+ *     security:
+ *       - bearerAuth: []
+ *     description: This endpoint allows users to enable two factor authentication.
+ *     responses:
+ *       '200':
+ *         description: Two factor authentication enabled successfully
+ *       '500':
+ *         description: Internal Server Error - An error occurred while deleting the account
+ */
+router.patch('/enable-2fa', isLoggedIn, enableTwoFactorAuth);
 
 export default router;

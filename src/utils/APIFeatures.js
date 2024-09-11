@@ -13,6 +13,8 @@ class APIFeatures {
     // 1 B) Advanced Filtering
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+    queryStr = queryStr.replace('"true"', () => true);
+    queryStr = queryStr.replace('"false"', () => false);
 
     this.query = this.query.find(JSON.parse(queryStr));
 

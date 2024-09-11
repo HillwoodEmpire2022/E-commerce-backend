@@ -22,6 +22,12 @@ export const getAllProducts = async (req, res, next) => {
         !req.query.fields.includes('absorbCustomerCharge') && { fields: `${req.query.fields},absorbCustomerCharge` }),
     };
 
+    // For featured products query, need to change the query object to featured.isFeatured: <value>
+    if (query.featured) {
+      query['featured.isFeatured'] = query.featured.isFeatured;
+      delete query.featured;
+    }
+
     const queryObj = {};
     let products;
     if (req?.user?.role === 'seller') queryObj.seller = req.user._id;
