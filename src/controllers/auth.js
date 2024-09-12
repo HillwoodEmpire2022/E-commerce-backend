@@ -229,52 +229,6 @@ export const userLogin = async (req, res, next) => {
       }
     }
 
-    // // Create activity Log
-    // // TODO: SHIFT TO VERIFY OTP
-    // const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    // const ipAddress = ip?.split('::ffff:')[1];
-
-    // const userAgent = req.headers['user-agent'];
-    // const parsedUserAgent = new UAParser(userAgent);
-
-    // const { browser, os } = parsedUserAgent.getResult();
-
-    // await createdActivityLog({
-    //   userId: user._id,
-    //   activity: {
-    //     type: 'security',
-    //     action: 'login',
-    //   },
-    //   details: 'New login',
-    //   status: 'success',
-    //   ipAddress,
-    //   userAgent: {
-    //     browser: `${browser.name} ${browser.version}`,
-    //     os: ` ${os.name} ${os.version}`,
-    //   },
-    //   status: 'success',
-    // });
-
-    // // Send Email
-    // const emailOptions = {
-    //   to: user.email,
-    //   subject: 'Security Alert: New Sign-in',
-    //   text: {
-    //     heading: `A new sign-in on ${os.name} ${os.version}`,
-    //     message: `We noticed a new sign-in to your account on a ${os.name} ${os.version} device via ${browser?.name} ${browser.version}. If this was you, you don’t need to do anything. If not, click on the button below to secure your account.`,
-    //     button: {
-    //       text: 'Secure your account',
-    //       url: `${process.env.CLIENT_URL}/forgot-password`,
-    //     },
-    //   },
-    // };
-
-    // try {
-    //   await sendEmail(emailOptions, 'security-activity');
-    // } catch (error) {
-    //   console.error(error);
-    // }
-
     res.status(200).json({
       status: 'success',
       token: response.token,
@@ -716,4 +670,89 @@ export const enableTwoFactorAuth = async (req, res, next) => {
   }
 };
 
+// Verify Otp
+export const verifyOtp = async (req, res, next) => {
+  try {
+    const { otp } = req.body;
+
+    if (!otp) {
+      return next(new AppError('Please provide OTP.', 400));
+    }
+
+    const hashedToken = crypto.createHash('sha256').update(String(otp)).digest('hex');
+
+    const user = await User.findOne({
+      'twoFactorAuthOtp.otp': hashedToken,
+      'twoFactorAuthOtp.expiresOn': { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(403).json({
+        status: 'fail',
+        message: 'Invalid OTP or OTP has expired.',
+      });
+    }
+
+    user.twoFactorAuthOtp.otp = undefined;
+    user.twoFactorAuthOtp.expiresOn = undefined;
+    await user.save();
+
+    // Create activity Log
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const ipAddress = ip?.split('::ffff:')[1];
+
+    const userAgent = req.headers['user-agent'];
+    const parsedUserAgent = new UAParser(userAgent);
+
+    const { browser, os } = parsedUserAgent.getResult();
+
+    await createdActivityLog({
+      userId: user._id,
+      activity: {
+        type: 'security',
+        action: 'login',
+      },
+      details: 'New login',
+      status: 'success',
+      ipAddress,
+      userAgent: {
+        browser: `${browser.name} ${browser.version}`,
+        os: ` ${os.name} ${os.version}`,
+      },
+      status: 'success',
+    });
+
+    // Send Email
+    const emailOptions = {
+      to: user.email,
+      subject: 'Security Alert: New Sign-in',
+      text: {
+        heading: `A new sign-in on ${os.name} ${os.version}`,
+        message: `We noticed a new sign-in to your account on a ${os.name} ${os.version} device via ${browser?.name} ${browser.version}. If this was you, you don’t need to do anything. If not, click on the button below to secure your account.`,
+        button: {
+          text: 'Secure your account',
+          url: `${process.env.CLIENT_URL}/forgot-password`,
+        },
+      },
+    };
+
+    try {
+      await sendEmail(emailOptions, 'security-activity');
+    } catch (error) {
+      console.error(error);
+    }
+
+    const response = returnedUserInfo(user);
+
+    return res.status(200).json({
+      status: 'success',
+      token: response.token,
+      data: {
+        user: response.user,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 // Add More Recovery Options

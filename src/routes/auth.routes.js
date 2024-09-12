@@ -13,6 +13,7 @@ import {
   deactivateAccount,
   enableTwoFactorAuth,
   verifyEmail,
+  verifyOtp,
 } from '../controllers/auth.js';
 import { isLoggedIn } from '../middlewares/authentication.js';
 import { uploadProfilePicture } from '../utils/multer.js';
@@ -650,5 +651,8 @@ router.delete('/delete-account/:id', isLoggedIn, deleteAccount);
  *         description: Internal Server Error - An error occurred while deleting the account
  */
 router.patch('/enable-2fa', isLoggedIn, enableTwoFactorAuth);
+
+// Verify otp
+router.post('/verify-otp', verifyOtp);
 
 export default router;

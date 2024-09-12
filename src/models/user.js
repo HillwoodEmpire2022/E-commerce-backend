@@ -105,8 +105,7 @@ userSchema.methods.generateSixDigitsCode = function (option) {
     // Lasts for 15 mininutes
     this.passwordResetExpiresOn = Date.now() + 15 * 60 * 1000;
   } else if (option === 'otp') {
-    // TODO: INCRYPT THE OTP
-    this.twoFactorAuthOtp.otp = code;
+    this.twoFactorAuthOtp.otp = crypto.createHash('sha256').update(code).digest('hex');
     this.twoFactorAuthOtp.expiresOn = Date.now() + 5 * 60 * 1000;
   }
 
