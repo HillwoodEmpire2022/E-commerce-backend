@@ -135,7 +135,7 @@ export const signInOtpEmailTemplate = (otp) => {
         <div style="padding: 0px 30px 35px 30px; text-align:center">
             <h2>Sign in OTP</h2>
             <p style="line-height:20px">Please use the code below to complete sign in.</p>
-            <p style="text-align:center;width:100%;color:#444746; font-size: 6px; margin:0; font-weight: light">${otp}</p>
+            <p style="text-align:center;width:100%;color:#444746; font-size: 26px; margin:0; font-weight: light">${otp}</p>
         </div>
     </div>
 </div>`;
