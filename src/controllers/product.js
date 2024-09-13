@@ -283,7 +283,9 @@ export const createProduct = async (req, res, next) => {
       ...(req.body.attributes && {
         attributes: req.body.attributes,
       }),
-      brand: req.body.brand,
+      ...(req.body.brand && {
+        brand: req.body.brand,
+      }),
       productImages: req.body.productImages,
       ...(req.body.seller_commission && {
         seller_commission: req.body.seller_commission,
