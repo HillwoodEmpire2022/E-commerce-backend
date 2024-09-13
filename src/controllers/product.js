@@ -44,9 +44,12 @@ export const getAllProducts = async (req, res, next) => {
 
     products = await features.query;
 
+    const totalProducts = await Product.countDocuments();
+
     res.status(200).json({
       status: 'success',
       count: products.length,
+      totalProducts,
       data: {
         products,
       },
