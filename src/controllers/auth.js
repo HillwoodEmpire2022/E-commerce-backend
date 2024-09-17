@@ -546,7 +546,7 @@ export const deleteAccount = async (req, res) => {
 };
 
 // Request for activation email
-export const requestVerificationEmail = async (req, res) => {
+export const requestVerificationEmail = async (req, res, next) => {
   try {
     const { email } = req.body;
 
@@ -556,10 +556,8 @@ export const requestVerificationEmail = async (req, res) => {
     if (!user) return next(new AppError('User with provided email does not exist.', 404));
 
     // Create activation token
-    const activationToken = activationTokenGenerator(email);
+    const verificationCode = user.generateSixDigitsCode('activation');
 
-    // Update user with activation email
-    user.activationToken = activationToken;
     await user.save({
       validateBeforeSave: false,
     });
@@ -567,7 +565,7 @@ export const requestVerificationEmail = async (req, res) => {
     // Send Verification Email
     const url = `${
       process.env.CLIENT_URL || 'https://e-commerce-frontend-pi-seven.vercel.app'
-    }/activate-account/${activationToken}`;
+    }/activate-account/${verificationCode}`;
 
     // Email Obtions
     const emailOptions = {
@@ -575,10 +573,11 @@ export const requestVerificationEmail = async (req, res) => {
       subject: 'Email Verification Link',
       firstName: user.firstName,
       url,
+      verificationCode,
     };
 
     try {
-      await sendEmail(emailOptions.to, emailOptions.subject, emailOptions.url, emailOptions.firstName);
+      await sendEmail(emailOptions, 'account-activation');
     } catch (error) {
       console.error(error);
       return next(new AppError('There was an error sending email! Please try again.', 500));
