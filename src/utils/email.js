@@ -2,6 +2,7 @@ import { Resend } from 'resend';
 import dotenv from 'dotenv';
 import {
   activationEmailTemplate,
+  adminOrderNotificationEmailTemplate,
   forgotPasswordEmailTemplate,
   orderNotificationEmailTemplate,
   securityActivityEmailTemplate,
@@ -21,13 +22,15 @@ async function sendEmail(options, kind) {
       ? securityActivityEmailTemplate(options)
       : kind === 'sign-in-otp'
       ? signInOtpEmailTemplate(options.otp)
+      : kind === 'admin-order-notification'
+      ? adminOrderNotificationEmailTemplate(options)
       : '';
 
   try {
     const data = await resend.emails.send({
       from: `Feli Express <${process.env.RESEND_NO_REPLY_EMIL}>`,
       // from: process.env.RESEND_NO_REPLY_EMIL,
-      to: [options.to],
+      to: Array.isArray(options.to) ? options.to : [options.to],
       subject: options.subject,
       html,
     });

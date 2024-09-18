@@ -15,7 +15,7 @@ dotenv.config();
 import flw from '../services/flutterwave.js';
 import AppError from '../utils/AppError.js';
 import User from '../models/user.js';
-import { send_order_notification_email } from '../utils/email.js';
+import sendEmail, { send_order_notification_email } from '../utils/email.js';
 const paypack = new PaypackJs.default({
   client_id: process.env.PAYPACK_APP_ID,
   client_secret: process.env.PAYPACK_APP_SECRET,
@@ -809,7 +809,7 @@ export const flw_webhook = async (req, res, next) => {
   const order_url = `${process.env.CLIENT_URL}/user/order/${order._id}`;
   const customer = await User.findById(order.customer);
 
-  // Email Obtions
+  // CUstomer Email Obtions
   const emailOptions = {
     to: order.customer.email,
     subject: `Feli Express - Your Order (#${order._id}) Has Been Received!`,
@@ -817,8 +817,21 @@ export const flw_webhook = async (req, res, next) => {
     order_url,
   };
 
+  // Admin Email Options
+  const adminEmails = await User.find({ role: 'admin' }).select('email');
+
+  const adminEmailOptions = {
+    to: adminEmails.map((admin) => admin.email),
+    subject: `New Order (#${order._id}) Has Been Received!`,
+    orderId: order._id,
+  };
+
+  // Order Notification emails
   try {
+    // Customer
     await send_order_notification_email(emailOptions, order);
+    // Admin
+    await sendEmail(adminEmailOptions, 'admin-order-notification');
   } catch (error) {
     console.log(error);
 
