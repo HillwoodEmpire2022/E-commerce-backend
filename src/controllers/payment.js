@@ -33,19 +33,8 @@ const generateRedirectUrl = () => {
   return redirect_url;
 };
 
-async function updateOrderAndProducts(order, customerDetails, transactionId) {
-  // Payment was successfull
-  // Update order status to pending
-  order.status = removeEmptySpaces('pending');
-  order.customerDetails = customerDetails;
-  order.transactionId = transactionId;
-
-  await order.save({
-    validateBeforeSave: false,
-  });
-
+async function updateOrderProducts(orderProducts) {
   // Update Ordered Products quantities
-  const orderProducts = order.items;
   orderProducts.forEach(async (product) => {
     // Find the product
     const orderProduct = await Product.findById(product.product);
@@ -748,7 +737,7 @@ export const retryPay = async (req, res, next) => {
 
 export const flw_webhook = async (req, res, next) => {
   // If you specified a secret hash, check for the signature
-  const secretHash = process.env.FLW_ECRYPTION_KEY;
+  const secretHash = process.env.FLW_WEBHOOK_SECRET;
   const signature = req.headers['verif-hash'];
 
   if (!signature || signature !== secretHash) {
@@ -757,8 +746,6 @@ export const flw_webhook = async (req, res, next) => {
   }
 
   const payload = req.body;
-  console.log('Flutterwave Event: 🚀🚀 ', payload?.['event.type']);
-
   // Find Order
   const order = await Order.findOne({
     tx_ref: payload.data.tx_ref,
@@ -793,13 +780,12 @@ export const flw_webhook = async (req, res, next) => {
     },
   };
 
+  order.status = 'pending';
   order.transactionId = payload.data.id;
 
   await order.save({
     validateBeforeSave: false,
   });
-
-  console.log('Order Updated: 🚀🚀 ', order);
 
   if (!order) return res.status(404).end();
   // Verify Transaction
@@ -817,7 +803,7 @@ export const flw_webhook = async (req, res, next) => {
   }
 
   // Update Order
-  await updateOrderAndProducts(order, response.data.customer, response.data.id);
+  await updateOrderProducts(order.items);
 
   // Send Email to Customer
   const order_url = `${process.env.CLIENT_URL}/user/order/${order._id}`;
