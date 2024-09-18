@@ -140,3 +140,26 @@ export const signInOtpEmailTemplate = (otp) => {
     </div>
 </div>`;
 };
+
+export const adminOrderNotificationEmailTemplate = (options) => {
+  const nodeEnv = process.env.NODE_ENV;
+  const clientUrl =
+    nodeEnv === 'production'
+      ? process.env.CLIENT_PRODUCTION_URL
+      : nodeEnv === 'development'
+      ? process.env.CLIENT_DEV_URL
+      : process.env.CLIENT_STAGING_URL;
+  return `
+    <div style="background-color: #f4f4f4; padding: 50px 0px; font-family: sans-serif; color: #444746;">
+	   <div class="container" style="width:90%;max-width: 600px;margin: 0 auto;background-color:#ffffff; box-shadow:0 0 10px rgba(0, 0, 0, 0.1)">
+        <div class="header" style="text-align:center;width:100%;padding:10px 0;background-color:#1D6F2B;color:white;">
+            <h1>Feli Express</h1>
+        </div>
+        <div style="padding: 0px 30px 35px 30px; text-align:center">
+            <h2>A New Order</h2>
+            <p style="line-height:20px; padding: 0px 15px">A new order has just been placed on the store! Click on the button below for more details.</p>
+            <a href="${clientUrl}/user/order/${options.orderId}"  style="cursor: pointer;display:inline-block;padding:10px 20px;background-color: #1D6F2B;color:white;text-decoration: none;border-radius: 5px;font-size: 16px;">Track order</a> 
+        </div>
+    </div>
+</div>`;
+};
