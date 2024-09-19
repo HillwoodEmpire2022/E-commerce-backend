@@ -24,6 +24,9 @@ const productClassSchema = new mongoose.Schema(
         delete ret.__v;
       },
     },
+    toObject: {
+      virtuals: true,
+    },
   }
 );
 

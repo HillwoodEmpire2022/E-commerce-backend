@@ -26,6 +26,9 @@ const categorySchema = new mongoose.Schema(
         delete ret.__v;
       },
     },
+    toObject: {
+      virtuals: true,
+    },
     timestamps: true,
   }
 );
