@@ -65,10 +65,7 @@ export const addSubCategory = async (req, res) => {
 // Get Sub-categories
 export const getSubCategories = async (req, res) => {
   try {
-    const subCategories = await SubCategory.find({}, [
-      '-updatedAt',
-      '-createdAt',
-    ])
+    const subCategories = await SubCategory.find({}, ['-updatedAt', '-createdAt'])
       .populate({
         path: 'category',
         select: '-updatedAt -createdAt',
@@ -89,15 +86,10 @@ export const getSubCategories = async (req, res) => {
 // Get Sub-category
 export const getSubCategory = async (req, res) => {
   try {
-    const category = await SubCategory.findById(req.params.id).populate(
-      'category',
-      ['id', 'name']
-    );
+    const category = await SubCategory.findById(req.params.id).populate('category', ['id', 'name']);
 
     if (!category) {
-      return res
-        .status(404)
-        .json({ status: 'fail', message: 'Sub-category not found' });
+      return res.status(404).json({ status: 'fail', message: 'Sub-category not found' });
     }
 
     // Send the found sub category as a response
@@ -116,16 +108,10 @@ export const updateSubCategory = async (req, res) => {
     const { id } = req.params;
     const updatedData = req.body;
 
-    const updatedSubCategory = await SubCategory.findByIdAndUpdate(
-      id,
-      updatedData,
-      { new: true }
-    );
+    const updatedSubCategory = await SubCategory.findByIdAndUpdate(id, updatedData, { new: true });
 
     if (!updatedSubCategory) {
-      return res
-        .status(404)
-        .json({ status: '404', message: 'SubCategory not found' });
+      return res.status(404).json({ status: '404', message: 'SubCategory not found' });
     }
 
     res.status(200).json({
@@ -147,13 +133,11 @@ export const deleteSubCategory = async (req, res) => {
     const subCategory = await SubCategory.findByIdAndDelete(req.params.id);
 
     if (!subCategory) {
-      return res
-        .status(404)
-        .json({ status: 'fail', message: 'Subcategory not found' });
+      return res.status(404).json({ status: 'fail', message: 'Subcategory not found' });
     }
 
     // Send the found category as a response
-    res.status(204).json({
+    res.status(200).json({
       status: 'success',
     });
   } catch (error) {

@@ -21,10 +21,6 @@ import {
 } from '../validations/authValidations.js';
 import { mongoIdValidator } from '../validations/mongoidValidator.js';
 
-const activationTokenGenerator = (email) => {
-  return jwt.sign({ email }, process.env.JWT_SECRET_KEY);
-};
-
 // ********* Register ************
 export const userRegister = async (req, res, next) => {
   let sellerProfile, newUser, userProfile;
@@ -130,7 +126,7 @@ export const verifyEmail = async (req, res) => {
 
     return res.status(200).json({
       status: 'success',
-      message: 'Account Activated successfully.',
+      message: 'Email verified successfully.',
     });
   } catch (err) {
     next(err);
@@ -188,7 +184,8 @@ export const userLogin = async (req, res, next) => {
     if (!user.verified)
       return res.status(401).json({
         status: 'fail',
-        message: 'Account not activated! Check your email to activate your account.',
+        message:
+          'Your email has not been verified yet. Please check your inbox for the verification link or click here to resend the verification email.',
       });
 
     // Check if user account is active
@@ -227,6 +224,51 @@ export const userLogin = async (req, res, next) => {
         console.error(error);
         return next(new AppError('There was an error sending email! Please try again.', 500));
       }
+    }
+
+    // // Create activity Log
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const ipAddress = ip?.split('::ffff:')[1];
+
+    const userAgent = req.headers['user-agent'];
+    const parsedUserAgent = new UAParser(userAgent);
+
+    const { browser, os } = parsedUserAgent.getResult();
+
+    await createdActivityLog({
+      userId: user._id,
+      activity: {
+        type: 'security',
+        action: 'login',
+      },
+      details: 'New login',
+      status: 'success',
+      ipAddress,
+      userAgent: {
+        browser: `${browser.name} ${browser.version}`,
+        os: ` ${os.name} ${os.version}`,
+      },
+      status: 'success',
+    });
+
+    // Send Email
+    const emailOptions = {
+      to: user.email,
+      subject: 'Security Alert: New Sign-in',
+      text: {
+        heading: `A new sign-in on ${os.name} ${os.version}`,
+        message: `We noticed a new sign-in to your account on a ${os.name} ${os.version} device via ${browser?.name} ${browser.version}. If this was you, you don’t need to do anything. If not, click on the button below to secure your account.`,
+        button: {
+          text: 'Secure your account',
+          url: `${process.env.CLIENT_URL}/forgot-password`,
+        },
+      },
+    };
+
+    try {
+      await sendEmail(emailOptions, 'security-activity');
+    } catch (error) {
+      console.error(error);
     }
 
     res.status(200).json({
@@ -587,7 +629,7 @@ export const requestVerificationEmail = async (req, res, next) => {
     res.status(200).json({
       status: 'success',
       activationToken: process.env.NODE_ENV === 'test' ? activationToken : undefined,
-      data: 'Email to activate your account was sent to your email.',
+      data: 'A verification link has been sent to your email address. Please check your inbox and follow the instructions to verify your account.',
     });
   } catch (error) {
     console.error(error);
