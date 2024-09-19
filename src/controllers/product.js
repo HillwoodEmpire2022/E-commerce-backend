@@ -228,7 +228,7 @@ export const searchProduct = async (req, res, next) => {
           index: 'product_full_text_search',
           text: {
             query: searchItem,
-            path: ['name'],
+            path: ['name', 'description'],
             fuzzy: {
               maxEdits: 2,
             },
