@@ -10,9 +10,12 @@ export const getUsers = async (req, res) => {
 
     const users = await features.query;
 
+    const totalUsers = await User.countDocuments();
+
     res.status(200).json({
       status: 'success',
       count: users.length,
+      totalUsers,
       data: {
         users,
       },

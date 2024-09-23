@@ -267,6 +267,7 @@ export const getOrders = async (req, res, next) => {
     if (role === 'customer') filter.customer = _id;
 
     // EXECUTE QUERY
+    const totalOrders = await Order.countDocuments(filter);
     const features = new APIFeatures(Order.find(filter), req.query).filter().sort().limitFields().paginate();
     orders = await features.query.populate({
       path: 'items.product',
@@ -276,6 +277,7 @@ export const getOrders = async (req, res, next) => {
     res.status(200).json({
       status: 'success',
       count: orders?.length,
+      totalOrders,
       data: {
         orders,
       },

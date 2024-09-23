@@ -22,10 +22,10 @@ describe('User Registration', () => {
 
     const response = await request(app).post('/api/v1/auth/register').send(userData);
 
-    expect(response.body).toMatchObject({
-      status: 'success',
-      data: 'Email to activate your account was sent to your email.',
-    });
+    expect(response.body.status).toEqual('success');
+    expect(response.body.data).toEqual('Check your inbox to verify your email address.');
+    expect(response.body.activationToken).toBeDefined();
+
     expect(response.status).toBe(201);
 
     const createdUser = await User.findOne({
@@ -103,7 +103,7 @@ describe('Account Activation', () => {
 
     expect(response.body).toEqual({
       status: 'success',
-      message: 'Account Activated successfully.',
+      message: 'Email verified successfully.',
     });
 
     const updatedUser = await User.findOne({
@@ -204,7 +204,8 @@ describe('userLogin', () => {
     expect(response.status).toBe(401);
     expect(response.body).toEqual({
       status: 'fail',
-      message: 'Account not activated! Check your email to activate your account.',
+      message:
+        'Your email has not been verified yet. Please check your inbox for the verification link or click here to resend the verification email.',
     });
   });
 

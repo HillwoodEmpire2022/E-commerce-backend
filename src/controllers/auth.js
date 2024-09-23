@@ -80,7 +80,7 @@ export const userRegister = async (req, res, next) => {
     res.status(201).json({
       status: 'success',
       activationToken: process.env.NODE_ENV === 'test' ? verificationCode : undefined,
-      data: 'Email to activate your account was sent to your email.',
+      data: 'Check your inbox to verify your email address.',
     });
   } catch (error) {
     await User.findByIdAndDelete(newUser?._id);
