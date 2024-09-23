@@ -253,9 +253,11 @@ export const getOrders = async (req, res, next) => {
     if (req.params.sellerId || role === 'seller') {
       const sellerId = !req.params.sellerId ? _id : req.params.sellerId;
       orders = await fetchSellerOrders(sellerId, role, req.query);
+      const totalOrders = await Order.countDocuments({ 'items.seller': sellerId });
       return res.status(200).json({
         status: 'success',
         count: orders?.length,
+        totalOrders,
         data: {
           orders,
         },
