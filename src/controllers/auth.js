@@ -1,6 +1,5 @@
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
-import jwt from 'jsonwebtoken';
 import UAParser from 'ua-parser-js';
 import { base64FileStringGenerator } from '../utils/base64Converter.js';
 
