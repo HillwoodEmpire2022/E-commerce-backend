@@ -247,7 +247,6 @@ export const userLogin = async (req, res, next) => {
         browser: `${browser.name} ${browser.version}`,
         os: ` ${os.name} ${os.version}`,
       },
-      status: 'success',
     });
 
     // Send Email
