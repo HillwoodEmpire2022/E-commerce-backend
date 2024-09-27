@@ -25,7 +25,7 @@ const activity = new Schema(
         'product_updated',
         'user_role_updated',
         'featured_product',
-        'unauthorized_error',
+        'unauthorized_access_attempt',
       ],
     },
   },
