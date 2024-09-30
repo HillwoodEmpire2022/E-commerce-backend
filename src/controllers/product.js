@@ -11,6 +11,7 @@ import Brand from '../models/brand.model.js';
 import AppError from '../utils/AppError.js';
 import { strictTransportSecurity } from 'helmet';
 import mongoose from 'mongoose';
+import { createdActivityLog, extractUserAgentdata } from '../utils/createActivityLog.js';
 
 export const getAllProducts = async (req, res, next) => {
   try {
@@ -193,6 +194,29 @@ export const updateProductData = async (req, res, next) => {
 
     const updatedProduct = await Product.findByIdAndUpdate(req.params.productId, req.body, {
       new: strictTransportSecurity,
+    });
+
+    // If request body contains featured, create acitivity log
+    const { ipAddress, browser, os } = extractUserAgentdata(req);
+
+    const adminUsers = await User.find({ role: 'admin' }).select('_id');
+    adminUsers.forEach(async (admin) => {
+      const activity = {
+        userId: admin?._id,
+        activity: {
+          type: 'product',
+          action: 'product_updated',
+        },
+        details: `Product with id ${updatedProduct.id} has been updated`,
+        status: 'success',
+        ipAddress,
+        userAgent: {
+          browser: `${browser.name} ${browser.version}`,
+          os: ` ${os.name} ${os.version}`,
+        },
+      };
+
+      await createdActivityLog(activity);
     });
 
     res.status(200).json({
