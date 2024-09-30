@@ -1,5 +1,6 @@
 import User from '../models/user.js';
 import APIFeatures from '../utils/APIFeatures.js';
+import { createdActivityLog, extractUserAgentdata } from '../utils/createActivityLog.js';
 import { mongoIdValidator } from '../validations/mongoidValidator.js';
 import { updateUserSchema } from '../validations/userUpdateValidation.js';
 
@@ -42,7 +43,6 @@ export const updateUserRole = async (req, res) => {
     }
 
     // Fetch the user by ID
-    console.log(userId);
     const user = await User.findByIdAndUpdate(userId, req.body, {
       new: true,
     });
@@ -50,6 +50,32 @@ export const updateUserRole = async (req, res) => {
     if (!user) {
       return res.status(404).json({ status: 'fail', message: 'User not found' });
     }
+
+    // Create activity log
+    const { ipAddress, browser, os } = extractUserAgentdata(req);
+
+    const adminUsers = await User.find({ role: 'admin' }).select('_id');
+
+    adminUsers.forEach(async (admin) => {
+      const activity = {
+        userId: admin?._id,
+        activity: {
+          type: 'user',
+          action: 'user_role_updated',
+        },
+        details: `User role updated to "${req.body.role}" for user with ID: ${userId}`,
+        status: 'success',
+        ipAddress,
+        userAgent: {
+          browser: `${browser.name} ${browser.version}`,
+          os: ` ${os.name} ${os.version}`,
+        },
+      };
+
+      await createdActivityLog(activity);
+    });
+
+    console.log(user);
 
     res.status(200).json({ status: 'success', data: user });
   } catch (error) {
