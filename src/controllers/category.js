@@ -3,6 +3,36 @@ import Category from '../models/category.js';
 import { addCategoryValidation } from '../validations/productValidation.js';
 import removeEmptySpaces from '../utils/removeEmptySpaces.js';
 import SubCategory from '../models/subcategory.js';
+import { extractUserAgentdata, createdActivityLog } from '../utils/createActivityLog.js';
+
+// Refactor create Activity log
+async function createActivityLogs(category_id, req, doer, type, action, details, status) {
+  const { ipAddress, browser, os } = extractUserAgentdata(req);
+
+  const activity = {
+    userId: doer?._id,
+    activity: {
+      type,
+      action,
+    },
+
+    resource: {
+      name: 'categories',
+      id: category_id,
+    },
+
+    details,
+    status,
+
+    ipAddress,
+    userAgent: {
+      browser: `${browser.name} ${browser.version}`,
+      os: ` ${os.name} ${os.version}`,
+    },
+  };
+
+  await createdActivityLog(activity);
+}
 
 // ******** Categories ***********
 // Create Categories
@@ -32,6 +62,16 @@ export const addCategory = async (req, res) => {
       name: categoryData.name,
       productClass: categoryData.productClass,
     });
+
+    await createActivityLogs(
+      category.id,
+      req,
+      req.user._id,
+      'system',
+      'category_created',
+      `A new category: ${category.name} has been created`,
+      'success'
+    );
 
     res.status(201).json({
       status: 'success',
@@ -107,6 +147,16 @@ export const updateCategory = async (req, res) => {
       return res.status(404).json({ status: '404', message: 'Category found' });
     }
 
+    await createActivityLogs(
+      id,
+      req,
+      req.user._id,
+      'system',
+      'category_updated',
+      `Category: ${updatedCategory.name} has been updated`,
+      'success'
+    );
+
     res.status(200).json({
       status: 'success',
       data: updatedCategory,
@@ -121,7 +171,7 @@ export const updateCategory = async (req, res) => {
 };
 
 // Delete Categories
-export const deleteCategory = async (req, res) => {
+export const deleteCategory = async (req, res, next) => {
   try {
     const category = await Category.findByIdAndDelete(req.params.id);
 
@@ -137,14 +187,21 @@ export const deleteCategory = async (req, res) => {
       category: req.params.id,
     });
 
+    await createActivityLogs(
+      req.params.id,
+      req,
+      req.user._id,
+      'system',
+      'category_deleted',
+      `Category: ${category.name} has been deleted. This includes all its subcategories`,
+      'success'
+    );
+
     // Send the found category as a response
     res.status(200).json({
       status: 'success',
     });
   } catch (error) {
-    res.status(500).json({
-      status: 'error',
-      message: 'Internal server error',
-    });
+    next(error);
   }
 };
