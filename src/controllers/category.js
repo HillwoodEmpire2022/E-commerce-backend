@@ -5,7 +5,6 @@ import removeEmptySpaces from '../utils/removeEmptySpaces.js';
 import SubCategory from '../models/subcategory.js';
 import { extractUserAgentdata, createdActivityLog } from '../utils/createActivityLog.js';
 
-// Refactor create Activity log
 async function createActivityLogs(category_id, req, doer, type, action, details, status) {
   const { ipAddress, browser, os } = extractUserAgentdata(req);
 

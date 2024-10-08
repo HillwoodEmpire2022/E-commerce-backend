@@ -13,6 +13,35 @@ import { strictTransportSecurity } from 'helmet';
 import mongoose from 'mongoose';
 import { createdActivityLog, extractUserAgentdata } from '../utils/createActivityLog.js';
 
+// Refactor create Activity log
+async function createActivityLogs(product_id, req, doer, type, action, details, status) {
+  const { ipAddress, browser, os } = extractUserAgentdata(req);
+
+  const activity = {
+    userId: doer?._id,
+    activity: {
+      type,
+      action,
+    },
+
+    resource: {
+      name: 'products',
+      id: product_id,
+    },
+
+    details,
+    status,
+
+    ipAddress,
+    userAgent: {
+      browser: `${browser.name} ${browser.version}`,
+      os: ` ${os.name} ${os.version}`,
+    },
+  };
+
+  await createdActivityLog(activity);
+}
+
 export const getAllProducts = async (req, res, next) => {
   try {
     const isAdmin = req.user && req.user.role === 'admin' ? true : false;
@@ -196,28 +225,16 @@ export const updateProductData = async (req, res, next) => {
       new: strictTransportSecurity,
     });
 
-    // If request body contains featured, create acitivity log
-    const { ipAddress, browser, os } = extractUserAgentdata(req);
-
-    const adminUsers = await User.find({ role: 'admin' }).select('_id');
-    adminUsers.forEach(async (admin) => {
-      const activity = {
-        userId: admin?._id,
-        activity: {
-          type: 'product',
-          action: 'product_updated',
-        },
-        details: `Product with id ${updatedProduct.id} has been updated`,
-        status: 'success',
-        ipAddress,
-        userAgent: {
-          browser: `${browser.name} ${browser.version}`,
-          os: ` ${os.name} ${os.version}`,
-        },
-      };
-
-      await createdActivityLog(activity);
-    });
+    //  Activity Log
+    await createActivityLogs(
+      product._id,
+      req,
+      req.user._id,
+      'system',
+      'product_updated',
+      `Product: ${product.name} has been updated`,
+      'success'
+    );
 
     res.status(200).json({
       status: 'success',
@@ -389,6 +406,17 @@ export const createProduct = async (req, res, next) => {
 
     // Create the product
     const product = await Product.create(productObject);
+
+    //  Activity Log
+    await createActivityLogs(
+      product._id,
+      req,
+      req.user._id,
+      'system',
+      'product_created',
+      `Product: ${product.name} has been created`,
+      'success'
+    );
 
     res.status(201).json({
       status: 'success',

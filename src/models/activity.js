@@ -34,7 +34,7 @@ const activity = new Schema(
         'password_change',
         'password_reset',
         'product_viewed',
-        'product_added',
+        'product_created',
         'product_updated',
         'user_role_updated',
         'featured_product',

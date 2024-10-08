@@ -5,14 +5,13 @@ import Order from '../models/order.js';
 import Product from '../models/product.js';
 import { randomStringGenerator } from '../utils/randomStringGenerator.js';
 import removeEmptySpaces from '../utils/removeEmptySpaces.js';
-import UAParser from 'ua-parser-js';
 dotenv.config();
 
 import User from '../models/user.js';
 import flw from '../services/flutterwave.js';
 import AppError from '../utils/AppError.js';
-import sendEmail, { send_order_notification_email } from '../utils/email.js';
 import { createdActivityLog, extractUserAgentdata } from '../utils/createActivityLog.js';
+import sendEmail, { send_order_notification_email } from '../utils/email.js';
 
 // Refactor create Activity log
 async function createActivityLogs(order_id, req, doer, type, action, details, status) {
