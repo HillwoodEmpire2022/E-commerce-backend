@@ -1,9 +1,8 @@
-import UAParser from 'ua-parser-js';
 import UserProfile from '../models/userProfile.js';
 import AppError from '../utils/AppError.js';
 
-import removeEmptySpaces from '../utils/removeEmptySpaces.js';
 import { createdActivityLog, extractUserAgentdata } from '../utils/createActivityLog.js';
+import removeEmptySpaces from '../utils/removeEmptySpaces.js';
 
 async function createActivityLogs(user_id, req, doer, type, action, details, status) {
   const { ipAddress, browser, os } = extractUserAgentdata(req);
