@@ -50,7 +50,7 @@ const resource = new Schema(
     name: {
       type: String,
       // The name of the resource that can be used to query it EX: orders/id
-      enum: ['products', 'categories', 'users', 'orders', 'subcategories', 'product-classes'],
+      enum: ['products', 'categories', 'users', 'orders', 'subcategories', 'product-classes', 'user-profiles'],
     },
     id: String,
   },
