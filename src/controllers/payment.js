@@ -5,14 +5,42 @@ import Order from '../models/order.js';
 import Product from '../models/product.js';
 import { randomStringGenerator } from '../utils/randomStringGenerator.js';
 import removeEmptySpaces from '../utils/removeEmptySpaces.js';
-import UAParser from 'ua-parser-js';
 dotenv.config();
 
 import User from '../models/user.js';
 import flw from '../services/flutterwave.js';
 import AppError from '../utils/AppError.js';
+import { createdActivityLog, extractUserAgentdata } from '../utils/createActivityLog.js';
 import sendEmail, { send_order_notification_email } from '../utils/email.js';
-import { createdActivityLog } from '../utils/createActivityLog.js';
+
+// Refactor create Activity log
+async function createActivityLogs(order_id, req, doer, type, action, details, status) {
+  const { ipAddress, browser, os } = extractUserAgentdata(req);
+
+  const activity = {
+    userId: doer?._id,
+    activity: {
+      type,
+      action,
+    },
+
+    resource: {
+      name: 'orders',
+      id: order_id,
+    },
+
+    details,
+    status,
+
+    ipAddress,
+    userAgent: {
+      browser: `${browser.name} ${browser.version}`,
+      os: ` ${os.name} ${os.version}`,
+    },
+  };
+
+  await createdActivityLog(activity);
+}
 
 async function updateOrderProducts(orderProducts) {
   // Update Ordered Products quantities
@@ -292,34 +320,15 @@ export const flw_webhook = async (req, res, next) => {
     // Admin
     await sendEmail(adminEmailOptions, 'admin-order-notification');
 
-    // Create activity log
-    // Create Activity Log
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    const ipAddress = ip?.split('::ffff:')[1];
-    const userAgent = req.headers['user-agent'];
-    const parsedUserAgent = new UAParser(userAgent);
-
-    const { browser, os } = parsedUserAgent.getResult();
-    try {
-      // User Activity
-      await createdActivityLog({
-        userId: order.customer,
-        activity: {
-          type: 'order',
-          action: 'order_placed',
-        },
-        details: 'An order has been placed',
-        status: 'success',
-        ipAddress,
-        userAgent: {
-          browser: `${browser.name} ${browser.version}`,
-          os: ` ${os.name} ${os.version}`,
-        },
-      });
-    } catch (error) {
-      console.log(error);
-      return res.status(500).end();
-    }
+    await createActivityLogs(
+      order._id,
+      req,
+      order.customer,
+      'user',
+      'order_placed',
+      'An order has been placed',
+      'success'
+    );
   } catch (error) {
     console.log(error);
     return res.status(500).end();

@@ -1,9 +1,36 @@
-import UAParser from 'ua-parser-js';
 import UserProfile from '../models/userProfile.js';
 import AppError from '../utils/AppError.js';
 
+import { createdActivityLog, extractUserAgentdata } from '../utils/createActivityLog.js';
 import removeEmptySpaces from '../utils/removeEmptySpaces.js';
-import { createdActivityLog } from '../utils/createActivityLog.js';
+
+async function createActivityLogs(user_id, req, doer, type, action, details, status) {
+  const { ipAddress, browser, os } = extractUserAgentdata(req);
+
+  const activity = {
+    userId: doer?._id,
+    activity: {
+      type,
+      action,
+    },
+
+    resource: {
+      name: 'user-profiles',
+      id: user_id,
+    },
+
+    details,
+    status,
+
+    ipAddress,
+    userAgent: {
+      browser: `${browser.name} ${browser.version}`,
+      os: ` ${os.name} ${os.version}`,
+    },
+  };
+
+  await createdActivityLog(activity);
+}
 
 export const updateProfile = async (req, res, next) => {
   try {
@@ -44,37 +71,16 @@ export const updateProfile = async (req, res, next) => {
     }
 
     // Create Activity Log
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    const ipAddress = ip?.split('::ffff:')[1];
-    const userAgent = req.headers['user-agent'];
-    const parsedUserAgent = new UAParser(userAgent);
-
-    const { browser, os } = parsedUserAgent.getResult();
-
-    try {
-      await createdActivityLog({
-        userId: loggedInUser.id,
-        activity: {
-          type: 'user',
-          action: 'profile_update',
-        },
-        details: 'Profile updated',
-        status: 'success',
-        ipAddress,
-        userAgent: {
-          browser: `${browser.name} ${browser.version}`,
-          os: ` ${os.name} ${os.version}`,
-        },
-      });
-    } catch (error) {
-      console.log(error);
-      return res.status(200).json({
-        status: 'success',
-        data: {
-          profile: userProfile,
-        },
-      });
-    }
+    //  Activity Log
+    await createActivityLogs(
+      userProfile._id,
+      req,
+      req.user._id,
+      'user',
+      'profile_update',
+      `Profile updated`,
+      'success'
+    );
 
     res.status(200).json({
       status: 'success',

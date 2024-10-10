@@ -4,6 +4,34 @@ import { createdActivityLog, extractUserAgentdata } from '../utils/createActivit
 import { mongoIdValidator } from '../validations/mongoidValidator.js';
 import { updateUserSchema } from '../validations/userUpdateValidation.js';
 
+async function createActivityLogs(user_id, req, doer, type, action, details, status) {
+  const { ipAddress, browser, os } = extractUserAgentdata(req);
+
+  const activity = {
+    userId: doer?._id,
+    activity: {
+      type,
+      action,
+    },
+
+    resource: {
+      name: 'users',
+      id: user_id,
+    },
+
+    details,
+    status,
+
+    ipAddress,
+    userAgent: {
+      browser: `${browser.name} ${browser.version}`,
+      os: ` ${os.name} ${os.version}`,
+    },
+  };
+
+  await createdActivityLog(activity);
+}
+
 export const getUsers = async (req, res) => {
   try {
     // EXECUTE QUERY
@@ -52,34 +80,18 @@ export const updateUserRole = async (req, res) => {
     }
 
     // Create activity log
-    const { ipAddress, browser, os } = extractUserAgentdata(req);
-
-    const adminUsers = await User.find({ role: 'admin' }).select('_id');
-
-    adminUsers.forEach(async (admin) => {
-      const activity = {
-        userId: admin?._id,
-        activity: {
-          type: 'user',
-          action: 'user_role_updated',
-        },
-        details: `User role updated to "${req.body.role}" for user with ID: ${userId}`,
-        status: 'success',
-        ipAddress,
-        userAgent: {
-          browser: `${browser.name} ${browser.version}`,
-          os: ` ${os.name} ${os.version}`,
-        },
-      };
-
-      await createdActivityLog(activity);
-    });
-
-    console.log(user);
+    await createActivityLogs(
+      userId,
+      req,
+      req.user._id,
+      'system',
+      'user_role_updated',
+      `User role updated to "${req.body.role}" by ${req.user.firstName} ${req.user.lastName}`,
+      'success'
+    );
 
     res.status(200).json({ status: 'success', data: user });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };

@@ -6,7 +6,7 @@ export const getActivityLogs = async (req, res, next) => {
     const { _id, role } = req.user;
 
     const filter = {
-      ...(role === 'admin' ? {} : { userId: _id }),
+      ...(role === 'admin' ? { $or: [{ type: 'system' }, { userId: _id }] } : { userId: _id }),
     };
 
     const query = new APIFeatures(ActivityLog.find(filter), req.query).filter().sort().limitFields().paginate();

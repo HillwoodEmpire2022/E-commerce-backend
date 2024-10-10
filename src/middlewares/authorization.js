@@ -1,33 +1,39 @@
-import User from '../models/user.js';
 import { createdActivityLog, extractUserAgentdata } from '../utils/createActivityLog.js';
+
+async function createActivityLogs(req, doer, type, action, details, status) {
+  const { ipAddress, browser, os } = extractUserAgentdata(req);
+
+  const activity = {
+    userId: doer?._id,
+    activity: {
+      type,
+      action,
+    },
+
+    details,
+    status,
+
+    ipAddress,
+    userAgent: {
+      browser: `${browser.name} ${browser.version}`,
+      os: ` ${os.name} ${os.version}`,
+    },
+  };
+
+  await createdActivityLog(activity);
+}
 
 export const restrictTo = (...roles) => {
   return async (req, res, next) => {
     if (!roles.includes(req.user.role)) {
-      // Log the unauthorized access attempt
-      const { ipAddress, browser, os } = extractUserAgentdata(req);
-
-      // Find admin user
-      const adminUsers = await User.find({ role: 'admin' }).select('_id');
-
-      adminUsers.forEach(async (admin) => {
-        const activity = {
-          userId: admin?._id,
-          activity: {
-            type: 'security',
-            action: 'unauthorized_access_attempt',
-          },
-          details: `User tried to access a route: ${req.originalUrl} without permission`,
-          status: 'failure',
-          ipAddress,
-          userAgent: {
-            browser: `${browser.name} ${browser.version}`,
-            os: ` ${os.name} ${os.version}`,
-          },
-        };
-
-        await createdActivityLog(activity);
-      });
+      await createActivityLogs(
+        req,
+        req.user,
+        'system',
+        'unauthorized_access_attempt',
+        `User tried to access a route: ${req.originalUrl} without permission`,
+        'failure'
+      );
 
       return res.status(403).json({
         status: 'fail',

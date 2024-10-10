@@ -9,7 +9,7 @@ import User from '../models/user.js';
 import UserProfile from '../models/userProfile.js';
 import AppError from '../utils/AppError.js';
 import { uploadProfileImageToCloudinary } from '../utils/cloudinary.js';
-import { createdActivityLog } from '../utils/createActivityLog.js';
+import { createdActivityLog, extractUserAgentdata } from '../utils/createActivityLog.js';
 import sendEmail from '../utils/email.js';
 import { generateJWToken } from '../utils/jsonWebToken.js';
 import {
@@ -19,6 +19,36 @@ import {
   signupValidationSchema,
 } from '../validations/authValidations.js';
 import { mongoIdValidator } from '../validations/mongoidValidator.js';
+
+// Refactor create Activity log
+async function createActivityLogs(resource_id, req, doer, type, action, details, status) {
+  const { ipAddress, browser, os } = extractUserAgentdata(req);
+
+  const activity = {
+    userId: doer?._id,
+    activity: {
+      type,
+      action,
+    },
+
+    details,
+
+    status,
+
+    ipAddress,
+    userAgent: {
+      browser: `${browser.name} ${browser.version}`,
+      os: ` ${os.name} ${os.version}`,
+    },
+  };
+
+  await createdActivityLog(activity);
+
+  return {
+    browser,
+    os,
+  };
+}
 
 // ********* Register ************
 export const userRegister = async (req, res, next) => {
@@ -224,30 +254,16 @@ export const userLogin = async (req, res, next) => {
         return next(new AppError('There was an error sending email! Please try again.', 500));
       }
     }
-
     // // Create activity Log
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    const ipAddress = ip?.split('::ffff:')[1];
-
-    const userAgent = req.headers['user-agent'];
-    const parsedUserAgent = new UAParser(userAgent);
-
-    const { browser, os } = parsedUserAgent.getResult();
-
-    await createdActivityLog({
-      userId: user._id,
-      activity: {
-        type: 'security',
-        action: 'login',
-      },
-      details: 'New login',
-      status: 'success',
-      ipAddress,
-      userAgent: {
-        browser: `${browser.name} ${browser.version}`,
-        os: ` ${os.name} ${os.version}`,
-      },
-    });
+    const { os, browser } = await createActivityLogs(
+      user._id,
+      req,
+      user._id,
+      'security',
+      'login',
+      'New login',
+      'success'
+    );
 
     // Send Email
     const emailOptions = {
@@ -378,32 +394,10 @@ export const resetUserPassword = async (req, res, next) => {
     user.passwordResetExpiresOn = undefined;
     await user.save();
 
-    // Create Activity Log
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    const ipAddress = ip?.split('::ffff:')[1];
-    const userAgent = req.headers['user-agent'];
-    const parsedUserAgent = new UAParser(userAgent);
-
-    const { browser, os } = parsedUserAgent.getResult();
-
     try {
-      await createdActivityLog({
-        userId: user._id,
-        activity: {
-          type: 'security',
-          action: 'password_reset',
-        },
-        details: 'Password was reset',
-        status: 'success',
-        ipAddress,
-        userAgent: {
-          browser: `${browser.name} ${browser.version}`,
-          os: ` ${os.name} ${os.version}`,
-        },
-        status: 'success',
-      });
+      // Create Activity Log
+      await createActivityLogs(user._id, req, user._id, 'security', 'password_reset', 'Password was reset', 'success');
     } catch (error) {
-      console.log(error);
       return res.status(201).json({ message: 'password reset successfully' });
     }
 
@@ -424,6 +418,9 @@ export const updatePassword = async (req, res, next) => {
         message: 'user not found',
       });
     }
+
+    console.log(req.body);
+
     const { currentPassword, newPassword, confirmPassword } = req.body;
 
     // validate password
@@ -462,28 +459,20 @@ export const updatePassword = async (req, res, next) => {
     );
 
     // Create Activity Log
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    const ipAddress = ip?.split('::ffff:')[1];
-    const userAgent = req.headers['user-agent'];
-    const parsedUserAgent = new UAParser(userAgent);
-
-    const { browser, os } = parsedUserAgent.getResult();
-
-    await createdActivityLog({
-      userId,
-      activity: {
-        type: 'security',
-        action: 'password_change',
-      },
-      details: 'Password was changed',
-      status: 'success',
-      ipAddress,
-      userAgent: {
-        browser: `${browser.name} ${browser.version}`,
-        os: ` ${os.name} ${os.version}`,
-      },
-      status: 'success',
-    });
+    try {
+      // Create Activity Log
+      await createActivityLogs(
+        user._id,
+        req,
+        user._id,
+        'security',
+        'password_change',
+        'Password was upadated',
+        'success'
+      );
+    } catch (error) {
+      console.log(error);
+    }
 
     return res.status(201).json({
       message: 'password updated succesfully',
@@ -736,30 +725,16 @@ export const verifyOtp = async (req, res, next) => {
     user.twoFactorAuthOtp.expiresOn = undefined;
     await user.save();
 
-    // Create activity Log
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    const ipAddress = ip?.split('::ffff:')[1];
-
-    const userAgent = req.headers['user-agent'];
-    const parsedUserAgent = new UAParser(userAgent);
-
-    const { browser, os } = parsedUserAgent.getResult();
-
-    await createdActivityLog({
-      userId: user._id,
-      activity: {
-        type: 'security',
-        action: 'login',
-      },
-      details: 'New login',
-      status: 'success',
-      ipAddress,
-      userAgent: {
-        browser: `${browser.name} ${browser.version}`,
-        os: ` ${os.name} ${os.version}`,
-      },
-      status: 'success',
-    });
+    // // Create activity Log
+    const { os, browser } = await createActivityLogs(
+      user._id,
+      req,
+      user._id,
+      'security',
+      'login',
+      'New login',
+      'success'
+    );
 
     // Send Email
     const emailOptions = {
