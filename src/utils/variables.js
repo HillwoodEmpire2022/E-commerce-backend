@@ -1,1 +1,1 @@
-export const customer_commission = 0.04;
+export const customer_commission = 0.08;
