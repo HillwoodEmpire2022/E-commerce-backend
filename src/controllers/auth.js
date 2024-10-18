@@ -1,6 +1,5 @@
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
-import UAParser from 'ua-parser-js';
 import { base64FileStringGenerator } from '../utils/base64Converter.js';
 
 import SellerProfile from '../models/sellerProfile.js';
@@ -19,6 +18,7 @@ import {
   signupValidationSchema,
 } from '../validations/authValidations.js';
 import { mongoIdValidator } from '../validations/mongoidValidator.js';
+import { googleOath2passport } from '../utils/googleOath2passport.js';
 
 // Refactor create Activity log
 async function createActivityLogs(resource_id, req, doer, type, action, details, status) {
@@ -769,4 +769,50 @@ export const verifyOtp = async (req, res, next) => {
     next(error);
   }
 };
-// Add More Recovery Options
+
+export const googleOathCallback = async (req, res) => {
+  const user = req.user;
+
+  const response = returnedUserInfo(user);
+
+  // // Create activity Log
+  const { os, browser } = await createActivityLogs(
+    user._id,
+    req,
+    user._id,
+    'security',
+    'login',
+    'New login',
+    'success'
+  );
+
+  // Send Email
+  const emailOptions = {
+    to: user.email,
+    subject: 'Security Alert: New Sign-in',
+    text: {
+      heading: `A new sign-in on ${os.name} ${os.version}`,
+      message: `We noticed a new sign-in to your account on a ${os.name} ${os.version} device via ${browser?.name} ${browser.version}. If this was you, you don’t need to do anything. If not, click on the button below to secure your account.`,
+      button: {
+        text: 'Secure your account',
+        url: `${process.env.CLIENT_URL}/forgot-password`,
+      },
+    },
+  };
+
+  try {
+    await sendEmail(emailOptions, 'security-activity');
+  } catch (error) {
+    console.error(error);
+  }
+
+  const nodeEnv = process.env.NODE_ENV;
+  const clientUrl =
+    nodeEnv === 'production'
+      ? process.env.CLIENT_PRODUCTION_URL
+      : nodeEnv === 'development'
+      ? process.env.CLIENT_DEV_URL
+      : process.env.CLIENT_STAGING_URL;
+
+  res.redirect(`${clientUrl}/auth/callback?token=${response.token}`);
+};

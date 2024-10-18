@@ -1,23 +1,25 @@
 import express from 'express';
 import {
-  userRegister,
-  userLogin,
-  resetUserPassword,
+  deactivateAccount,
+  deleteAccount,
+  enableTwoFactorAuth,
+  forgotPassword,
   getMe,
+  requestVerificationEmail,
+  resetUserPassword,
   updatePassword,
+  userLogin,
+  userRegister,
   userUpdatePhoto,
   userUpdateProfile,
-  forgotPassword,
-  deleteAccount,
-  requestVerificationEmail,
-  deactivateAccount,
-  enableTwoFactorAuth,
   verifyEmail,
+  googleOathCallback,
   verifyOtp,
 } from '../controllers/auth.js';
 import { isLoggedIn } from '../middlewares/authentication.js';
-import { uploadProfilePicture } from '../utils/multer.js';
 import { restrictTo } from '../middlewares/authorization.js';
+import { googleOath2passport } from '../utils/googleOath2passport.js';
+import { uploadProfilePicture } from '../utils/multer.js';
 const router = express.Router();
 
 /**
@@ -654,5 +656,9 @@ router.patch('/enable-2fa', isLoggedIn, enableTwoFactorAuth);
 
 // Verify otp
 router.post('/verify-otp', verifyOtp);
+
+router.get('/google', googleOath2passport.authenticate('google', { scope: ['email', 'profile'], session: false }));
+
+router.get('/google/callback', googleOath2passport.authenticate('google', { session: false }), googleOathCallback);
 
 export default router;
