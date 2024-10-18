@@ -22,7 +22,7 @@ passport.use(
             lastName: profile.family_name,
             email: profile.email,
             password: 'password',
-            role: 'user',
+            role: 'customer',
             verified: true,
           });
           return done(null, user);
